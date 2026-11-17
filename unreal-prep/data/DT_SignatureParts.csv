@@ -1,0 +1,20 @@
+﻿Name,Part,Key,NameTH,NameEN,Weight
+"Move_none","Move","none","","",0
+"Move_dash","Move","dash","พุ่ง","Dash",2
+"Move_pull","Move","pull","ดึงเข้าหา","Pull In",2
+"Move_fly","Move","fly","เหินฟ้า","Sky Leap",2
+"Move_warp","Move","warp","วาร์ป","Warp",3
+"Move_dig","Move","dig","มุดดิน","Burrow",3
+"Attack_trap","Attack","trap","วางกับดัก","Lay Trap",1
+"Attack_pop","Attack","pop","โผล่ตี","Rising Strike",2
+"Attack_sweep","Attack","sweep","กวาดวงกว้าง","Wide Sweep",2
+"Attack_shot","Attack","shot","ยิงรัว","Rapid Shots",2
+"Attack_cone","Attack","cone","พ่นใส่","Spray Cone",2
+"Attack_drop","Attack","drop","เรียกของตกใส่","Call Down a Drop",3
+"Effect_none","Effect","none","","",0
+"Effect_push","Effect","push","ผลักกระเด็น","Knockback",1
+"Effect_hole","Effect","hole","ทำให้สะดุดช้า","Trip and Slow",1
+"Effect_burn","Effect","burn","เผาไหม้","Burn",1
+"Effect_stun","Effect","stun","มึน","Stunned",2
+"Effect_leech","Effect","leech","ดูดเลือด","Life Steal",2
+"Effect_freeze","Effect","freeze","แช่แข็ง","Frozen",2

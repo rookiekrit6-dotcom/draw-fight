@@ -1,0 +1,34 @@
+﻿Name,NameTH,NameEN,Rarity,Priority,Type,VFX,Animation,Status
+meteor,อุกกาบาต,Meteor,Rare,1,Delayed AOE,"Magic circle telegraph on target (radius readable), meteor falling from sky with fire trail, big blast + crater + camera shake","Staff raised to sky, then point down",todo
+pause,กดหยุดชั่วคราว,Pause,Legendary,1,Time stop,"Desaturate everything inside a sphere, clock-hand ring, frozen particles",Palm out,todo
+quake,แผ่นดินไหว,Earthquake,Rare,1,Wide ground AOE,"Arena-wide cracks spreading from the hero, rock pillars burst up under grounded enemies, heavy shake",Stomp,todo
+rift,ตัดมิติ,Dimension Cut,Legendary,1,Arena line,"Horizontal dimension tear across the arena (glowing slit with distortion), jumpable",Horizontal hand chop,todo
+shadow,ก้าวเงา,Shadow Step,Legendary,1,Teleport strike,"Body dissolves into black smoke, reappears behind target with purple afterimage, one bright stab flash","Vanish, appear, stab",todo
+slam,ทุบปฐพี,Ground Slam,Common,1,Ground AOE,"Radial crack decal + dust ring, rock chunks (mesh particles) launched, shockwave distortion ring; mid-air version: falling streak then bigger crater",Overhead raise then smash; air variant = dive,todo
+sun,ดวงอาทิตย์แผดเผา,Scorching Sun,Legendary,1,Arena-wide 3s,"Small sun in the sky, god rays, whole-arena warm light (drive a light from the skill), enemies ignite",Both arms to the sky,todo
+thunder,อัสนีบาต,Thunderstrike,Rare,1,3 strikes,"Warning line on ground before each strike, lightning bolt (beam + branches), electric sparks, white flash",Point at target,todo
+tornado,พายุหมุน,Tornado,Rare,1,Moving AOE,"Tornado mesh with scrolling noise texture, debris orbiting, lifts enemies",Push forward,todo
+vortex,หลุมดูด,Vortex,Legendary,1,Pull AOE,"Black-purple swirl disc on ground, debris spiraling inward, enemies dragged",Both hands pull inward,todo
+wave,คลื่นดาบ,Sword Wave,Common,1,Line projectile,"Crescent blade mesh with emissive edge + bloom, ground scorch line, pierces every enemy in line",Wide horizontal slash,todo
+barrier,เกราะธาตุ,Elemental Barrier,Common,2,Self buff 3s,"Hex shield dome tinted by hero element, ripple where hits land",Brace pose,todo
+blast,ระเบิดรอบตัว,Blast Around,Rare,2,Self AOE,"Expanding fireball sphere around the hero, heat distortion, debris and smoke column",Arms out burst pose,todo
+charge,พุ่งกระแทก,Charge,Common,2,Shield dash,"Energy shield bubble in front, ground sparks, knockback burst on contact",Hunched shield charge loop,todo
+clip,คลิปหนีบ,Paper Clip,Rare,2,Grab and slam,"Paper clip meshes snapping onto enemies, lift, then slam with ring",Clamp then slam,todo
+counter,สวนกลับ,Counter,Legendary,2,Stance,"Glowing outline on hero during stance; on trigger: time-slow flash, white slash cross","Guard stance, then counter slash",todo
+eraser,ยางลบ,Eraser,Rare,2,Debuff hit,"Pink eraser crumbs burst, the target's buff icons visibly erased",Rubbing motion,todo
+lash,ตวัดรัด,Lash,Rare,2,Pull line,"Whip ribbon with glowing tip reaching full range, drag streak on the ground as the enemy is pulled",Long whip crack,todo
+leap,กระโจนทุบ,Leap Smash,Common,2,Gap closer,"Jump arc trail, landing impact ring + dust",Leap and smash,todo
+miasma,หมอกพิษ,Poison Mist,Rare,2,Lingering cloud,"Long green-purple smoke cloud, bubbling decals on the ground, 4.5s",Breath forward,todo
+pageflip,พลิกหน้ากระดาษ,Page Flip,Legendary,2,Swap places,"Paper page sweeping across screen, both fighters swap behind it",Page turn gesture,todo
+pin,หมุดปัก,Thumbtack,Rare,2,Stun,"Giant thumbtack drops from above onto target, stars circling",Point down,todo
+rage,คลั่ง,Rage,Rare,2,Self buff 5s,"Red aura flames on body for 5s, veins of light, red screen-edge pulse at start",Roar pose,todo
+ruler,ไม้บรรทัดฟาด,Ruler Smack,Rare,2,Screen-wide line,"Giant ruler mesh slapping across the lane, motion streak",Wide swing,todo
+scribble,ขีดเขียนรัว,Scribble Flurry,Common,2,6-hit combo,"Scribble line squiggles in the air for each hit, last hit launches with a big doodle star",Six quick strokes,todo
+sig,สกิลประจำตัว,Signature Skill,Signature,2,Built from parts,Compose from the Move + Attack + Effect parts in DT_SignatureParts; each part gets its own small VFX module,Depends on parts,todo
+spin,หมุนพายุ,Storm Spin,Common,2,Self AOE 1.2s,"Ring of motion-blur slashes around the body, wind swirl particles, hit sparks",Spin loop montage 1.2s,todo
+thrust,พุ่งทะลวง,Piercing Thrust,Common,2,Dash,"Speed trail ribbon behind the body, spear tip spark cone, pierce flash on each enemy passed","Short forward dash montage, spear held level",todo
+volley,ฝนธนู,Arrow Rain,Rare,2,5 arcing projectiles,"Arrows with glow trails arcing up, impact puffs at 5 landing spots, warning dots on ground",Bow draw aimed upward,todo
+haste,เร่งความเร็ว,Haste,Common,3,Self buff 5s,"Wind streak lines around legs, afterimages while running",Quick crouch,todo
+heal,ฟื้นพลัง,Heal,Rare,3,Self buff,"Green rising motes + soft ring at feet, brief body glow",Short raise-hand pose,todo
+inkspill,หมึกหก,Ink Spill,Common,3,Ground pool,"Glossy black ink puddle decal with drips, slow splash on step",Flick forward,todo
+throw,ซัดสามทิศ,Triple Throw,Common,3,Projectiles x3,"Three spinning weapon copies (use the player's own weapon mesh) with ribbon trails, impact sparks",Quick sidearm throw,todo

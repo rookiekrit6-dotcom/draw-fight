@@ -1,0 +1,5 @@
+﻿Name,NameTH,NameEN,DescTH,DescEN
+"dodge","หัวจิ๋วหลบไว","Tiny Head, Quick Dodge","มีโอกาส 15% หลบการโจมตี","15% chance to dodge an attack"
+"thick","หัวแข็ง","Thick Skull","รับดาเมจน้อยลง 15%","Take 15% less damage"
+"regen","ฟื้นตัว","Regeneration","ฟื้นเลือด 0.6% ต่อวินาที","Regenerate 0.6% HP per second"
+"focus","สมาธิ","Focus","คูลดาวน์สกิลสั้นลง 20%","Skill cooldowns are 20% shorter"

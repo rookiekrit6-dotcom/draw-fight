@@ -1,0 +1,270 @@
+{
+ "costSingle": 60,
+ "costTen": 540,
+ "pityPulls": 30,
+ "pityGuarantees": "Legendary",
+ "tenPullGuarantee": "at least one Rare or better on the 10th pull if none yet",
+ "duplicateRefund": {
+  "Common": 25,
+  "Rare": 60,
+  "Legendary": 150
+ },
+ "maxSkillLevel": 3,
+ "baseWeightByRarity": {
+  "Common": 60,
+  "Rare": 30,
+  "Legendary": 10
+ },
+ "fitMultipliers": {
+  "signatureSkillOfYourWeaponClass": 4,
+  "sameMeleeOrRangedGroup": 2,
+  "favoredByYourElement": 3,
+  "note": "element multiplier stacks with the class/group one (multiply)"
+ },
+ "groups": {
+  "Melee": {
+   "classes": [
+    "sword",
+    "spear",
+    "hammer",
+    "dagger",
+    "fist",
+    "whip",
+    "shield"
+   ],
+   "skills": [
+    "wave",
+    "thrust",
+    "slam",
+    "spin",
+    "charge",
+    "lash",
+    "shadow",
+    "counter",
+    "leap",
+    "quake",
+    "rage"
+   ]
+  },
+  "Ranged": {
+   "classes": [
+    "bow",
+    "staff",
+    "bomb",
+    "knife",
+    "ring",
+    "gun",
+    "spray"
+   ],
+   "skills": [
+    "volley",
+    "meteor",
+    "throw",
+    "blast",
+    "pin",
+    "ruler",
+    "inkspill",
+    "scribble",
+    "thunder",
+    "tornado"
+   ]
+  }
+ },
+ "elementFavors": {
+  "fire": [
+   "sun",
+   "meteor",
+   "blast",
+   "rage"
+  ],
+  "water": [
+   "heal",
+   "barrier",
+   "inkspill"
+  ],
+  "earth": [
+   "quake",
+   "slam",
+   "barrier"
+  ],
+  "wind": [
+   "tornado",
+   "haste",
+   "spin",
+   "leap"
+  ],
+  "poison": [
+   "miasma",
+   "inkspill"
+  ],
+  "spore": [
+   "miasma",
+   "heal"
+  ],
+  "light": [
+   "sun",
+   "heal",
+   "thunder"
+  ],
+  "dark": [
+   "shadow",
+   "rift",
+   "vortex"
+  ],
+  "fight": [
+   "rage",
+   "counter",
+   "charge"
+  ],
+  "psy": [
+   "vortex",
+   "pause",
+   "rift",
+   "pageflip"
+  ],
+  "mech": [
+   "thunder",
+   "clip",
+   "pin",
+   "ruler"
+  ],
+  "zombie": [
+   "miasma",
+   "rage",
+   "heal"
+  ]
+ },
+ "signatureSkillPower": "mult = max(0.8, 2.7 - 0.22 * (moveWeight + attackWeight + effectWeight))",
+ "comboMoves": {
+  "sword": [
+   {
+    "a": "down",
+    "m": 1
+   },
+   {
+    "a": "up",
+    "m": 1,
+    "launch": 210
+   },
+   {
+    "a": "big",
+    "m": 1.5,
+    "kb": 300,
+    "dur": 0.26
+   }
+  ],
+  "spear": [
+   {
+    "a": "poke",
+    "m": 0.9
+   },
+   {
+    "a": "poke",
+    "m": 0.9
+   },
+   {
+    "a": "poke",
+    "m": 1.5,
+    "kb": 280,
+    "step": 300,
+    "dur": 0.24
+   }
+  ],
+  "hammer": [
+   {
+    "a": "big",
+    "m": 1,
+    "kb": 240,
+    "dur": 0.28
+   },
+   {
+    "a": "big",
+    "m": 1.45,
+    "kb": 260,
+    "shock": 1,
+    "dur": 0.32
+   }
+  ],
+  "whip": [
+   {
+    "a": "down",
+    "m": 1,
+    "whip": 1,
+    "dur": 0.24
+   },
+   {
+    "a": "up",
+    "m": 1,
+    "whip": 1,
+    "launch": 150,
+    "dur": 0.24
+   }
+  ],
+  "shield": [
+   {
+    "a": "poke",
+    "m": 1,
+    "kb": 330
+   },
+   {
+    "a": "poke",
+    "m": 1.2,
+    "kb": 420,
+    "step": 200,
+    "dur": 0.24
+   }
+  ],
+  "dagger": [
+   {
+    "a": "poke",
+    "m": 0.8,
+    "dur": 0.14
+   },
+   {
+    "a": "up",
+    "m": 0.8,
+    "dur": 0.14
+   },
+   {
+    "a": "poke",
+    "m": 0.8,
+    "dur": 0.14
+   },
+   {
+    "a": "down",
+    "m": 1.4,
+    "kb": 230,
+    "dur": 0.18
+   }
+  ],
+  "fist": [
+   {
+    "a": "poke",
+    "m": 0.7,
+    "dur": 0.12
+   },
+   {
+    "a": "poke",
+    "m": 0.7,
+    "dur": 0.12
+   },
+   {
+    "a": "poke",
+    "m": 0.75,
+    "dur": 0.12
+   },
+   {
+    "a": "down",
+    "m": 0.9,
+    "dur": 0.14
+   },
+   {
+    "a": "up",
+    "m": 1.5,
+    "launch": 330,
+    "kb": 120,
+    "dur": 0.2
+   }
+  ]
+ }
+}

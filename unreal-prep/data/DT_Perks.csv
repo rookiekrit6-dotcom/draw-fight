@@ -1,0 +1,13 @@
+﻿Name,NameTH,NameEN,DescTH,DescEN,CostTH,CostEN
+"guard","กางกัน","Brace","รับดาเมจจากด้านหน้าน้อยลง 35% ขณะไม่ได้โจมตี","Take 35% less frontal damage while not attacking","ดาเมจ -10%","Damage -10%"
+"glide","ร่อน","Glide","ตกช้าลงขณะลอย คุมตำแหน่งกลางอากาศได้นาน","Fall slowly and control your position in the air longer","เลือด -5%","HP -5%"
+"pull","ดึง","Pull","โจมตีโดนแล้วลากศัตรูเข้าหาตัว","Hits drag the enemy toward you","ดาเมจ -8%","Damage -8%"
+"heavy","หนักอึ้ง","Heavy","โดนผลักกระเด็นน้อยลง 70%","70% less knockback taken","ความเร็ว -15%","Speed -15%"
+"shatter","แตกกระจาย","Shatter","โจมตีโดนแล้วเศษกระเด็นใส่ศัตรูตัวอื่นที่อยู่ใกล้ 40%","Hits splash 40% damage onto other nearby enemies","ตีช้าลง 10%","Attack rate -10%"
+"dual","สองมือ","Dual Wield","การตีประชิดทุกครั้งตีซ้ำอีกหนึ่งที 35%","Every melee hit strikes once more for 35%","ดาเมจ -20%","Damage -20%"
+"aura","ออร่า","Aura","ศัตรูที่ยืนใกล้ตัวโดนดาเมจธาตุต่อเนื่อง","Enemies standing close take constant elemental damage","ดาเมจ -12%","Damage -12%"
+"mist","ปล่อยไอ","Vapor","โจมตีโดนแล้วทิ้งหมอกธาตุไว้ 3 วินาที ศัตรูที่ยืนในหมอกโดนดาเมจ","Hits leave an elemental mist for 3 seconds that damages enemies inside","ดาเมจ -10%","Damage -10%"
+"orbit","ลอยข้างตัว","Orbit","อาวุธเงาลอยวนรอบตัว ตีศัตรูที่เข้าใกล้เองทุก 0.8 วินาที","A shadow weapon orbits you and hits nearby enemies every 0.8 seconds","ดาเมจ -10%","Damage -10%"
+"lucky","สุ่มของ","Lucky Item","ทุก 8 วินาทีสุ่มได้ของดี 1 อย่าง ฟื้นเลือด เร่งความเร็ว คลั่ง หรือเกราะ","Every 8 seconds you get a random boon: heal, haste, rage or barrier","เลือด -6%","HP -6%"
+"reflect","สะท้อนกระสุน","Reflect Shots","มีโอกาส 30% ตีกระสุนที่พุ่งมากลับไปหาคนยิง","30% chance to bat incoming shots back at the shooter","ความเร็ว -8%","Speed -8%"
+"thorns","หนาม","Thorns","ศัตรูที่ตีประชิดใส่เราจะโดนดาเมจสะท้อนกลับ 12%","Melee attackers take 12% of the damage back","ดาเมจ -8%","Damage -8%"

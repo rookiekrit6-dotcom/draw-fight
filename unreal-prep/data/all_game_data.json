@@ -1,0 +1,1922 @@
+{
+ "skills": [
+  {
+   "Name": "sig",
+   "NameTH": "สกิลประจำตัว",
+   "NameEN": "Signature Skill",
+   "DescTH": "สกิลเฉพาะของอาวุธชิ้นนี้ ประกอบจากการเคลื่อนที่ รูปแบบโจมตี และผลพิเศษ",
+   "DescEN": "This weapon's own skill, built from a movement, an attack pattern and a special effect",
+   "Cooldown": 9,
+   "Rarity": "Signature",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "",
+   "IconShape": 6
+  },
+  {
+   "Name": "thrust",
+   "NameTH": "พุ่งทะลวง",
+   "NameEN": "Piercing Thrust",
+   "DescTH": "พุ่งไปข้างหน้า ทะลุศัตรูด้วยดาเมจ 1.9 เท่า",
+   "DescEN": "Dash forward through enemies for 1.9x damage",
+   "Cooldown": 5,
+   "Rarity": "Common",
+   "WeaponHintTH": "หอก",
+   "SignatureOfClass": "spear",
+   "GachaGroup": "Melee",
+   "FavoredElements": "",
+   "IconShape": 7
+  },
+  {
+   "Name": "slam",
+   "NameTH": "ทุบปฐพี",
+   "NameEN": "Ground Slam",
+   "DescTH": "ทุบพื้นจนศัตรูรอบตัวลอย ดาเมจ 1.65 เท่า ใช้กลางอากาศจะดิ่งลงทุบ",
+   "DescEN": "Smash the ground and launch nearby enemies for 1.65x damage. Used in mid-air, you dive down first",
+   "Cooldown": 6,
+   "Rarity": "Common",
+   "WeaponHintTH": "ค้อน",
+   "SignatureOfClass": "hammer",
+   "GachaGroup": "Melee",
+   "FavoredElements": "earth",
+   "IconShape": 3
+  },
+  {
+   "Name": "throw",
+   "NameTH": "ซัดสามทิศ",
+   "NameEN": "Triple Throw",
+   "DescTH": "ขว้างอาวุธออกไป 3 ชิ้นพร้อมกัน",
+   "DescEN": "Throw 3 copies of your weapon at once",
+   "Cooldown": 4.5,
+   "Rarity": "Common",
+   "WeaponHintTH": "มีดบิน",
+   "SignatureOfClass": "knife",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "",
+   "IconShape": 14
+  },
+  {
+   "Name": "spin",
+   "NameTH": "หมุนพายุ",
+   "NameEN": "Storm Spin",
+   "DescTH": "หมุนอาวุธรอบตัว 1.2 วินาที โดนทุกตัวที่เข้าใกล้",
+   "DescEN": "Spin your weapon around you for 1.2 seconds, hitting anything close",
+   "Cooldown": 6.5,
+   "Rarity": "Common",
+   "WeaponHintTH": "จักร",
+   "SignatureOfClass": "ring",
+   "GachaGroup": "Melee",
+   "FavoredElements": "wind",
+   "IconShape": 13
+  },
+  {
+   "Name": "wave",
+   "NameTH": "คลื่นดาบ",
+   "NameEN": "Sword Wave",
+   "DescTH": "ปล่อยคลื่นฟันทะลุศัตรูทุกตัวในแนว ดาเมจ 1.4 เท่า",
+   "DescEN": "Send a slashing wave through every enemy in line for 1.4x damage",
+   "Cooldown": 5,
+   "Rarity": "Common",
+   "WeaponHintTH": "ดาบ",
+   "SignatureOfClass": "sword",
+   "GachaGroup": "Melee",
+   "FavoredElements": "",
+   "IconShape": 9
+  },
+  {
+   "Name": "volley",
+   "NameTH": "ฝนธนู",
+   "NameEN": "Arrow Rain",
+   "DescTH": "ยิงธนู 5 ดอกเป็นวิถีโค้ง ตกใส่ศัตรูหลายระยะ",
+   "DescEN": "Fire 5 arrows in an arc that land at several distances",
+   "Cooldown": 6,
+   "Rarity": "Rare",
+   "WeaponHintTH": "ธนู",
+   "SignatureOfClass": "bow;gun",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "",
+   "IconShape": 14
+  },
+  {
+   "Name": "meteor",
+   "NameTH": "อุกกาบาต",
+   "NameEN": "Meteor",
+   "DescTH": "ร่ายเวทตกใส่ตำแหน่งศัตรู ระเบิดวงกว้าง 2.4 เท่า ออกจากวงทันก็หลบได้",
+   "DescEN": "Drop a spell on the enemy's position for a wide 2.4x blast. It can be avoided by leaving the circle in time",
+   "Cooldown": 6.5,
+   "Rarity": "Rare",
+   "WeaponHintTH": "คทา",
+   "SignatureOfClass": "staff;summon",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "fire",
+   "IconShape": 14
+  },
+  {
+   "Name": "shadow",
+   "NameTH": "ก้าวเงา",
+   "NameEN": "Shadow Step",
+   "DescTH": "หายตัวไปโผล่ด้านหลังศัตรูแล้วแทงทันที ดาเมจรวม 3 เท่า",
+   "DescEN": "Vanish, appear behind the enemy and stab at once for 3x total damage",
+   "Cooldown": 6,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "มีดสั้น",
+   "SignatureOfClass": "dagger",
+   "GachaGroup": "Melee",
+   "FavoredElements": "dark",
+   "IconShape": 15
+  },
+  {
+   "Name": "lash",
+   "NameTH": "ตวัดรัด",
+   "NameEN": "Lash",
+   "DescTH": "ตวัดแส้สุดระยะ ดาเมจ 1.6 เท่า ลากศัตรูมาตรงหน้าและทำให้ชะงัก 0.8 วินาที",
+   "DescEN": "Lash at full range for 1.6x damage, drag the enemy in front of you and stagger it for 0.8 seconds",
+   "Cooldown": 5.5,
+   "Rarity": "Rare",
+   "WeaponHintTH": "แส้",
+   "SignatureOfClass": "whip",
+   "GachaGroup": "Melee",
+   "FavoredElements": "",
+   "IconShape": 9
+  },
+  {
+   "Name": "charge",
+   "NameTH": "พุ่งกระแทก",
+   "NameEN": "Charge",
+   "DescTH": "ยกโล่พุ่งชน ไม่โดนโจมตีระหว่างพุ่ง ศัตรูที่โดนกระเด็นและชะงัก ดาเมจ 1.7 เท่า",
+   "DescEN": "Charge behind your shield, untouchable while charging. Enemies hit are knocked back and staggered for 1.7x damage",
+   "Cooldown": 5.5,
+   "Rarity": "Common",
+   "WeaponHintTH": "โล่",
+   "SignatureOfClass": "shield",
+   "GachaGroup": "Melee",
+   "FavoredElements": "fight",
+   "IconShape": 7
+  },
+  {
+   "Name": "blast",
+   "NameTH": "ระเบิดรอบตัว",
+   "NameEN": "Blast Around",
+   "DescTH": "จุดระเบิดรอบตัวเป็นวงกว้าง ดาเมจ 2.2 เท่า ศัตรูกระเด็นลอย",
+   "DescEN": "Detonate a wide blast around you for 2.2x damage, launching enemies",
+   "Cooldown": 7,
+   "Rarity": "Rare",
+   "WeaponHintTH": "ระเบิด",
+   "SignatureOfClass": "bomb",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "fire",
+   "IconShape": 10
+  },
+  {
+   "Name": "heal",
+   "NameTH": "ฟื้นพลัง",
+   "NameEN": "Heal",
+   "DescTH": "ฟื้นเลือดตัวเองทันที 13%",
+   "DescEN": "Instantly restore 13% of your HP",
+   "Cooldown": 11,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "water;spore;light;zombie",
+   "IconShape": 8
+  },
+  {
+   "Name": "rage",
+   "NameTH": "คลั่ง",
+   "NameEN": "Rage",
+   "DescTH": "ดาเมจทุกอย่างแรงขึ้น 40% เป็นเวลา 5 วินาที",
+   "DescEN": "All your damage is 40% stronger for 5 seconds",
+   "Cooldown": 10,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Melee",
+   "FavoredElements": "fire;fight;zombie",
+   "IconShape": 1
+  },
+  {
+   "Name": "haste",
+   "NameTH": "เร่งความเร็ว",
+   "NameEN": "Haste",
+   "DescTH": "วิ่งเร็วขึ้น 35% และตีถี่ขึ้น 40% เป็นเวลา 5 วินาที",
+   "DescEN": "Run 35% faster and attack 40% more often for 5 seconds",
+   "Cooldown": 9,
+   "Rarity": "Common",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "wind",
+   "IconShape": 13
+  },
+  {
+   "Name": "barrier",
+   "NameTH": "เกราะธาตุ",
+   "NameEN": "Elemental Barrier",
+   "DescTH": "รับดาเมจน้อยลง 60% เป็นเวลา 3 วินาที",
+   "DescEN": "Take 60% less damage for 3 seconds",
+   "Cooldown": 9,
+   "Rarity": "Common",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "water;earth",
+   "IconShape": 12
+  },
+  {
+   "Name": "quake",
+   "NameTH": "แผ่นดินไหว",
+   "NameEN": "Earthquake",
+   "DescTH": "ศัตรูที่ยืนบนพื้นในระยะกว้างโดนดาเมจ 1.2 เท่า ลอยและชะงัก",
+   "DescEN": "Grounded enemies in a wide area take 1.2x damage, get launched and staggered",
+   "Cooldown": 7,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Melee",
+   "FavoredElements": "earth",
+   "IconShape": 3
+  },
+  {
+   "Name": "vortex",
+   "NameTH": "หลุมดูด",
+   "NameEN": "Vortex",
+   "DescTH": "ดูดศัตรูรอบตัวเข้ามาหา ทำดาเมจ 1.05 เท่า และทำให้ชะงัก",
+   "DescEN": "Pull nearby enemies toward you for 1.05x damage and stagger them",
+   "Cooldown": 7,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "dark;psy",
+   "IconShape": 2
+  },
+  {
+   "Name": "counter",
+   "NameTH": "สวนกลับ",
+   "NameEN": "Counter",
+   "DescTH": "ตั้งท่า 1 วินาที ถ้าโดนโจมตีในช่วงนี้จะไม่เสียเลือดและฟันสวน 2.5 เท่า",
+   "DescEN": "Take a stance for 1 second. If hit during it, you take no damage and counter for 2.5x",
+   "Cooldown": 6,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Melee",
+   "FavoredElements": "fight",
+   "IconShape": 12
+  },
+  {
+   "Name": "leap",
+   "NameTH": "กระโจนทุบ",
+   "NameEN": "Leap Smash",
+   "DescTH": "กระโดดพุ่งไปหาศัตรูแล้วทุบลงพื้น ดาเมจ 1.8 เท่า",
+   "DescEN": "Leap toward the enemy and smash down for 1.8x damage",
+   "Cooldown": 6,
+   "Rarity": "Common",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "fist",
+   "GachaGroup": "Melee",
+   "FavoredElements": "wind",
+   "IconShape": 10
+  },
+  {
+   "Name": "sun",
+   "NameTH": "ดวงอาทิตย์แผดเผา",
+   "NameEN": "Scorching Sun",
+   "DescTH": "เรียกดวงอาทิตย์ขึ้นกลางสนาม 3 วินาที แผดเผาศัตรูทุกตัวไม่ว่าอยู่ที่ไหน และติดไฟ",
+   "DescEN": "Summon a sun over the arena for 3 seconds. It scorches every enemy wherever they are and sets them on fire",
+   "Cooldown": 12,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "fire;light",
+   "IconShape": 0
+  },
+  {
+   "Name": "thunder",
+   "NameTH": "อัสนีบาต",
+   "NameEN": "Thunderstrike",
+   "DescTH": "สายฟ้าผ่าลงใส่ศัตรู 3 ครั้งติดกัน ครั้งละ 1.3 เท่า โดนแล้วชะงัก มีเส้นเตือนก่อนผ่า",
+   "DescEN": "Lightning strikes the enemy 3 times in a row for 1.3x each and staggers. A warning line shows before each strike",
+   "Cooldown": 8,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "light;mech",
+   "IconShape": 5
+  },
+  {
+   "Name": "rift",
+   "NameTH": "ตัดมิติ",
+   "NameEN": "Dimension Cut",
+   "DescTH": "ฉีกมิติเป็นเส้นแนวนอนทั้งสนาม ศัตรูที่อยู่ระดับเดียวกับเส้นโดน 2.2 เท่า กระโดดหลบได้",
+   "DescEN": "Tear a horizontal line across the whole arena. Enemies level with it take 2.2x. It can be jumped over",
+   "Cooldown": 10,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "dark;psy",
+   "IconShape": 2
+  },
+  {
+   "Name": "miasma",
+   "NameTH": "หมอกพิษ",
+   "NameEN": "Poison Mist",
+   "DescTH": "พ่นหมอกพิษไปข้างหน้าเป็นแนวยาว ค้างอยู่ 4.5 วินาที ศัตรูในหมอกโดนดาเมจและพิษสะสม",
+   "DescEN": "Breathe a long line of poison mist that lingers 4.5 seconds. Enemies inside take damage and stacking poison",
+   "Cooldown": 8,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "poison;spore;zombie",
+   "IconShape": 4
+  },
+  {
+   "Name": "tornado",
+   "NameTH": "พายุหมุน",
+   "NameEN": "Tornado",
+   "DescTH": "ปล่อยพายุหมุนเคลื่อนไปข้างหน้า โดนซ้ำหลายครั้งและงัดศัตรูลอย",
+   "DescEN": "Release a tornado that travels forward, hitting repeatedly and lifting enemies",
+   "Cooldown": 8,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "wind",
+   "IconShape": 13
+  },
+  {
+   "Name": "inkspill",
+   "NameTH": "หมึกหก",
+   "NameEN": "Ink Spill",
+   "DescTH": "สาดหมึกเป็นแอ่งยาวข้างหน้า 4.5 วินาที ศัตรูที่เหยียบจะช้าลงและโดนดาเมจต่อเนื่อง",
+   "DescEN": "Splash a long ink puddle ahead for 4.5 seconds. Enemies stepping in it are slowed and take damage over time",
+   "Cooldown": 8,
+   "Rarity": "Common",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "spray",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "water;poison",
+   "IconShape": 4
+  },
+  {
+   "Name": "eraser",
+   "NameTH": "ยางลบ",
+   "NameEN": "Eraser",
+   "DescTH": "ลบบัฟทั้งหมดของศัตรูที่ใกล้ที่สุด ดาเมจ 1.5 เท่า และทำให้สกิลของมันรอนานขึ้น 2 วินาที",
+   "DescEN": "Erase all buffs on the nearest enemy for 1.5x damage and add 2 seconds to its skill cooldowns",
+   "Cooldown": 9,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "",
+   "IconShape": 10
+  },
+  {
+   "Name": "ruler",
+   "NameTH": "ไม้บรรทัดฟาด",
+   "NameEN": "Ruler Smack",
+   "DescTH": "ฟาดเป็นเส้นตรงยาวสุดจอในระดับเดียวกับตัว ดาเมจ 1.7 เท่า ผลักกระเด็นไกล",
+   "DescEN": "Smack in a straight line across the screen at your height for 1.7x damage and a long knockback",
+   "Cooldown": 7,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "mech",
+   "IconShape": 7
+  },
+  {
+   "Name": "scribble",
+   "NameTH": "ขีดเขียนรัว",
+   "NameEN": "Scribble Flurry",
+   "DescTH": "ขีดใส่ข้างหน้า 6 ครั้งติดกัน ครั้งสุดท้ายงัดศัตรูลอย",
+   "DescEN": "Scribble forward 6 times in a row. The last hit launches the enemy",
+   "Cooldown": 6,
+   "Rarity": "Common",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "",
+   "IconShape": 9
+  },
+  {
+   "Name": "pin",
+   "NameTH": "หมุดปัก",
+   "NameEN": "Thumbtack",
+   "DescTH": "ปักหมุดตรึงศัตรูที่ใกล้ที่สุด มึน 0.9 วินาที แล้วเดินช้าต่ออีก 3 วินาที",
+   "DescEN": "Pin the nearest enemy: stunned for 0.9 seconds, then slowed for 3 more",
+   "Cooldown": 8,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "trapper",
+   "GachaGroup": "Ranged",
+   "FavoredElements": "mech",
+   "IconShape": 11
+  },
+  {
+   "Name": "pageflip",
+   "NameTH": "พลิกหน้ากระดาษ",
+   "NameEN": "Page Flip",
+   "DescTH": "สลับตำแหน่งกับศัตรู ศัตรูมึน ส่วนเราได้เร่งความเร็วชั่วครู่",
+   "DescEN": "Swap places with the enemy. It is stunned and you gain a short speed boost",
+   "Cooldown": 9,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "psy",
+   "IconShape": 2
+  },
+  {
+   "Name": "clip",
+   "NameTH": "คลิปหนีบ",
+   "NameEN": "Paper Clip",
+   "DescTH": "หนีบศัตรูรอบตัวยกลอยค้างกลางอากาศ แล้วกระแทกลงพื้น ดาเมจ 2 เท่า",
+   "DescEN": "Clip nearby enemies, hold them in the air, then slam them down for 2x damage",
+   "Cooldown": 9,
+   "Rarity": "Rare",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "mech",
+   "IconShape": 12
+  },
+  {
+   "Name": "pause",
+   "NameTH": "กดหยุดชั่วคราว",
+   "NameEN": "Pause",
+   "DescTH": "หยุดเวลาของศัตรูในระยะ 1.3 วินาที ไม่ทำดาเมจ แต่ตีฟรีได้เต็มที่",
+   "DescEN": "Stop time for enemies in range for 1.3 seconds. No damage, but you get free hits",
+   "Cooldown": 13,
+   "Rarity": "Legendary",
+   "WeaponHintTH": "",
+   "SignatureOfClass": "",
+   "GachaGroup": "Any",
+   "FavoredElements": "psy",
+   "IconShape": 6
+  }
+ ],
+ "elements": [
+  {
+   "Name": "fire",
+   "NameTH": "ไฟ",
+   "NameEN": "Fire",
+   "SuffixTH": "เพลิง",
+   "Color": "#e5484d",
+   "TextColor": "",
+   "EffectTH": "เผาศัตรูต่อเนื่อง 3 วินาที",
+   "EffectEN": "Burns the enemy for 3 seconds",
+   "SoundFreq": 520,
+   "Beats": "spore;zombie"
+  },
+  {
+   "Name": "water",
+   "NameTH": "น้ำ",
+   "NameEN": "Water",
+   "SuffixTH": "วารี",
+   "Color": "#2b7de9",
+   "TextColor": "",
+   "EffectTH": "ซัดกระเด็นและทำให้ช้า",
+   "EffectEN": "Knocks back and slows",
+   "SoundFreq": 440,
+   "Beats": "fire;earth"
+  },
+  {
+   "Name": "earth",
+   "NameTH": "ดิน",
+   "NameEN": "Earth",
+   "SuffixTH": "ศิลา",
+   "Color": "#8a5a2b",
+   "TextColor": "",
+   "EffectTH": "ตีโดนแล้วได้เกราะหิน 2 วินาที",
+   "EffectEN": "Hitting grants a stone shield for 2 seconds",
+   "SoundFreq": 220,
+   "Beats": "fire;mech"
+  },
+  {
+   "Name": "wind",
+   "NameTH": "ลม",
+   "NameEN": "Wind",
+   "SuffixTH": "วายุ",
+   "Color": "#5cc8e0",
+   "TextColor": "#1f9bb5",
+   "EffectTH": "ตีไว วิ่งไว และงัดศัตรูลอย",
+   "EffectEN": "Fast attacks, fast feet, lifts enemies",
+   "SoundFreq": 660,
+   "Beats": "poison;fight"
+  },
+  {
+   "Name": "poison",
+   "NameTH": "พิษ",
+   "NameEN": "Poison",
+   "SuffixTH": "พิษร้าย",
+   "Color": "#8a4fd8",
+   "TextColor": "",
+   "EffectTH": "พิษสะสมได้ถึง 5 ชั้น",
+   "EffectEN": "Poison stacks up to 5 times",
+   "SoundFreq": 330,
+   "Beats": "water;spore"
+  },
+  {
+   "Name": "spore",
+   "NameTH": "สปอร์",
+   "NameEN": "Spore",
+   "SuffixTH": "สปอร์",
+   "Color": "#2fa84f",
+   "TextColor": "",
+   "EffectTH": "ฝังสปอร์ แล้วระเบิดซ้ำใน 1.5 วินาที",
+   "EffectEN": "Plants a spore that bursts again after 1.5 seconds",
+   "SoundFreq": 392,
+   "Beats": "water;earth"
+  },
+  {
+   "Name": "light",
+   "NameTH": "แสง",
+   "NameEN": "Light",
+   "SuffixTH": "แสงดาว",
+   "Color": "#f2c200",
+   "TextColor": "#b98f00",
+   "EffectTH": "ฟื้นเลือดตัวเองเมื่อตีโดน",
+   "EffectEN": "Heals you on hit",
+   "SoundFreq": 784,
+   "Beats": "dark;zombie"
+  },
+  {
+   "Name": "dark",
+   "NameTH": "มืด",
+   "NameEN": "Dark",
+   "SuffixTH": "รัตติกาล",
+   "Color": "#222222",
+   "TextColor": "",
+   "EffectTH": "ดูดเลือด 20% ของดาเมจ",
+   "EffectEN": "Steals 20% of damage as HP",
+   "SoundFreq": 196,
+   "Beats": "light;psy"
+  },
+  {
+   "Name": "fight",
+   "NameTH": "ต่อสู้",
+   "NameEN": "Fighting",
+   "SuffixTH": "นักสู้",
+   "Color": "#f08a24",
+   "TextColor": "",
+   "EffectTH": "ตีต่อเนื่องยิ่งแรงขึ้น",
+   "EffectEN": "Consecutive hits grow stronger",
+   "SoundFreq": 294,
+   "Beats": "dark;mech"
+  },
+  {
+   "Name": "psy",
+   "NameTH": "พลังจิต",
+   "NameEN": "Psychic",
+   "SuffixTH": "จิตสังหาร",
+   "Color": "#f062a6",
+   "TextColor": "",
+   "EffectTH": "ดึงศัตรูเข้าหาและทำให้มึน",
+   "EffectEN": "Pulls the enemy in and may stun",
+   "SoundFreq": 880,
+   "Beats": "fight;poison"
+  },
+  {
+   "Name": "mech",
+   "NameTH": "จักรกล",
+   "NameEN": "Machine",
+   "SuffixTH": "จักรกล",
+   "Color": "#8b8f96",
+   "TextColor": "",
+   "EffectTH": "ตีครบ 3 ครั้งยิงกระสุนซ้ำ",
+   "EffectEN": "Every 3rd hit fires a bonus bolt",
+   "SoundFreq": 349,
+   "Beats": "wind;light"
+  },
+  {
+   "Name": "zombie",
+   "NameTH": "ซอมบี้",
+   "NameEN": "Zombie",
+   "SuffixTH": "ซากศพ",
+   "Color": "#7d8a2e",
+   "TextColor": "",
+   "EffectTH": "ตายแล้วฟื้น 1 ครั้งด้วยเลือด 30%",
+   "EffectEN": "Revives once at 30% HP",
+   "SoundFreq": 165,
+   "Beats": "wind;psy"
+  },
+  {
+   "Name": "none",
+   "NameTH": "ไร้ธาตุ",
+   "NameEN": "No Element",
+   "SuffixTH": "เปล่า",
+   "Color": "#5c6a84",
+   "TextColor": "",
+   "EffectTH": "ไม่แพ้ทางใคร เลือดและดาเมจ +10%",
+   "EffectEN": "No weakness. HP and damage +10%",
+   "SoundFreq": 300,
+   "Beats": ""
+  },
+  {
+   "Name": "inf",
+   "NameTH": "อนันต์",
+   "NameEN": "Infinity",
+   "SuffixTH": "อนันต์",
+   "Color": "#c13fd0",
+   "TextColor": "",
+   "EffectTH": "สุ่มเป็นธาตุใหม่ทุกครั้งที่โจมตี",
+   "EffectEN": "A random element on every attack",
+   "SoundFreq": 600,
+   "Beats": ""
+  }
+ ],
+ "weaponClasses": [
+  {
+   "Name": "sword",
+   "NameTH": "ดาบ",
+   "NameEN": "Sword",
+   "DescTH": "ฟันคอมโบ 3 จังหวะ ลง ขึ้น ฟาดปิด และฟันลงกลางอากาศได้",
+   "DescEN": "3-hit combo: down, up, finisher. Can also slash downward in mid-air",
+   "SignatureSkill": "wave",
+   "RangedDistance2D": 0,
+   "DamageMult": 1.13,
+   "ReachMult": 1,
+   "CooldownMult": 1,
+   "SigMoves": "dash;pop;none",
+   "DrawnShapeTypes": "sword"
+  },
+  {
+   "Name": "spear",
+   "NameTH": "หอก",
+   "NameEN": "Spear",
+   "DescTH": "แทงไกลกว่าอาวุธอื่น จังหวะสามพุ่งแทงยาว",
+   "DescEN": "Outreaches other weapons. The third hit is a long lunge",
+   "SignatureSkill": "thrust",
+   "RangedDistance2D": 0,
+   "DamageMult": 0.96,
+   "ReachMult": 1.15,
+   "CooldownMult": 1,
+   "SigMoves": "dash;pop;push",
+   "DrawnShapeTypes": "stick"
+  },
+  {
+   "Name": "hammer",
+   "NameTH": "ค้อน",
+   "NameEN": "Hammer",
+   "DescTH": "ช้าแต่หนัก จังหวะสองทุบพื้นสะเทือนทั้งสองด้าน",
+   "DescEN": "Slow but heavy. The second hit shakes the ground on both sides",
+   "SignatureSkill": "slam",
+   "RangedDistance2D": 0,
+   "DamageMult": 1.2,
+   "ReachMult": 1,
+   "CooldownMult": 1.22,
+   "SigMoves": "fly;pop;stun",
+   "DrawnShapeTypes": "club"
+  },
+  {
+   "Name": "bow",
+   "NameTH": "ธนู",
+   "NameEN": "Bow",
+   "DescTH": "ยิงลูกธนูไกล เล็งให้เอง ศัตรูกลิ้งหลบหรือกระโดดข้ามได้",
+   "DescEN": "Long-range arrows with auto-aim. Enemies can roll or jump past them",
+   "SignatureSkill": "volley",
+   "RangedDistance2D": 260,
+   "DamageMult": 0.96,
+   "ReachMult": 1,
+   "CooldownMult": 1.08,
+   "SigMoves": "none;shot;hole",
+   "DrawnShapeTypes": "bow"
+  },
+  {
+   "Name": "staff",
+   "NameTH": "คทาเวท",
+   "NameEN": "Magic Staff",
+   "DescTH": "ร่ายลูกพลังธาตุที่เลี้ยวตามศัตรู ช้าแต่หนีไม่พ้นง่าย ๆ",
+   "DescEN": "Casts homing elemental orbs. Slow, but hard to shake off",
+   "SignatureSkill": "meteor",
+   "RangedDistance2D": 250,
+   "DamageMult": 0.94,
+   "ReachMult": 1,
+   "CooldownMult": 1.08,
+   "SigMoves": "none;shot;freeze",
+   "DrawnShapeTypes": "staff"
+  },
+  {
+   "Name": "bomb",
+   "NameTH": "ระเบิด",
+   "NameEN": "Bomb",
+   "DescTH": "โยนเป็นวิถีโค้ง ระเบิดเป็นวงเมื่อโดนพื้นหรือโดนตัว",
+   "DescEN": "Thrown in an arc. Explodes in a circle on hitting the ground or a body",
+   "SignatureSkill": "blast",
+   "RangedDistance2D": 180,
+   "DamageMult": 1.36,
+   "ReachMult": 1,
+   "CooldownMult": 1.3,
+   "SigMoves": "none;trap;push",
+   "DrawnShapeTypes": "bomb"
+  },
+  {
+   "Name": "knife",
+   "NameTH": "มีดบิน",
+   "NameEN": "Throwing Knife",
+   "DescTH": "ขว้างเร็ว ถี่ ระยะสั้น",
+   "DescEN": "Fast, frequent, short-range throws",
+   "SignatureSkill": "throw",
+   "RangedDistance2D": 170,
+   "DamageMult": 0.83,
+   "ReachMult": 1,
+   "CooldownMult": 0.78,
+   "SigMoves": "none;shot;leech",
+   "DrawnShapeTypes": "star"
+  },
+  {
+   "Name": "ring",
+   "NameTH": "จักร",
+   "NameEN": "Chakram",
+   "DescTH": "ขว้างออกไปแล้ววนกลับมือ โดนได้ทั้งขาไปและขากลับ",
+   "DescEN": "Flies out and returns to your hand, hitting on the way out and back",
+   "SignatureSkill": "spin",
+   "RangedDistance2D": 170,
+   "DamageMult": 0.8,
+   "ReachMult": 1,
+   "CooldownMult": 0.95,
+   "SigMoves": "none;shot;stun",
+   "DrawnShapeTypes": "ring"
+  },
+  {
+   "Name": "whip",
+   "NameTH": "แส้",
+   "NameEN": "Whip",
+   "DescTH": "ฟาดไกลที่สุดในอาวุธประชิด โดนปลายแส้แรงขึ้น 30% แต่ศัตรูชิดตัวจะตีเบาลง",
+   "DescEN": "Longest reach among melee weapons. Tip hits deal 30% more, but point-blank hits are weaker",
+   "SignatureSkill": "lash",
+   "RangedDistance2D": 0,
+   "DamageMult": 0.85,
+   "ReachMult": 1.9,
+   "CooldownMult": 1.15,
+   "SigMoves": "pull;sweep;stun",
+   "DrawnShapeTypes": "whip"
+  },
+  {
+   "Name": "shield",
+   "NameTH": "โล่",
+   "NameEN": "Shield",
+   "DescTH": "กระแทกระยะสั้นแต่ผลักแรง และกันดาเมจด้านหน้า 32% ตลอดเวลาที่ไม่ได้โจมตี",
+   "DescEN": "Short-range bash with strong knockback. Blocks 32% of frontal damage whenever you are not attacking",
+   "SignatureSkill": "charge",
+   "RangedDistance2D": 0,
+   "DamageMult": 0.93,
+   "ReachMult": 0.7,
+   "CooldownMult": 1,
+   "SigMoves": "dash;pop;push",
+   "DrawnShapeTypes": "shield"
+  },
+  {
+   "Name": "dagger",
+   "NameTH": "มีดสั้นนักฆ่า",
+   "NameEN": "Assassin Dagger",
+   "DescTH": "ตีเร็วมาก 4 จังหวะ ระยะสั้น แทงจากด้านหลังแรงขึ้น 50% และตีแรกหลังกลิ้งหลบแรง 2 เท่า",
+   "DescEN": "Very fast 4-hit combo, short range. Backstabs deal 50% more and the first hit after a dodge roll deals double",
+   "SignatureSkill": "shadow",
+   "RangedDistance2D": 0,
+   "DamageMult": 0.85,
+   "ReachMult": 0.78,
+   "CooldownMult": 0.6,
+   "SigMoves": "dash;pop;leech",
+   "DrawnShapeTypes": "dagger"
+  },
+  {
+   "Name": "fist",
+   "NameTH": "หมัด",
+   "NameEN": "Fist",
+   "DescTH": "ต่อยเร็วที่สุด 5 จังหวะ ระยะสั้นมาก หมัดสุดท้ายเสยลอย",
+   "DescEN": "The fastest 5-hit combo, very short range. The last punch is a launcher",
+   "SignatureSkill": "leap",
+   "RangedDistance2D": 0,
+   "DamageMult": 0.92,
+   "ReachMult": 0.8,
+   "CooldownMult": 0.46,
+   "SigMoves": "dash;pop;stun",
+   "DrawnShapeTypes": "fist"
+  },
+  {
+   "Name": "gun",
+   "NameTH": "ปืนรัว",
+   "NameEN": "Burst Gun",
+   "DescTH": "ยิงชุดละ 3 นัดเป็นเส้นตรง นัดเบาแต่ถี่ ศัตรูกระโดดข้ามได้",
+   "DescEN": "Fires 3-round bursts in a straight line. Light but frequent. Enemies can jump over",
+   "SignatureSkill": "volley",
+   "RangedDistance2D": 240,
+   "DamageMult": 0.93,
+   "ReachMult": 1,
+   "CooldownMult": 1,
+   "SigMoves": "none;shot;push",
+   "DrawnShapeTypes": "gun"
+  },
+  {
+   "Name": "spray",
+   "NameTH": "สเปรย์",
+   "NameEN": "Spray",
+   "DescTH": "พ่นเป็นกรวยระยะสั้น โดนทุกตัวที่อยู่ข้างหน้าและทำให้ช้าลง",
+   "DescEN": "Sprays a short cone that hits everything in front and slows it",
+   "SignatureSkill": "inkspill",
+   "RangedDistance2D": 110,
+   "DamageMult": 0.9,
+   "ReachMult": 1,
+   "CooldownMult": 0.6,
+   "SigMoves": "none;cone;burn",
+   "DrawnShapeTypes": "spray"
+  },
+  {
+   "Name": "trapper",
+   "NameTH": "กับดัก",
+   "NameEN": "Trap",
+   "DescTH": "โยนกับดักไปวางข้างหน้า ระเบิดเมื่อศัตรูเหยียบ วางได้พร้อมกัน 3 อัน",
+   "DescEN": "Tosses a trap ahead that blows up when stepped on. Up to 3 at a time",
+   "SignatureSkill": "pin",
+   "RangedDistance2D": 150,
+   "DamageMult": 1.12,
+   "ReachMult": 1,
+   "CooldownMult": 1.08,
+   "SigMoves": "none;trap;stun",
+   "DrawnShapeTypes": "trap"
+  },
+  {
+   "Name": "summon",
+   "NameTH": "เรียกลูกน้อง",
+   "NameEN": "Summons minions",
+   "DescTH": "ส่งลูกน้องตัวจิ๋วบินไล่ตามศัตรู ช้าแต่ตามนาน",
+   "DescEN": "Sends a tiny minion that chases the enemy. Slow, but it follows for a long time",
+   "SignatureSkill": "meteor",
+   "RangedDistance2D": 230,
+   "DamageMult": 1.22,
+   "ReachMult": 1,
+   "CooldownMult": 1.1,
+   "SigMoves": "none;drop;none",
+   "DrawnShapeTypes": "totem"
+  }
+ ],
+ "perks": [
+  {
+   "Name": "guard",
+   "NameTH": "กางกัน",
+   "NameEN": "Brace",
+   "DescTH": "รับดาเมจจากด้านหน้าน้อยลง 35% ขณะไม่ได้โจมตี",
+   "DescEN": "Take 35% less frontal damage while not attacking",
+   "CostTH": "ดาเมจ -10%",
+   "CostEN": "Damage -10%"
+  },
+  {
+   "Name": "glide",
+   "NameTH": "ร่อน",
+   "NameEN": "Glide",
+   "DescTH": "ตกช้าลงขณะลอย คุมตำแหน่งกลางอากาศได้นาน",
+   "DescEN": "Fall slowly and control your position in the air longer",
+   "CostTH": "เลือด -5%",
+   "CostEN": "HP -5%"
+  },
+  {
+   "Name": "pull",
+   "NameTH": "ดึง",
+   "NameEN": "Pull",
+   "DescTH": "โจมตีโดนแล้วลากศัตรูเข้าหาตัว",
+   "DescEN": "Hits drag the enemy toward you",
+   "CostTH": "ดาเมจ -8%",
+   "CostEN": "Damage -8%"
+  },
+  {
+   "Name": "heavy",
+   "NameTH": "หนักอึ้ง",
+   "NameEN": "Heavy",
+   "DescTH": "โดนผลักกระเด็นน้อยลง 70%",
+   "DescEN": "70% less knockback taken",
+   "CostTH": "ความเร็ว -15%",
+   "CostEN": "Speed -15%"
+  },
+  {
+   "Name": "shatter",
+   "NameTH": "แตกกระจาย",
+   "NameEN": "Shatter",
+   "DescTH": "โจมตีโดนแล้วเศษกระเด็นใส่ศัตรูตัวอื่นที่อยู่ใกล้ 40%",
+   "DescEN": "Hits splash 40% damage onto other nearby enemies",
+   "CostTH": "ตีช้าลง 10%",
+   "CostEN": "Attack rate -10%"
+  },
+  {
+   "Name": "dual",
+   "NameTH": "สองมือ",
+   "NameEN": "Dual Wield",
+   "DescTH": "การตีประชิดทุกครั้งตีซ้ำอีกหนึ่งที 35%",
+   "DescEN": "Every melee hit strikes once more for 35%",
+   "CostTH": "ดาเมจ -20%",
+   "CostEN": "Damage -20%"
+  },
+  {
+   "Name": "aura",
+   "NameTH": "ออร่า",
+   "NameEN": "Aura",
+   "DescTH": "ศัตรูที่ยืนใกล้ตัวโดนดาเมจธาตุต่อเนื่อง",
+   "DescEN": "Enemies standing close take constant elemental damage",
+   "CostTH": "ดาเมจ -12%",
+   "CostEN": "Damage -12%"
+  },
+  {
+   "Name": "mist",
+   "NameTH": "ปล่อยไอ",
+   "NameEN": "Vapor",
+   "DescTH": "โจมตีโดนแล้วทิ้งหมอกธาตุไว้ 3 วินาที ศัตรูที่ยืนในหมอกโดนดาเมจ",
+   "DescEN": "Hits leave an elemental mist for 3 seconds that damages enemies inside",
+   "CostTH": "ดาเมจ -10%",
+   "CostEN": "Damage -10%"
+  },
+  {
+   "Name": "orbit",
+   "NameTH": "ลอยข้างตัว",
+   "NameEN": "Orbit",
+   "DescTH": "อาวุธเงาลอยวนรอบตัว ตีศัตรูที่เข้าใกล้เองทุก 0.8 วินาที",
+   "DescEN": "A shadow weapon orbits you and hits nearby enemies every 0.8 seconds",
+   "CostTH": "ดาเมจ -10%",
+   "CostEN": "Damage -10%"
+  },
+  {
+   "Name": "lucky",
+   "NameTH": "สุ่มของ",
+   "NameEN": "Lucky Item",
+   "DescTH": "ทุก 8 วินาทีสุ่มได้ของดี 1 อย่าง ฟื้นเลือด เร่งความเร็ว คลั่ง หรือเกราะ",
+   "DescEN": "Every 8 seconds you get a random boon: heal, haste, rage or barrier",
+   "CostTH": "เลือด -6%",
+   "CostEN": "HP -6%"
+  },
+  {
+   "Name": "reflect",
+   "NameTH": "สะท้อนกระสุน",
+   "NameEN": "Reflect Shots",
+   "DescTH": "มีโอกาส 30% ตีกระสุนที่พุ่งมากลับไปหาคนยิง",
+   "DescEN": "30% chance to bat incoming shots back at the shooter",
+   "CostTH": "ความเร็ว -8%",
+   "CostEN": "Speed -8%"
+  },
+  {
+   "Name": "thorns",
+   "NameTH": "หนาม",
+   "NameEN": "Thorns",
+   "DescTH": "ศัตรูที่ตีประชิดใส่เราจะโดนดาเมจสะท้อนกลับ 12%",
+   "DescEN": "Melee attackers take 12% of the damage back",
+   "CostTH": "ดาเมจ -8%",
+   "CostEN": "Damage -8%"
+  }
+ ],
+ "passives": [
+  {
+   "Name": "dodge",
+   "NameTH": "หัวจิ๋วหลบไว",
+   "NameEN": "Tiny Head, Quick Dodge",
+   "DescTH": "มีโอกาส 15% หลบการโจมตี",
+   "DescEN": "15% chance to dodge an attack"
+  },
+  {
+   "Name": "thick",
+   "NameTH": "หัวแข็ง",
+   "NameEN": "Thick Skull",
+   "DescTH": "รับดาเมจน้อยลง 15%",
+   "DescEN": "Take 15% less damage"
+  },
+  {
+   "Name": "regen",
+   "NameTH": "ฟื้นตัว",
+   "NameEN": "Regeneration",
+   "DescTH": "ฟื้นเลือด 0.6% ต่อวินาที",
+   "DescEN": "Regenerate 0.6% HP per second"
+  },
+  {
+   "Name": "focus",
+   "NameTH": "สมาธิ",
+   "NameEN": "Focus",
+   "DescTH": "คูลดาวน์สกิลสั้นลง 20%",
+   "DescEN": "Skill cooldowns are 20% shorter"
+  }
+ ],
+ "enemyKinds": [
+  {
+   "Name": "normal",
+   "NameTH": "ปกติ",
+   "HpMult": 1,
+   "DamageMult": 1,
+   "SizeMult": 1,
+   "SpeedMult": 1,
+   "Heavy": "False"
+  },
+  {
+   "Name": "small",
+   "NameTH": "ตัวเล็ก ไว บาง",
+   "HpMult": 0.45,
+   "DamageMult": 0.6,
+   "SizeMult": 0.7,
+   "SpeedMult": 1.15,
+   "Heavy": "False"
+  },
+  {
+   "Name": "giant",
+   "NameTH": "ยักษ์ หนัก ผลักไม่ไป",
+   "HpMult": 1.9,
+   "DamageMult": 1.15,
+   "SizeMult": 1.45,
+   "SpeedMult": 0.78,
+   "Heavy": "True"
+  },
+  {
+   "Name": "fly",
+   "NameTH": "บินได้",
+   "HpMult": 0.8,
+   "DamageMult": 0.9,
+   "SizeMult": 0.9,
+   "SpeedMult": 1,
+   "Heavy": "False"
+  },
+  {
+   "Name": "turret",
+   "NameTH": "ป้อมยิง ไม่ขยับ",
+   "HpMult": 1.5,
+   "DamageMult": 1,
+   "SizeMult": 1,
+   "SpeedMult": 1,
+   "Heavy": "False"
+  }
+ ],
+ "bosses": [
+  {
+   "Name": "boss1",
+   "NameTH": "จ่าฝูงหมึก",
+   "NameEN": "Ink Warlord",
+   "Kind": "giant",
+   "WeaponShape": "club",
+   "SizeMult": 1,
+   "Pattern": "rage"
+  },
+  {
+   "Name": "boss2",
+   "NameTH": "แม่มดเมฆดำ",
+   "NameEN": "Black Cloud Witch",
+   "Kind": "fly",
+   "WeaponShape": "staff",
+   "SizeMult": 0.7,
+   "Pattern": "storm"
+  },
+  {
+   "Name": "boss3",
+   "NameTH": "ป้อมกระดานดำ",
+   "NameEN": "Blackboard Fortress",
+   "Kind": "giant",
+   "WeaponShape": "shield",
+   "SizeMult": 1.6,
+   "Pattern": "summon"
+  },
+  {
+   "Name": "boss4",
+   "NameTH": "เงานักฆ่า",
+   "NameEN": "Shadow Assassin",
+   "Kind": "normal",
+   "WeaponShape": "dagger",
+   "SizeMult": 0.6,
+   "Pattern": "swift"
+  },
+  {
+   "Name": "boss5",
+   "NameTH": "จอมระเบิดชอล์ก",
+   "NameEN": "Chalk Bomb Lord",
+   "Kind": "giant",
+   "WeaponShape": "bomb",
+   "SizeMult": 1,
+   "Pattern": "bombs"
+  }
+ ],
+ "signatureParts": [
+  {
+   "Name": "Move_none",
+   "Part": "Move",
+   "Key": "none",
+   "NameTH": "",
+   "NameEN": "",
+   "Weight": 0
+  },
+  {
+   "Name": "Move_dash",
+   "Part": "Move",
+   "Key": "dash",
+   "NameTH": "พุ่ง",
+   "NameEN": "Dash",
+   "Weight": 2
+  },
+  {
+   "Name": "Move_pull",
+   "Part": "Move",
+   "Key": "pull",
+   "NameTH": "ดึงเข้าหา",
+   "NameEN": "Pull In",
+   "Weight": 2
+  },
+  {
+   "Name": "Move_fly",
+   "Part": "Move",
+   "Key": "fly",
+   "NameTH": "เหินฟ้า",
+   "NameEN": "Sky Leap",
+   "Weight": 2
+  },
+  {
+   "Name": "Move_warp",
+   "Part": "Move",
+   "Key": "warp",
+   "NameTH": "วาร์ป",
+   "NameEN": "Warp",
+   "Weight": 3
+  },
+  {
+   "Name": "Move_dig",
+   "Part": "Move",
+   "Key": "dig",
+   "NameTH": "มุดดิน",
+   "NameEN": "Burrow",
+   "Weight": 3
+  },
+  {
+   "Name": "Attack_trap",
+   "Part": "Attack",
+   "Key": "trap",
+   "NameTH": "วางกับดัก",
+   "NameEN": "Lay Trap",
+   "Weight": 1
+  },
+  {
+   "Name": "Attack_pop",
+   "Part": "Attack",
+   "Key": "pop",
+   "NameTH": "โผล่ตี",
+   "NameEN": "Rising Strike",
+   "Weight": 2
+  },
+  {
+   "Name": "Attack_sweep",
+   "Part": "Attack",
+   "Key": "sweep",
+   "NameTH": "กวาดวงกว้าง",
+   "NameEN": "Wide Sweep",
+   "Weight": 2
+  },
+  {
+   "Name": "Attack_shot",
+   "Part": "Attack",
+   "Key": "shot",
+   "NameTH": "ยิงรัว",
+   "NameEN": "Rapid Shots",
+   "Weight": 2
+  },
+  {
+   "Name": "Attack_cone",
+   "Part": "Attack",
+   "Key": "cone",
+   "NameTH": "พ่นใส่",
+   "NameEN": "Spray Cone",
+   "Weight": 2
+  },
+  {
+   "Name": "Attack_drop",
+   "Part": "Attack",
+   "Key": "drop",
+   "NameTH": "เรียกของตกใส่",
+   "NameEN": "Call Down a Drop",
+   "Weight": 3
+  },
+  {
+   "Name": "Effect_none",
+   "Part": "Effect",
+   "Key": "none",
+   "NameTH": "",
+   "NameEN": "",
+   "Weight": 0
+  },
+  {
+   "Name": "Effect_push",
+   "Part": "Effect",
+   "Key": "push",
+   "NameTH": "ผลักกระเด็น",
+   "NameEN": "Knockback",
+   "Weight": 1
+  },
+  {
+   "Name": "Effect_hole",
+   "Part": "Effect",
+   "Key": "hole",
+   "NameTH": "ทำให้สะดุดช้า",
+   "NameEN": "Trip and Slow",
+   "Weight": 1
+  },
+  {
+   "Name": "Effect_burn",
+   "Part": "Effect",
+   "Key": "burn",
+   "NameTH": "เผาไหม้",
+   "NameEN": "Burn",
+   "Weight": 1
+  },
+  {
+   "Name": "Effect_stun",
+   "Part": "Effect",
+   "Key": "stun",
+   "NameTH": "มึน",
+   "NameEN": "Stunned",
+   "Weight": 2
+  },
+  {
+   "Name": "Effect_leech",
+   "Part": "Effect",
+   "Key": "leech",
+   "NameTH": "ดูดเลือด",
+   "NameEN": "Life Steal",
+   "Weight": 2
+  },
+  {
+   "Name": "Effect_freeze",
+   "Part": "Effect",
+   "Key": "freeze",
+   "NameTH": "แช่แข็ง",
+   "NameEN": "Frozen",
+   "Weight": 2
+  }
+ ],
+ "signatureKeywords": [
+  {
+   "Name": "kw1",
+   "Keywords": "พลั่ว;จอบ;เสียม;สว่าน;shovel;spade;hoe;drill;pickaxe",
+   "Move": "dig",
+   "Attack": "pop",
+   "Effect": "hole",
+   "Anim": "L",
+   "SkillNameTH": "ขุดดินโผล่หลัง",
+   "SkillNameEN": "Dig and Ambush"
+  },
+  {
+   "Name": "kw2",
+   "Keywords": "ร่ม;umbrella;parasol",
+   "Move": "fly",
+   "Attack": "sweep",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "ร่อนร่มทุบ",
+   "SkillNameEN": "Umbrella Dive"
+  },
+  {
+   "Name": "kw3",
+   "Keywords": "ตู้เย็น;น้ำแข็ง;ไอติม;ไอศกรีม;แอร์;fridge;ice;freezer;popsicle",
+   "Move": "none",
+   "Attack": "cone",
+   "Effect": "freeze",
+   "Anim": "A",
+   "SkillNameTH": "พ่นไอเย็น",
+   "SkillNameEN": "Frost Breath"
+  },
+  {
+   "Name": "kw4",
+   "Keywords": "กระเป๋า;เป้;กล่อง;ถุง;ลัง;bag;backpack;box;sack;crate",
+   "Move": "none",
+   "Attack": "drop",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "เทของใส่หัว",
+   "SkillNameEN": "Dump It on Their Head"
+  },
+  {
+   "Name": "kw5",
+   "Keywords": "เบ็ด;เชือก;โซ่;บ่วง;แห;สมอ;hook;rope;chain;lasso;net;anchor;rod",
+   "Move": "pull",
+   "Attack": "sweep",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "เกี่ยวดึงมาฟาด",
+   "SkillNameEN": "Hook and Smack"
+  },
+  {
+   "Name": "kw6",
+   "Keywords": "ไม้กวาด;broom",
+   "Move": "fly",
+   "Attack": "sweep",
+   "Effect": "push",
+   "Anim": "L",
+   "SkillNameTH": "ขี่ไม้กวาดกวาด",
+   "SkillNameEN": "Broom Sweep"
+  },
+  {
+   "Name": "kw7",
+   "Keywords": "กระทะ;ตะหลิว;หม้อ;เขียง;pan;spatula;pot;wok;skillet",
+   "Move": "dash",
+   "Attack": "sweep",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ฟาดกระทะ",
+   "SkillNameEN": "Pan Smack"
+  },
+  {
+   "Name": "kw8",
+   "Keywords": "อาทิตย์;ตะวัน;ดาว;ดวงจันทร์;พระจันทร์;sun;star;moon;comet",
+   "Move": "none",
+   "Attack": "drop",
+   "Effect": "burn",
+   "Anim": "A",
+   "SkillNameTH": "ดาวตกเผา",
+   "SkillNameEN": "Falling Star"
+  },
+  {
+   "Name": "kw9",
+   "Keywords": "กีตาร์;ไมค์;ลำโพง;กลอง;แตร;ขลุ่ย;ระฆัง;guitar;mic;speaker;drum;horn;flute;bell",
+   "Move": "none",
+   "Attack": "cone",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "คลื่นเสียงกระแทก",
+   "SkillNameEN": "Sound Blast"
+  },
+  {
+   "Name": "kw10",
+   "Keywords": "ปืน;ปืนใหญ่;จรวด;gun;cannon;rocket;pistol;rifle;blaster",
+   "Move": "none",
+   "Attack": "shot",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "ยิงรัวไม่ยั้ง",
+   "SkillNameEN": "Full Auto"
+  },
+  {
+   "Name": "kw11",
+   "Keywords": "ค้อน;กระบอง;ไม้เบสบอล;hammer;club;bat;mace;mallet",
+   "Move": "fly",
+   "Attack": "pop",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "กระโดดทุบหัว",
+   "SkillNameEN": "Jumping Head Smash"
+  },
+  {
+   "Name": "kw12",
+   "Keywords": "เคียว;scythe;sickle",
+   "Move": "warp",
+   "Attack": "sweep",
+   "Effect": "leech",
+   "Anim": "L",
+   "SkillNameTH": "เกี่ยววิญญาณ",
+   "SkillNameEN": "Soul Reap"
+  },
+  {
+   "Name": "kw13",
+   "Keywords": "ดาบ;คาตานะ;กระบี่;sword;katana;blade;saber",
+   "Move": "dash",
+   "Attack": "sweep",
+   "Effect": "none",
+   "Anim": "L",
+   "SkillNameTH": "พุ่งฟันวงเดือน",
+   "SkillNameEN": "Crescent Dash"
+  },
+  {
+   "Name": "kw14",
+   "Keywords": "หอก;ทวน;ง้าว;ตรีศูล;spear;lance;halberd;trident;pike",
+   "Move": "dash",
+   "Attack": "pop",
+   "Effect": "push",
+   "Anim": "L",
+   "SkillNameTH": "พุ่งแทงทะลวง",
+   "SkillNameEN": "Piercing Lunge"
+  },
+  {
+   "Name": "kw15",
+   "Keywords": "ไม้เท้า;คทา;ไม้กายสิทธิ์;wand;staff;scepter",
+   "Move": "none",
+   "Attack": "drop",
+   "Effect": "freeze",
+   "Anim": "L",
+   "SkillNameTH": "เสกน้ำแข็งถล่ม",
+   "SkillNameEN": "Ice Avalanche"
+  },
+  {
+   "Name": "kw16",
+   "Keywords": "หนังสือ;คัมภีร์;สมุด;ม้วน;book;scroll;tome;notebook",
+   "Move": "none",
+   "Attack": "trap",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ผนึกอักขระ",
+   "SkillNameEN": "Rune Seal"
+  },
+  {
+   "Name": "kw17",
+   "Keywords": "ระเบิด;กับดัก;ทุ่น;ลูกตุ้ม;bomb;mine;grenade;dynamite",
+   "Move": "none",
+   "Attack": "trap",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "วางทุ่นระเบิด",
+   "SkillNameEN": "Lay Mine"
+  },
+  {
+   "Name": "kw18",
+   "Keywords": "ส้อม;ช้อน;ตะเกียบ;fork;spoon;chopstick",
+   "Move": "dash",
+   "Attack": "pop",
+   "Effect": "leech",
+   "Anim": "L",
+   "SkillNameTH": "จิ้มกิน",
+   "SkillNameEN": "Poke and Eat"
+  },
+  {
+   "Name": "kw19",
+   "Keywords": "ปากกา;ดินสอ;พู่กัน;ชอล์ก;pen;pencil;brush;chalk;crayon;marker",
+   "Move": "warp",
+   "Attack": "sweep",
+   "Effect": "hole",
+   "Anim": "L",
+   "SkillNameTH": "ขีดเส้นตัดฉาก",
+   "SkillNameEN": "Line Cut"
+  },
+  {
+   "Name": "kw20",
+   "Keywords": "มีด;กรรไกร;เข็ม;knife;scissor;needle;dagger",
+   "Move": "warp",
+   "Attack": "pop",
+   "Effect": "leech",
+   "Anim": "A",
+   "SkillNameTH": "โผล่แทงข้างหลัง",
+   "SkillNameEN": "Backstab Warp"
+  },
+  {
+   "Name": "kw21",
+   "Keywords": "บูมเมอแรง;จาน;ฝา;เหรียญ;ไพ่;boomerang;disc;plate;lid;coin;card;frisbee",
+   "Move": "none",
+   "Attack": "shot",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ซัดรัวสามชิ้น",
+   "SkillNameEN": "Triple Fling"
+  },
+  {
+   "Name": "kw22",
+   "Keywords": "บอล;ลูกโป่ง;ลูกแก้ว;ball;balloon;marble",
+   "Move": "none",
+   "Attack": "shot",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "เตะอัดรัว",
+   "SkillNameEN": "Rapid Kicks"
+  },
+  {
+   "Name": "kw23",
+   "Keywords": "ปลา;ไก่;หมา;แมว;งู;มังกร;นก;fish;chicken;dog;cat;snake;dragon;bird",
+   "Move": "dash",
+   "Attack": "pop",
+   "Effect": "leech",
+   "Anim": "A",
+   "SkillNameTH": "สัตว์เลี้ยงขย้ำ",
+   "SkillNameEN": "Pet Maul"
+  },
+  {
+   "Name": "kw24",
+   "Keywords": "ต้นไม้;กิ่งไม้;ดอกไม้;ราก;ใบไม้;เห็ด;tree;branch;flower;root;leaf;mushroom",
+   "Move": "none",
+   "Attack": "trap",
+   "Effect": "leech",
+   "Anim": "A",
+   "SkillNameTH": "รากไม้รัดดูด",
+   "SkillNameEN": "Draining Roots"
+  },
+  {
+   "Name": "kw25",
+   "Keywords": "น้ำ;ขวด;ถัง;สายยาง;แก้ว;water;bottle;bucket;hose;cup",
+   "Move": "none",
+   "Attack": "cone",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "ฉีดน้ำแรงดันสูง",
+   "SkillNameEN": "Pressure Jet"
+  },
+  {
+   "Name": "kw26",
+   "Keywords": "ไฟแช็ก;คบเพลิง;เทียน;ไม้ขีด;ตะเกียง;fire;lighter;torch;candle;match;lantern",
+   "Move": "none",
+   "Attack": "cone",
+   "Effect": "burn",
+   "Anim": "A",
+   "SkillNameTH": "พ่นไฟ",
+   "SkillNameEN": "Fire Breath"
+  },
+  {
+   "Name": "kw27",
+   "Keywords": "พัด;พัดลม;ใบพัด;fan;propeller",
+   "Move": "none",
+   "Attack": "cone",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "พัดพายุ",
+   "SkillNameEN": "Gale Fan"
+  },
+  {
+   "Name": "kw28",
+   "Keywords": "ไฟฟ้า;สายไฟ;ไม้ตียุง;หลอดไฟ;ปลั๊ก;electric;wire;zapper;bulb;plug;taser",
+   "Move": "none",
+   "Attack": "cone",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ช็อตไฟฟ้า",
+   "SkillNameEN": "Electric Shock"
+  },
+  {
+   "Name": "kw29",
+   "Keywords": "โทรศัพท์;มือถือ;คอม;จอย;รีโมท;phone;computer;joystick;remote;laptop",
+   "Move": "warp",
+   "Attack": "trap",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ส่งสัญญาณรบกวน",
+   "SkillNameEN": "Signal Jam"
+  },
+  {
+   "Name": "kw30",
+   "Keywords": "รถ;ล้อ;จักรยาน;สเก็ต;มอเตอร์ไซค์;car;wheel;bike;skate;motorcycle;truck",
+   "Move": "dash",
+   "Attack": "sweep",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "พุ่งชนกวาด",
+   "SkillNameEN": "Ram and Sweep"
+  },
+  {
+   "Name": "kw31",
+   "Keywords": "เก้าอี้;โต๊ะ;เตียง;ประตู;บันได;chair;table;bed;door;ladder;sofa",
+   "Move": "none",
+   "Attack": "drop",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "เฟอร์นิเจอร์หล่นทับ",
+   "SkillNameEN": "Falling Furniture"
+  },
+  {
+   "Name": "kw32",
+   "Keywords": "แปรง;ไม้ถูพื้น;ฟองน้ำ;สบู่;mop;sponge;soap;scrub",
+   "Move": "dash",
+   "Attack": "sweep",
+   "Effect": "hole",
+   "Anim": "A",
+   "SkillNameTH": "ถูพื้นให้ลื่น",
+   "SkillNameEN": "Slippery Mop"
+  },
+  {
+   "Name": "kw33",
+   "Keywords": "กุญแจ;ประแจ;ไขควง;คีม;key;wrench;screwdriver;plier",
+   "Move": "warp",
+   "Attack": "pop",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ไขมิติโผล่ตี",
+   "SkillNameEN": "Unlock and Strike"
+  },
+  {
+   "Name": "kw34",
+   "Keywords": "ธง;ป้าย;เสา;flag;sign;pole;banner",
+   "Move": "none",
+   "Attack": "sweep",
+   "Effect": "push",
+   "Anim": "L",
+   "SkillNameTH": "โบกธงกวาด",
+   "SkillNameEN": "Flag Sweep"
+  },
+  {
+   "Name": "kw35",
+   "Keywords": "โล่;ฝาหม้อ;กระดาน;shield;board",
+   "Move": "dash",
+   "Attack": "pop",
+   "Effect": "push",
+   "Anim": "A",
+   "SkillNameTH": "พุ่งกระแทกโล่",
+   "SkillNameEN": "Shield Bash"
+  },
+  {
+   "Name": "kw36",
+   "Keywords": "แส้;เข็มขัด;สายรัด;หาง;whip;belt;strap;tail",
+   "Move": "pull",
+   "Attack": "sweep",
+   "Effect": "stun",
+   "Anim": "L",
+   "SkillNameTH": "ตวัดรัดดึง",
+   "SkillNameEN": "Lash and Pull"
+  },
+  {
+   "Name": "kw37",
+   "Keywords": "ธนู;หน้าไม้;หนังสติ๊ก;bow;crossbow;slingshot",
+   "Move": "none",
+   "Attack": "shot",
+   "Effect": "hole",
+   "Anim": "A",
+   "SkillNameTH": "ยิงตรึงเท้า",
+   "SkillNameEN": "Pinning Shot"
+  },
+  {
+   "Name": "kw38",
+   "Keywords": "เงิน;ทอง;เพชร;มงกุฎ;แหวน;money;gold;diamond;crown;ring;gem",
+   "Move": "none",
+   "Attack": "drop",
+   "Effect": "stun",
+   "Anim": "A",
+   "SkillNameTH": "ฝนเงินฝนทอง",
+   "SkillNameEN": "Rain of Riches"
+  },
+  {
+   "Name": "kw39",
+   "Keywords": "อาหาร;ข้าว;ไข่;ขนม;เค้ก;พิซซ่า;ส้มตำ;ปลาร้า;food;rice;egg;snack;cake;pizza;burger;banana",
+   "Move": "none",
+   "Attack": "shot",
+   "Effect": "leech",
+   "Anim": "A",
+   "SkillNameTH": "ปาอาหารเติมพลัง",
+   "SkillNameEN": "Food Fight"
+  },
+  {
+   "Name": "kw40",
+   "Keywords": "ผี;กะโหลก;วิญญาณ;เงา;ghost;skull;spirit;shadow",
+   "Move": "warp",
+   "Attack": "sweep",
+   "Effect": "leech",
+   "Anim": "A",
+   "SkillNameTH": "เงาผีกลืนกิน",
+   "SkillNameEN": "Ghost Devour"
+  }
+ ],
+ "gacha": {
+  "costSingle": 60,
+  "costTen": 540,
+  "pityPulls": 30,
+  "pityGuarantees": "Legendary",
+  "tenPullGuarantee": "at least one Rare or better on the 10th pull if none yet",
+  "duplicateRefund": {
+   "Common": 25,
+   "Rare": 60,
+   "Legendary": 150
+  },
+  "maxSkillLevel": 3,
+  "baseWeightByRarity": {
+   "Common": 60,
+   "Rare": 30,
+   "Legendary": 10
+  },
+  "fitMultipliers": {
+   "signatureSkillOfYourWeaponClass": 4,
+   "sameMeleeOrRangedGroup": 2,
+   "favoredByYourElement": 3,
+   "note": "element multiplier stacks with the class/group one (multiply)"
+  },
+  "groups": {
+   "Melee": {
+    "classes": [
+     "sword",
+     "spear",
+     "hammer",
+     "dagger",
+     "fist",
+     "whip",
+     "shield"
+    ],
+    "skills": [
+     "wave",
+     "thrust",
+     "slam",
+     "spin",
+     "charge",
+     "lash",
+     "shadow",
+     "counter",
+     "leap",
+     "quake",
+     "rage"
+    ]
+   },
+   "Ranged": {
+    "classes": [
+     "bow",
+     "staff",
+     "bomb",
+     "knife",
+     "ring",
+     "gun",
+     "spray"
+    ],
+    "skills": [
+     "volley",
+     "meteor",
+     "throw",
+     "blast",
+     "pin",
+     "ruler",
+     "inkspill",
+     "scribble",
+     "thunder",
+     "tornado"
+    ]
+   }
+  },
+  "elementFavors": {
+   "fire": [
+    "sun",
+    "meteor",
+    "blast",
+    "rage"
+   ],
+   "water": [
+    "heal",
+    "barrier",
+    "inkspill"
+   ],
+   "earth": [
+    "quake",
+    "slam",
+    "barrier"
+   ],
+   "wind": [
+    "tornado",
+    "haste",
+    "spin",
+    "leap"
+   ],
+   "poison": [
+    "miasma",
+    "inkspill"
+   ],
+   "spore": [
+    "miasma",
+    "heal"
+   ],
+   "light": [
+    "sun",
+    "heal",
+    "thunder"
+   ],
+   "dark": [
+    "shadow",
+    "rift",
+    "vortex"
+   ],
+   "fight": [
+    "rage",
+    "counter",
+    "charge"
+   ],
+   "psy": [
+    "vortex",
+    "pause",
+    "rift",
+    "pageflip"
+   ],
+   "mech": [
+    "thunder",
+    "clip",
+    "pin",
+    "ruler"
+   ],
+   "zombie": [
+    "miasma",
+    "rage",
+    "heal"
+   ]
+  },
+  "signatureSkillPower": "mult = max(0.8, 2.7 - 0.22 * (moveWeight + attackWeight + effectWeight))",
+  "comboMoves": {
+   "sword": [
+    {
+     "a": "down",
+     "m": 1
+    },
+    {
+     "a": "up",
+     "m": 1,
+     "launch": 210
+    },
+    {
+     "a": "big",
+     "m": 1.5,
+     "kb": 300,
+     "dur": 0.26
+    }
+   ],
+   "spear": [
+    {
+     "a": "poke",
+     "m": 0.9
+    },
+    {
+     "a": "poke",
+     "m": 0.9
+    },
+    {
+     "a": "poke",
+     "m": 1.5,
+     "kb": 280,
+     "step": 300,
+     "dur": 0.24
+    }
+   ],
+   "hammer": [
+    {
+     "a": "big",
+     "m": 1,
+     "kb": 240,
+     "dur": 0.28
+    },
+    {
+     "a": "big",
+     "m": 1.45,
+     "kb": 260,
+     "shock": 1,
+     "dur": 0.32
+    }
+   ],
+   "whip": [
+    {
+     "a": "down",
+     "m": 1,
+     "whip": 1,
+     "dur": 0.24
+    },
+    {
+     "a": "up",
+     "m": 1,
+     "whip": 1,
+     "launch": 150,
+     "dur": 0.24
+    }
+   ],
+   "shield": [
+    {
+     "a": "poke",
+     "m": 1,
+     "kb": 330
+    },
+    {
+     "a": "poke",
+     "m": 1.2,
+     "kb": 420,
+     "step": 200,
+     "dur": 0.24
+    }
+   ],
+   "dagger": [
+    {
+     "a": "poke",
+     "m": 0.8,
+     "dur": 0.14
+    },
+    {
+     "a": "up",
+     "m": 0.8,
+     "dur": 0.14
+    },
+    {
+     "a": "poke",
+     "m": 0.8,
+     "dur": 0.14
+    },
+    {
+     "a": "down",
+     "m": 1.4,
+     "kb": 230,
+     "dur": 0.18
+    }
+   ],
+   "fist": [
+    {
+     "a": "poke",
+     "m": 0.7,
+     "dur": 0.12
+    },
+    {
+     "a": "poke",
+     "m": 0.7,
+     "dur": 0.12
+    },
+    {
+     "a": "poke",
+     "m": 0.75,
+     "dur": 0.12
+    },
+    {
+     "a": "down",
+     "m": 0.9,
+     "dur": 0.14
+    },
+    {
+     "a": "up",
+     "m": 1.5,
+     "launch": 330,
+     "kb": 120,
+     "dur": 0.2
+    }
+   ]
+  }
+ }
+}

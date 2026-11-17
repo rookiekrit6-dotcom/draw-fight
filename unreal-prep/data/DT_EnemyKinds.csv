@@ -1,0 +1,6 @@
+﻿Name,NameTH,HpMult,DamageMult,SizeMult,SpeedMult,Heavy
+"normal","ปกติ",1,1,1,1,"False"
+"small","ตัวเล็ก ไว บาง",0.45,0.6,0.7,1.15,"False"
+"giant","ยักษ์ หนัก ผลักไม่ไป",1.9,1.15,1.45,0.78,"True"
+"fly","บินได้",0.8,0.9,0.9,1,"False"
+"turret","ป้อมยิง ไม่ขยับ",1.5,1,1,1,"False"

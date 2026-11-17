@@ -1,0 +1,6 @@
+﻿Name,NameTH,NameEN,Kind,WeaponShape,SizeMult,Pattern
+"boss1","จ่าฝูงหมึก","Ink Warlord","giant","club",1,"rage"
+"boss2","แม่มดเมฆดำ","Black Cloud Witch","fly","staff",0.7,"storm"
+"boss3","ป้อมกระดานดำ","Blackboard Fortress","giant","shield",1.6,"summon"
+"boss4","เงานักฆ่า","Shadow Assassin","normal","dagger",0.6,"swift"
+"boss5","จอมระเบิดชอล์ก","Chalk Bomb Lord","giant","bomb",1,"bombs"
