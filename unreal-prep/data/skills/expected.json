@@ -1,0 +1,261 @@
+[
+ {
+  "file": "01.dfskill",
+  "name": "ประตูมิติดับดารา",
+  "steps": 8,
+  "power": 120,
+  "cooldown": 9
+ },
+ {
+  "file": "02.dfskill",
+  "name": "อุกกาบาตถล่ม",
+  "steps": 5,
+  "power": 56,
+  "cooldown": 6
+ },
+ {
+  "file": "03.dfskill",
+  "name": "หอกน้ำแข็งกระจาย",
+  "steps": 3,
+  "power": 72,
+  "cooldown": 5.1
+ },
+ {
+  "file": "04.dfskill",
+  "name": "ระเบิดเพลิง",
+  "steps": 7,
+  "power": 48,
+  "cooldown": 5
+ },
+ {
+  "file": "05.dfskill",
+  "name": "ลำแสงฟื้นพลัง",
+  "steps": 4,
+  "power": 57,
+  "cooldown": 5
+ },
+ {
+  "file": "06.dfskill",
+  "name": "พุ่งทะลวง",
+  "steps": 4,
+  "power": 37,
+  "cooldown": 5
+ },
+ {
+  "file": "07.dfskill",
+  "name": "ทุบปฐพี",
+  "steps": 6,
+  "power": 32,
+  "cooldown": 6
+ },
+ {
+  "file": "08.dfskill",
+  "name": "ซัดสามทิศ",
+  "steps": 2,
+  "power": 30,
+  "cooldown": 4.5
+ },
+ {
+  "file": "09.dfskill",
+  "name": "หมุนพายุ",
+  "steps": 7,
+  "power": 45,
+  "cooldown": 6.5
+ },
+ {
+  "file": "10.dfskill",
+  "name": "คลื่นดาบ",
+  "steps": 3,
+  "power": 27,
+  "cooldown": 5
+ },
+ {
+  "file": "11.dfskill",
+  "name": "ฝนธนู",
+  "steps": 2,
+  "power": 30,
+  "cooldown": 6
+ },
+ {
+  "file": "12.dfskill",
+  "name": "อุกกาบาต",
+  "steps": 3,
+  "power": 15,
+  "cooldown": 6.5
+ },
+ {
+  "file": "13.dfskill",
+  "name": "ก้าวเงา",
+  "steps": 5,
+  "power": 58,
+  "cooldown": 6
+ },
+ {
+  "file": "14.dfskill",
+  "name": "แส้ฟาด",
+  "steps": 4,
+  "power": 37,
+  "cooldown": 5
+ },
+ {
+  "file": "15.dfskill",
+  "name": "พุ่งชนโล่",
+  "steps": 5,
+  "power": 39,
+  "cooldown": 6
+ },
+ {
+  "file": "16.dfskill",
+  "name": "ระเบิดรอบตัว",
+  "steps": 5,
+  "power": 42,
+  "cooldown": 6
+ },
+ {
+  "file": "17.dfskill",
+  "name": "รักษา",
+  "steps": 3,
+  "power": 19,
+  "cooldown": 8
+ },
+ {
+  "file": "18.dfskill",
+  "name": "คลั่ง",
+  "steps": 3,
+  "power": 15,
+  "cooldown": 10
+ },
+ {
+  "file": "19.dfskill",
+  "name": "เร่งความเร็ว",
+  "steps": 2,
+  "power": 15,
+  "cooldown": 9
+ },
+ {
+  "file": "20.dfskill",
+  "name": "เกราะธาตุ",
+  "steps": 3,
+  "power": 9,
+  "cooldown": 9
+ },
+ {
+  "file": "21.dfskill",
+  "name": "แผ่นดินไหว",
+  "steps": 6,
+  "power": 30,
+  "cooldown": 7
+ },
+ {
+  "file": "22.dfskill",
+  "name": "กระแสวน",
+  "steps": 5,
+  "power": 26,
+  "cooldown": 8
+ },
+ {
+  "file": "23.dfskill",
+  "name": "สวนกลับ",
+  "steps": 5,
+  "power": 51,
+  "cooldown": 8
+ },
+ {
+  "file": "24.dfskill",
+  "name": "กระโดดทุบ",
+  "steps": 5,
+  "power": 35,
+  "cooldown": 6
+ },
+ {
+  "file": "25.dfskill",
+  "name": "ดวงอาทิตย์แผดเผา",
+  "steps": 9,
+  "power": 56,
+  "cooldown": 12
+ },
+ {
+  "file": "26.dfskill",
+  "name": "อัสนีบาต",
+  "steps": 5,
+  "power": 85,
+  "cooldown": 7
+ },
+ {
+  "file": "27.dfskill",
+  "name": "ฟันมิติ",
+  "steps": 3,
+  "power": 42,
+  "cooldown": 9
+ },
+ {
+  "file": "28.dfskill",
+  "name": "หมอกพิษ",
+  "steps": 6,
+  "power": 32,
+  "cooldown": 8
+ },
+ {
+  "file": "29.dfskill",
+  "name": "พายุทอร์นาโด",
+  "steps": 3,
+  "power": 10,
+  "cooldown": 8
+ },
+ {
+  "file": "30.dfskill",
+  "name": "น้ำหมึกหก",
+  "steps": 5,
+  "power": 34,
+  "cooldown": 6
+ },
+ {
+  "file": "31.dfskill",
+  "name": "ยางลบ",
+  "steps": 2,
+  "power": 18,
+  "cooldown": 6
+ },
+ {
+  "file": "32.dfskill",
+  "name": "ไม้บรรทัดฟาด",
+  "steps": 3,
+  "power": 32,
+  "cooldown": 6
+ },
+ {
+  "file": "33.dfskill",
+  "name": "ขีดเขียนรัว",
+  "steps": 7,
+  "power": 56,
+  "cooldown": 5
+ },
+ {
+  "file": "34.dfskill",
+  "name": "หมุดปัก",
+  "steps": 2,
+  "power": 12,
+  "cooldown": 7
+ },
+ {
+  "file": "35.dfskill",
+  "name": "พลิกหน้ากระดาษ",
+  "steps": 4,
+  "power": 14,
+  "cooldown": 10
+ },
+ {
+  "file": "36.dfskill",
+  "name": "คลิปหนีบ",
+  "steps": 5,
+  "power": 45,
+  "cooldown": 7
+ },
+ {
+  "file": "37.dfskill",
+  "name": "หยุดเวลา",
+  "steps": 4,
+  "power": 10,
+  "cooldown": 12
+ }
+]

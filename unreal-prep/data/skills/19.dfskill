@@ -1,0 +1,1 @@
+{"format":"dfskill","v":1,"name":"เร่งความเร็ว","author":"ย้ายจากเกม 2 มิติ","color":"#5cc8e0","cd":9,"steps":[{"at":0.1,"do":"buff","kind":"speed","amt":1.35,"dur":5},{"at":0.1,"do":"burst","where":"self","y":0.4,"n":50,"speed":6,"up":1,"size":0.14,"life":0.5,"grav":0}],"images":{},"anim":{"dur":0.3,"keys":[{"t":0,"r":{}},{"t":0.5,"r":{"chest":[20,0,0]}},{"t":1,"r":{}}]}}
