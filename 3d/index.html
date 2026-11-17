@@ -278,14 +278,14 @@ function ui(light){sel=clamp(sel,0,CH.parts.length-1);const um=useModel(CH);$('p
   $('pShape').value=p.s;$('pRole').value=p.r;$('pCol').value=p.c;for(const s of SL){$('s_'+s[0]).value=p[s[0]];$('v_'+s[0]).textContent=(+p[s[0]]).toFixed(2);}{const has=um&&MODEL.item,o=$('cWeap').querySelector('option[value=item]');if(o)o.hidden=!has,o.disabled=!has;if(!has&&CH.weap==='item')CH.weap='sword';$('itL').style.display=has&&CH.weap==='item'?'':'none';if(has)$('cIt').value=CH.itMode||(MODEL.item.long?'melee':'shot');}$('cMove').value=CH.move;$('cHold').value=CH.hold;$('cWeap').value=CH.weap;$('cEyes').value=CH.eyes?'1':'0';}
  const st=statsOf(CH);$('stats').textContent='รูปร่างกำหนดค่าพลัง: เลือด '+st.hp+' · ความเร็ว '+st.spd.toFixed(1)+' · ดาเมจ '+st.dmg+' · ระยะตี '+wOf(CH).reach+'  (ตัวใหญ่เลือดเยอะแต่ช้า ตัวเล็กไวแต่บาง)';save();}
 $('pShape').onchange=e=>{CH.parts[sel].s=+e.target.value;ui();};$('pRole').onchange=e=>{CH.parts[sel].r=e.target.value;ui();};$('pCol').oninput=e=>{CH.parts[sel].c=e.target.value;ui(true);const b=$('chips').children[sel];if(b)b.style.borderLeftColor=e.target.value;};
-$('cMove').onchange=e=>{CH.move=e.target.value;ui();};$('cHold').onchange=e=>{CH.hold=e.target.value;ui();};$('cWeap').onchange=e=>{CH.weap=e.target.value;ui();};$('cEyes').onchange=e=>{CH.eyes=+e.target.value;ui();};$('cIt').onchange=e=>{CH.itMode=e.target.value;ui();};
+$('cMove').onchange=e=>{CH.move=e.target.value;ui();};$('cHold').onchange=e=>{CH.hold=e.target.value;ui();};$('cWeap').onchange=e=>{CH.weap=e.target.value;CH.itSet=1;ui();};$('cEyes').onchange=e=>{CH.eyes=+e.target.value;ui();};$('cIt').onchange=e=>{CH.itMode=e.target.value;ui();};
 $('addP').onclick=()=>{if(CH.parts.length>=18)return;CH.parts.push(P(0,0,1.2,.6,.4,.4,.4,'#ffd84a','d'));sel=CH.parts.length-1;ui();};
 $('mirP').onclick=()=>{if(CH.parts.length>=18)return;const q=clone(CH.parts[sel]);q.x=-q.x;q.rz=-q.rz;if(Math.abs(q.x)<.05)q.x=.4;CH.parts.push(q);sel=CH.parts.length-1;ui();};
 $('delP').onclick=()=>{if(CH.parts.length<=1)return;CH.parts.splice(sel,1);ui();};
 $('loadP').onclick=()=>{CH=clone(PRE[$('preset').value]);sel=0;ui();};
 for(const [k,nm,a,b] of [['rSh','ระดับไหล่',.4,.9],['rNeck','ระดับคอ',.55,.97],['rHip','ระดับสะโพก',.15,.6],['rArm','ความกว้างลำตัว',.05,.4]]){const l=document.createElement('label');l.className='sl';l.innerHTML='<span>'+nm+'</span><input type="range" id="r_'+k+'" min="'+a+'" max="'+b+'" step="0.01" aria-label="'+nm+'"><span id="rv_'+k+'"></span>';$('rgSl').appendChild(l);l.querySelector('input').oninput=e=>{CH[k]=+e.target.value;$('rv_'+k).textContent=CH[k].toFixed(2);save();};}
 $('rgOn').onchange=e=>{CH.rigOn=e.target.checked;ui();};
-$('mdUse').onclick=()=>{if(!MODEL)return;CH.model=!CH.model;if(CH.model){CH.msc=CH.msc||1;CH.myaw=CH.myaw||0;if(MODEL.item)CH.weap='item';}ui();};
+$('mdUse').onclick=()=>{if(!MODEL)return;CH.model=!CH.model;if(CH.model){CH.msc=CH.msc||1;CH.myaw=CH.myaw||0;if(MODEL.item){CH.weap='item';CH.itSet=1;}}ui();};
 $('mdSc').oninput=e=>{CH.msc=+e.target.value;ui(true);$('mdScV').textContent=CH.msc.toFixed(2);};$('mdYaw').oninput=e=>{CH.myaw=+e.target.value;ui(true);$('mdYawV').textContent=CH.myaw.toFixed(2);};
 $('mdFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{MODEL=loadGLB(r.result,f.name);CH.model=true;CH.msc=1;CH.myaw=0;delete CH.rSh;delete CH.rNeck;delete CH.rHip;delete CH.rArm;delete CH.itMode;CH.weap=MODEL.item?'item':'sword';ui();}catch(er){$('mdInfo').textContent='อ่านไฟล์นี้ไม่ได้ ต้องเป็นไฟล์ .glb ที่มีโมเดลแบบสามเหลี่ยม';}};r.readAsArrayBuffer(f);};
 /* ---------- game state ---------- */
@@ -358,7 +358,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;resize();gl.
   for(const [e,b] of bars)if(!seen.has(e)){b.remove();bars.delete(e);}
   for(const g of G.tags){g.t-=dt;g.y+=dt*1.6;const q=M.tp(VP,g.x,g.y,g.z);g.el.style.left=((q[0]*.5+.5)*r.width)+'px';g.el.style.top=((-q[1]*.5+.5)*r.height)+'px';g.el.style.opacity=Math.min(1,g.t*3);if(g.t<=0)g.el.remove();}G.tags=G.tags.filter(g=>g.t>0);}
  requestAnimationFrame(frame);}
-try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';if(MODEL.item)CH.weap='item';}}catch(e){console.error(e);}
+try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);
 window.__d3={get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();}};
 })();
