@@ -544,7 +544,7 @@ function hurt(t,dmg,from){if(t.dead||t.inv>0)return;t.hp-=dmg;t.flash=.12;t.hitT
  if(t.hp<=0){t.dead=true;t.deadT=.5;if(t===G.pl)end(false);}}
 function step(dt){const p=G.pl;G.t+=dt;if(G.over)return;
  // player
- {let mx=IN.x+(IN.keys.KeyD||IN.keys.ArrowRight?1:0)-(IN.keys.KeyA||IN.keys.ArrowLeft?1:0),mz=-IN.y+(IN.keys.KeyW||IN.keys.ArrowUp?1:0)-(IN.keys.KeyS||IN.keys.ArrowDown?1:0);if(p.ai){let b=null,bd=1e9;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z);if(d<bd){bd=d;b=e;}}if(b){const a=Math.atan2(b.x-p.x,b.z-p.z)-G.camYaw;if(bd>wOf(p.ch).reach*.8){mx=Math.sin(a);mz=Math.cos(a);}else IN.atk=true;}}
+ {let mx=-(IN.x+(IN.keys.KeyD||IN.keys.ArrowRight?1:0)-(IN.keys.KeyA||IN.keys.ArrowLeft?1:0)),mz=-IN.y+(IN.keys.KeyW||IN.keys.ArrowUp?1:0)-(IN.keys.KeyS||IN.keys.ArrowDown?1:0);if(p.ai){let b=null,bd=1e9;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z);if(d<bd){bd=d;b=e;}}if(b){const a=Math.atan2(b.x-p.x,b.z-p.z)-G.camYaw;if(bd>wOf(p.ch).reach*.8){mx=Math.sin(a);mz=Math.cos(a);}else IN.atk=true;}}
   const l=Math.hypot(mx,mz);if(l>1){mx/=l;mz/=l;}const cy=Math.cos(G.camYaw),sy=Math.sin(G.camYaw),wx=mx*cy+mz*sy,wz=-mx*sy+mz*cy;p.moving=l>.12&&p.atkT<=0;
   let sp=p.spd;if(p.dash>0){sp*=3.2;p.dash-=dt;}if(p.moving||p.dash>0){if(l>.12)p.yaw=Math.atan2(wx,wz);const fx=l>.12?wx:Math.sin(p.yaw),fz=l>.12?wz:Math.cos(p.yaw),k=p.dash>0?1:Math.min(1,l);p.x+=fx*sp*k*dt;p.z+=fz*sp*k*dt;p.ph+=dt*sp*1.9;}
   if(IN.dash&&p.dcd<=0){p.dash=.2;p.dcd=.9;p.inv=.3;beep(520,.12,760);}IN.dash=false;if(IN.jump&&p.y<=0){p.vy=7.5;beep(380,.1,520);}IN.jump=false;
