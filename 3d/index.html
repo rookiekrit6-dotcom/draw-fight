@@ -61,10 +61,10 @@ body:not(.fight) #keys{display:none!important}
   <div id="view">
     <canvas id="gl"></canvas>
     <div id="hud"></div>
-    <div id="top"><div id="hpw"><div id="hp"></div></div><span id="wave">รอบ 1</span><button id="quit">กลับไปปั้นตัว</button></div>
+    <div id="top"><div id="hpw"><div id="hp"></div></div><span id="wave">รอบ 1</span><button id="autoB" style="pointer-events:auto;padding:3px 10px;font-size:13px">ออโต้: ปิด</button><button id="quit">กลับไปปั้นตัว</button></div>
     <div id="skbar"></div>
     <div id="hint">ลากนิ้วบนฉากเพื่อหมุนกล้อง</div>
-    <div id="keys" style="display:none"><b>คีย์บอร์ดและเมาส์</b><br>W A S D เดิน · คลิกซ้ายหรือ J โจมตี · Shift พุ่งหลบ · Space กระโดด · 1 2 3 ใช้สกิล<br>ลากเมาส์หมุนกล้อง · ล้อเมาส์ซูม</div>
+    <div id="keys" style="display:none"><b>คีย์บอร์ดและเมาส์</b><br>W A S D เดิน · คลิกซ้ายหรือ J โจมตี · Shift พุ่งหลบ · Space กระโดด · 1 2 3 ใช้สกิล · T เปิดปิดออโต้<br>ลากเมาส์หมุนกล้อง · ล้อเมาส์ซูม</div>
     <div id="ctl"><div id="stick"><div id="knob"></div></div><button class="ab" id="bJump">กระโดด</button><button class="ab" id="bDash">พุ่งหลบ</button><button class="ab" id="bAtk">โจมตี</button></div>
     <div id="over"><div class="box"><h1 id="ovT"></h1><p id="ovP"></p><button class="primary" id="ovA">สู้อีกรอบ</button><button id="ovB">กลับไปปั้นตัว</button></div></div>
   </div>
@@ -133,7 +133,7 @@ const PM=prog(`attribute vec3 p;attribute vec3 n;uniform mat4 uVP,uM;uniform mat
 void main(){vec3 nn=normalize(uN*n);vec4 w=uM*vec4(p,1.);w.xyz+=nn*uOut;vN=nn;vW=w.xyz;gl_Position=uVP*w;}`,
 `precision mediump float;uniform vec3 uC,uL,uEye;uniform float uFlash,uInk;uniform float uDk;uniform vec4 uLp[4];uniform vec3 uLc[4];vec3 pl(vec3 w){vec3 s=vec3(0.);for(int i=0;i<4;i++){float k=max(0.,1.-length(w-uLp[i].xyz)/uLp[i].w);s+=uLc[i]*k*k;}return s;}varying vec3 vN;varying vec3 vW;
 void main(){if(uInk>.5){gl_FragColor=vec4(mix(vec3(.11,.15,.25),vec3(.02,.03,.07),uDk),1.);return;}vec3 N=normalize(vN);float d=dot(N,uL);float r=d>.3?1.:d>-.15?.8:.62;float rim=pow(1.-max(dot(N,normalize(uEye-vW)),0.),3.)*.25;
-vec3 c=uC*r*mix(vec3(1.),vec3(.36,.4,.6),uDk)+rim*(1.-.5*uDk)+(uC*.5+.06)*pl(vW);c=mix(c,vec3(1.),uFlash);gl_FragColor=vec4(c,1.);}`);
+vec3 c=uC*r*mix(vec3(1.),vec3(.52,.56,.78),uDk)+rim*(1.-.5*uDk)+(uC*.5+.06)*pl(vW);c=mix(c,vec3(1.),uFlash);gl_FragColor=vec4(c,1.);}`);
 const PG=prog(`attribute vec3 p;uniform mat4 uVP,uM;varying vec3 vW;varying vec2 vU;void main(){vec4 w=uM*vec4(p,1.);vW=w.xyz;vU=p.xz;gl_Position=uVP*w;}`,
 `#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
@@ -142,7 +142,7 @@ precision mediump float;
 #endif
 uniform float uMode,uR,uA;uniform vec3 uC;varying vec3 vW;varying vec2 vU;uniform float uDk;uniform vec4 uLp[4];uniform vec3 uLc[4];vec3 pl(vec3 w){vec3 s=vec3(0.);for(int i=0;i<4;i++){float k=max(0.,1.-length(w-uLp[i].xyz)/uLp[i].w);s+=uLc[i]*k*k;}return s;}
 void main(){if(uMode<.5){vec2 g=abs(fract(vW.xz/2.)-.5);float ln=step(.47,max(g.x,g.y));vec3 c=mix(vec3(.93,.945,.965),vec3(.78,.83,.91),ln);float d=length(vW.xz);
- float ring=smoothstep(.22,.0,abs(d-uR));float dash=step(.5,fract(atan(vW.z,vW.x)*9.));c=mix(c,vec3(.9,.28,.3),ring*dash);if(d>uR)c*=.86;float fog=smoothstep(40.,95.,d);c=mix(c,vec3(.93,.96,1.),fog);vec3 dk=c*vec3(.1,.115,.2)+vec3(.012,.014,.03)+vec3(.45,.09,.11)*ring*dash;dk=mix(dk,vec3(.05,.06,.13),fog);c=mix(c,dk,uDk)+pl(vec3(vW.x,0.,vW.z))*(.2+.14*ln)*(1.-fog);gl_FragColor=vec4(c,1.);}
+ float ring=smoothstep(.22,.0,abs(d-uR));float dash=step(.5,fract(atan(vW.z,vW.x)*9.));c=mix(c,vec3(.9,.28,.3),ring*dash);if(d>uR)c*=.86;float fog=smoothstep(40.,95.,d);c=mix(c,vec3(.93,.96,1.),fog);vec3 dk=c*vec3(.15,.17,.29)+vec3(.012,.014,.03)+vec3(.45,.09,.11)*ring*dash;dk=mix(dk,vec3(.05,.06,.13),fog);c=mix(c,dk,uDk)+pl(vec3(vW.x,0.,vW.z))*(.2+.14*ln)*(1.-fog);gl_FragColor=vec4(c,1.);}
  else{float d=length(vU)*2.;if(uMode<1.5){float a=smoothstep(1.,.55,d)*uA;gl_FragColor=vec4(uC,a);}else{float a=smoothstep(.06,.0,abs(d-.9))*uA+step(d,.9)*uA*.25;gl_FragColor=vec4(uC,a);}}}`);
 const PT=(()=>{const mk=(t,src)=>{const o=gl.createShader(t);gl.shaderSource(o,src);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o;},p=gl.createProgram();
  gl.attachShader(p,mk(gl.VERTEX_SHADER,`attribute vec3 p;attribute vec3 n;attribute vec2 uv;attribute float it;attribute vec4 bj;attribute vec4 bw;uniform mat4 uVP,uM;uniform mat3 uN;uniform float uOut,uSw;uniform vec4 uBox,uIt;uniform vec3 uItC;uniform mat4 uB[17];varying vec3 vN;varying vec3 vW;varying vec2 vT;
@@ -153,7 +153,7 @@ void main(){vec3 q=p-uBox.xyz;vec3 m=n;
  vec3 nn=normalize(uN*m);vec4 w=uM*vec4(q,1.);w.xyz+=nn*uOut;vN=nn;vW=w.xyz;vT=uv;gl_Position=uVP*w;}`));
  gl.attachShader(p,mk(gl.FRAGMENT_SHADER,`precision mediump float;uniform sampler2D uTex;uniform vec3 uL,uEye;uniform float uFlash,uInk;uniform float uDk;uniform vec4 uLp[4];uniform vec3 uLc[4];vec3 pl(vec3 w){vec3 s=vec3(0.);for(int i=0;i<4;i++){float k=max(0.,1.-length(w-uLp[i].xyz)/uLp[i].w);s+=uLc[i]*k*k;}return s;}varying vec3 vN;varying vec3 vW;varying vec2 vT;
 void main(){if(uInk>.5){gl_FragColor=vec4(mix(vec3(.11,.15,.25),vec3(.02,.03,.07),uDk),1.);return;}vec3 N=normalize(vN);if(!gl_FrontFacing)N=-N;float d=dot(N,uL);float r=d>.25?1.:d>-.2?.84:.68;float rim=pow(1.-max(dot(N,normalize(uEye-vW)),0.),3.)*.18;
-vec3 tx=texture2D(uTex,vT).rgb;vec3 c=tx*r*1.08*mix(vec3(1.),vec3(.4,.44,.64),uDk)+rim*(1.-.5*uDk)+(tx*.55+.05)*pl(vW);c=mix(c,vec3(1.),uFlash);gl_FragColor=vec4(c,1.);}`));
+vec3 tx=texture2D(uTex,vT).rgb;vec3 c=tx*r*1.08*mix(vec3(1.),vec3(.55,.6,.8),uDk)+rim*(1.-.5*uDk)+(tx*.55+.05)*pl(vW);c=mix(c,vec3(1.),uFlash);gl_FragColor=vec4(c,1.);}`));
  gl.bindAttribLocation(p,0,'p');gl.bindAttribLocation(p,1,'n');gl.bindAttribLocation(p,2,'uv');gl.bindAttribLocation(p,3,'it');gl.bindAttribLocation(p,4,'bj');gl.bindAttribLocation(p,5,'bw');gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));const U={};for(const k of ['uVP','uM','uN','uOut','uTex','uL','uEye','uFlash','uInk','uBox','uIt','uItC','uSw','uDk','uLp[0]','uLc[0]'])U[k]=gl.getUniformLocation(p,k);U.uB=gl.getUniformLocation(p,'uB[0]');return {p,U};})();
 let MODEL=null;
 const BN=[['สะโพก',-1],['สันหลัง',0],['อก',1],['คอ',2],['หัว',3],['ต้นแขนซ้าย',2],['ปลายแขนซ้าย',5],['มือซ้าย',6],['ต้นแขนขวา',2],['ปลายแขนขวา',8],['มือขวา',9],['ต้นขาซ้าย',0],['หน้าแข้งซ้าย',11],['เท้าซ้าย',12],['ต้นขาขวา',0],['หน้าแข้งขวา',14],['เท้าขวา',15]],BMIR=[0,1,2,3,4,8,9,10,5,6,7,14,15,16,11,12,13];
@@ -353,10 +353,11 @@ const IMP={move:'hop',hold:'hand',weap:'sword',eyes:1,parts:[P(0,0,.6,0,1,1.05,.
 function spawnWave(){G.wave++;const n=G.wave===1?3:G.wave===2?5:2;for(let i=0;i<n;i++){const a=Math.random()*2*PI,e=mkEnt(IMP,Math.cos(a)*(11+Math.random()*5),Math.sin(a)*(11+Math.random()*5),1,.85);e.noWeap=true;e.hp=e.maxhp=34+G.wave*8;e.spd=2.5+G.wave*.25;e.dmg=7;G.ents.push(e);}
  if(G.wave===3){const b=mkEnt(IMP,0,14,1,2.1);b.noWeap=true;b.hp=b.maxhp=260;b.spd=2.1;b.dmg=16;b.boss=true;G.ents.push(b);}
  $('wave').textContent=G.wave===3?'รอบบอส':'รอบ '+G.wave+' จาก 3';}
-function start(){document.body.classList.add('fight');mode='fight';G.ents=[];G.shots=[];skReset();skBarBuild();IN.sk=null;G.wave=0;G.over=false;G.t=0;G.tags=[];$('hud').innerHTML='';$('over').classList.remove('on');const p=mkEnt(clone(CH),0,0,0,1);G.pl=p;G.ents.push(p);G.camYaw=0;spawnWave();resize();
+function start(){document.body.classList.add('fight');mode='fight';G.ents=[];G.shots=[];skReset();skBarBuild();IN.sk=null;G.wave=0;G.over=false;G.t=0;G.tags=[];$('hud').innerHTML='';$('over').classList.remove('on');const p=mkEnt(clone(CH),0,0,0,1);G.pl=p;G.ents.push(p);autoUI();G.camYaw=0;spawnWave();resize();
  const h=$('hint');h.classList.add('on');setTimeout(()=>h.classList.remove('on'),3500);au();}
 function stop(){document.body.classList.remove('fight');mode='edit';skReset();$('over').classList.remove('on');$('hud').innerHTML='';G.tags=[];resize();}
 function end(win){G.over=true;$('ovT').textContent=win?'ชนะแล้ว!':'แพ้แล้ว';$('ovP').textContent=win?'ผ่านครบ 3 รอบ ลองกลับไปปั้นตัวใหม่ เปลี่ยนวิธีเคลื่อนที่หรืออาวุธ แล้วดูว่าต่างกันอย่างไร':'ลองปั้นตัวให้ใหญ่ขึ้นเพื่อเพิ่มเลือด หรือเปลี่ยนเป็นหอกเพื่อตีจากระยะไกล';$('over').classList.add('on');beep(win?660:160,.4,win?990:90);}
+let AUTO=false;try{AUTO=localStorage.getItem('df3d_auto')==='1';}catch(e){}function autoUI(){const b=$('autoB');b.textContent='ออโต้: '+(AUTO?'เปิด':'ปิด');b.classList.toggle('on',AUTO);if(G.pl)G.pl.ai=AUTO;}$('autoB').onclick=()=>{AUTO=!AUTO;try{localStorage.setItem('df3d_auto',AUTO?'1':'0');}catch(e){}autoUI();};addEventListener('keydown',e=>{if(e.code==='KeyT'&&mode==='fight'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement&&document.activeElement.tagName||''))$('autoB').click();});
 $('go').onclick=start;$('quit').onclick=stop;$('ovB').onclick=stop;$('ovA').onclick=start;
 /* ---------- input ---------- */
 const IN={sk:null,x:0,y:0,atk:false,dash:false,jump:false,keys:{}};
@@ -387,7 +388,7 @@ const PBR=prog(FSV,`precision mediump float;uniform sampler2D uT;uniform float u
 const PBL=prog(FSV,`precision mediump float;uniform sampler2D uT;uniform vec2 uD;varying vec2 vU;void main(){vec3 c=texture2D(uT,vU).rgb*.227;c+=(texture2D(uT,vU+uD*1.38).rgb+texture2D(uT,vU-uD*1.38).rgb)*.316;c+=(texture2D(uT,vU+uD*3.23).rgb+texture2D(uT,vU-uD*3.23).rgb)*.07;gl_FragColor=vec4(c,1.);}`);
 const PCO=prog(FSV,`precision highp float;uniform sampler2D uT,uBl;uniform float uDk,uStr,uT0,uAsp;varying vec2 vU;
 float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-void main(){vec4 s=texture2D(uT,vU);vec3 day=mix(vec3(.93,.96,1.),vec3(.75,.89,1.),smoothstep(.45,1.,vU.y));vec3 nt=mix(vec3(.05,.06,.13),vec3(.02,.02,.07),smoothstep(.4,1.,vU.y));vec2 g=floor(vec2(vU.x*uAsp,vU.y)*110.);float st=step(.993,hs(g))*(.55+.45*sin(uT0*2.+hs(g+1.)*40.))*smoothstep(.5,.7,vU.y);nt+=st*.85;
+void main(){vec4 s=texture2D(uT,vU);vec3 day=mix(vec3(.93,.96,1.),vec3(.75,.89,1.),smoothstep(.45,1.,vU.y));vec3 nt=mix(vec3(.05,.06,.13),vec3(.02,.02,.07),smoothstep(.4,1.,vU.y));vec2 g=floor(vec2(vU.x*uAsp,vU.y)*110.);vec2 sf=fract(vec2(vU.x*uAsp,vU.y)*110.)-.5;float st=step(.993,hs(g))*smoothstep(.2,.04,length(sf))*(.55+.45*sin(uT0*2.+hs(g+1.)*40.))*smoothstep(.5,.7,vU.y);nt+=st*.85;
 vec3 c=s.rgb+mix(day,nt,uDk)*(1.-step(.01,s.a));c+=texture2D(uBl,vU).rgb*uStr;vec2 q=vU-.5;c*=1.-uDk*dot(q,q)*.8;gl_FragColor=vec4(c,1.);}`);
 function fsq(){bindMesh(QUAD);gl.drawArrays(gl.TRIANGLES,0,6);}
 function postEnd(t){const a=POST.a,b=POST.b;gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.activeTexture(gl.TEXTURE0);
@@ -549,7 +550,7 @@ function step(dt){const p=G.pl;G.t+=dt;if(G.over)return;
   let sp=p.spd;if(p.dash>0){sp*=3.2;p.dash-=dt;}if(p.moving||p.dash>0){if(l>.12)p.yaw=Math.atan2(wx,wz);const fx=l>.12?wx:Math.sin(p.yaw),fz=l>.12?wz:Math.cos(p.yaw),k=p.dash>0?1:Math.min(1,l);p.x+=fx*sp*k*dt;p.z+=fz*sp*k*dt;p.ph+=dt*sp*1.9;}
   if(IN.dash&&p.dcd<=0){p.dash=.2;p.dcd=.9;p.inv=.3;beep(520,.12,760);}IN.dash=false;if(IN.jump&&p.y<=0){p.vy=7.5;beep(380,.1,520);}IN.jump=false;
   if(IN.atk&&p.cd<=0){const w=wOf(p.ch);let b=null,bd=w.reach*1.8+2;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z)-e.rad;if(d<bd){bd=d;b=e;}}if(b)p.yaw=Math.atan2(b.x-p.x,b.z-p.z);p.atkT=p.atkDur=w.dur;p.cd=w.cd;p.did=false;beep(700,.08,420);}IN.atk=false;
-  if(p.ai&&IN.sk==null&&G.ents.some(e=>e.team&&!e.dead&&Math.hypot(e.x-p.x,e.z-p.z)<11))for(let i=0;i<3;i++)if(SKS[i]&&G.skcd[i]<=0){IN.sk=i;break;}if(IN.sk!=null){skTry(p,IN.sk);IN.sk=null;}
+  if(p.ai&&p.dcd<=0&&G.ents.some(e=>e.team&&!e.dead&&e.wind>0&&e.wind<.3&&Math.hypot(e.x-p.x,e.z-p.z)<1.25*e.sc+p.rad+.6))IN.dash=true;if(p.ai&&IN.sk==null&&G.ents.some(e=>e.team&&!e.dead&&Math.hypot(e.x-p.x,e.z-p.z)<11))for(let i=0;i<3;i++)if(SKS[i]&&G.skcd[i]<=0){IN.sk=i;break;}if(IN.sk!=null){skTry(p,IN.sk);IN.sk=null;}
   if(p.atkT>0){p.atkT-=dt;if(!p.did&&p.atkT<p.atkDur*.55){p.did=true;const w=wOf(p.ch),fx=Math.sin(p.yaw),fz=Math.cos(p.yaw);if(w.shot){const o=p.itemPos||[p.x,1.2,p.z];G.shots.push({x:o[0],y:o[1],z:o[2],vx:fx*17,vz:fz*17,t:1.1,dmg:w.dmg});beep(900,.18,1500);}else for(const e of G.ents)if(e.team&&!e.dead){const dx=e.x-p.x,dz=e.z-p.z,d=Math.hypot(dx,dz);if(d-e.rad<w.reach+p.rad*.4&&(d<1||(dx*fx+dz*fz)/d>.2)){hurt(e,w.dmg*(.9+Math.random()*.25),p);G.shake=.12;}}}}
   p.vy-=22*dt;p.y=Math.max(0,p.y+p.vy*dt);if(p.y<=0)p.vy=0;const d=Math.hypot(p.x,p.z);if(d>R-.6){p.x*=(R-.6)/d;p.z*=(R-.6)/d;}}
  for(const s of G.shots){s.t-=dt;s.x+=s.vx*dt;s.z+=s.vz*dt;s.y+=(1.1-s.y)*dt*3;for(const e of G.ents)if(e.team&&!e.dead&&Math.hypot(e.x-s.x,e.z-s.z)<e.rad+.45){hurt(e,s.dmg*(.9+Math.random()*.25),p);s.t=0;G.shake=.08;break;}}G.shots=G.shots.filter(s=>s.t>0);skStep(dt);
