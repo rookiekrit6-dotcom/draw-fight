@@ -1,9 +1,11 @@
 #include "DFFighterCharacter.h"
+#include "Misc/App.h"
 #include "DFCombatComponent.h"
 #include "DFAutoPilotComponent.h"
 #include "DFProfileSubsystem.h"
 #include "DFVoiceSubsystem.h"
 #include "DFSkillFX.h"
+#include "Engine/Engine.h"
 #include "AIController.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimSequence.h"
@@ -15,6 +17,8 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputCoreTypes.h"
+#include "Components/InputComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -113,6 +117,15 @@ ADFPlayerCharacter::ADFPlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 	FollowCamera->FieldOfView = 80.f;
+	// strong bloom so glowing skills bleed light like anime VFX
+	{
+		FPostProcessSettings& PP = FollowCamera->PostProcessSettings;
+		PP.bOverride_BloomIntensity = true; PP.BloomIntensity = 2.2f;
+		PP.bOverride_BloomThreshold = true; PP.BloomThreshold = 0.8f;
+		PP.bOverride_LensFlareIntensity = true; PP.LensFlareIntensity = 0.6f;
+		PP.bOverride_VignetteIntensity = true; PP.VignetteIntensity = 0.45f;
+		FollowCamera->PostProcessBlendWeight = 1.f;
+	}
 
 	AutoPilot->bEnabled = false;   // player starts manual; T toggles
 	AutoPilot->bDodge = true;
@@ -130,11 +143,98 @@ void ADFPlayerCharacter::BeginPlay()
 		FInputModeGameOnly Mode;
 		PC->SetInputMode(Mode);
 		PC->bShowMouseCursor = false;
+		if (PC->PlayerCameraManager) { PC->PlayerCameraManager->ViewPitchMin = -65.f; PC->PlayerCameraManager->ViewPitchMax = 20.f; }
 	}
+}
+
+void ADFPlayerCharacter::SetupPlayerInputComponent(UInputComponent* IC)
+{
+	Super::SetupPlayerInputComponent(IC);
+	if (!IC) return;
+	const TPair<FKey, void (ADFPlayerCharacter::*)()> Binds[] = {
+		{ EKeys::One, &ADFPlayerCharacter::KeySkill1 }, { EKeys::Two, &ADFPlayerCharacter::KeySkill2 },
+		{ EKeys::Three, &ADFPlayerCharacter::KeySkill3 }, { EKeys::R, &ADFPlayerCharacter::KeyUltimate },
+		{ EKeys::NumPadOne, &ADFPlayerCharacter::KeySkill1 }, { EKeys::NumPadTwo, &ADFPlayerCharacter::KeySkill2 },
+		{ EKeys::NumPadThree, &ADFPlayerCharacter::KeySkill3 },
+		{ EKeys::Gamepad_LeftShoulder, &ADFPlayerCharacter::KeySkill1 }, { EKeys::Gamepad_RightShoulder, &ADFPlayerCharacter::KeySkill2 },
+		{ EKeys::Gamepad_FaceButton_Top, &ADFPlayerCharacter::KeySkill3 }, { EKeys::Gamepad_RightTrigger, &ADFPlayerCharacter::KeyUltimate },
+		{ EKeys::LeftMouseButton, &ADFPlayerCharacter::KeyAttack }, { EKeys::J, &ADFPlayerCharacter::KeyAttack },
+		{ EKeys::Gamepad_FaceButton_Left, &ADFPlayerCharacter::KeyAttack },
+		{ EKeys::LeftShift, &ADFPlayerCharacter::KeyDash }, { EKeys::Gamepad_FaceButton_Right, &ADFPlayerCharacter::KeyDash },
+		{ EKeys::SpaceBar, &ADFPlayerCharacter::KeyJump }, { EKeys::Gamepad_FaceButton_Bottom, &ADFPlayerCharacter::KeyJump },
+		{ EKeys::K, &ADFPlayerCharacter::KeyTestNext }, { EKeys::L, &ADFPlayerCharacter::KeyTestPrev },
+		{ EKeys::T, &ADFPlayerCharacter::KeyAuto }, { EKeys::Gamepad_Special_Left, &ADFPlayerCharacter::KeyAuto },
+		{ EKeys::Escape, &ADFPlayerCharacter::KeyMenu }, { EKeys::Gamepad_Special_Right, &ADFPlayerCharacter::KeyMenu } };
+	for (const auto& B : Binds) IC->BindKey(B.Key, IE_Pressed, this, B.Value);
+
+	// movement keys as held flags (event-driven, works with Enhanced Input projects)
+	auto Hold = [this, IC](FKey Key, bool ADFPlayerCharacter::* Flag)
+	{
+		for (EInputEvent Ev : { IE_Pressed, IE_Released })
+		{
+			FInputKeyBinding KB(FInputChord(Key), Ev);
+			KB.bConsumeInput = false;
+			KB.KeyDelegate.GetDelegateForManualSet().BindLambda([this, Flag, Ev]() { this->*Flag = (Ev == IE_Pressed); });
+			IC->KeyBindings.Add(KB);
+		}
+	};
+	Hold(EKeys::W, &ADFPlayerCharacter::bKeyW); Hold(EKeys::Up, &ADFPlayerCharacter::bKeyW);
+	Hold(EKeys::S, &ADFPlayerCharacter::bKeyS); Hold(EKeys::Down, &ADFPlayerCharacter::bKeyS);
+	Hold(EKeys::A, &ADFPlayerCharacter::bKeyA); Hold(EKeys::Left, &ADFPlayerCharacter::bKeyA);
+	Hold(EKeys::D, &ADFPlayerCharacter::bKeyD); Hold(EKeys::Right, &ADFPlayerCharacter::bKeyD);
+	for (FKey K : { EKeys::MouseScrollUp, EKeys::MouseScrollDown })
+	{
+		FInputKeyBinding KB(FInputChord(K), IE_Pressed);
+		const float Step = K == EKeys::MouseScrollUp ? -120.f : 120.f;
+		KB.KeyDelegate.GetDelegateForManualSet().BindLambda([this, Step]() { TargetZoom = FMath::Clamp(TargetZoom + Step, MinZoom, MaxZoom); });
+		IC->KeyBindings.Add(KB);
+	}
+}
+
+bool ADFPlayerCharacter::CanAct() const
+{
+	return Combat && !Combat->IsDead() && !AutoPilot->bEnabled;
+}
+
+void ADFPlayerCharacter::KeyAttack()
+{
+	if (!CanAct()) return;
+	if (UDFCombatComponent* E = Combat->FindNearestEnemy(Combat->Reach * 2.f))
+	{
+		FVector To = E->GetOwner()->GetActorLocation() - GetActorLocation(); To.Z = 0;
+		if (!To.IsNearlyZero()) SetActorRotation(To.Rotation());
+	}
+	Combat->TryAttack();
+}
+
+void ADFPlayerCharacter::KeyDash()
+{
+	if (!CanAct()) return;
+	const FVector V = GetLastMovementInputVector();
+	Combat->TryDash(V.IsNearlyZero() ? GetActorForwardVector() : V);
+}
+
+void ADFPlayerCharacter::KeyJump() { if (CanAct()) Jump(); }
+void ADFPlayerCharacter::KeyAuto() { if (Combat && !Combat->IsDead()) AutoPilot->Toggle(); }
+void ADFPlayerCharacter::KeyMenu() { UGameplayStatics::OpenLevel(this, TEXT("MainMenu")); }
+
+void ADFPlayerCharacter::CycleTest(int32 Step)
+{
+	UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this);
+	if (!P) return;
+	const TArray<FName> All = P->GetAllSkillIds();
+	if (!All.Num()) return;
+	TestIdx = (TestIdx + Step + All.Num()) % All.Num();
+	TestSkill = All[TestIdx];
+	CdLeft[0] = 0.f;
+	FDFSkillRow Row;
+	const FString Th = P->GetSkill(TestSkill, Row) ? Row.NameTH : FString();
+	if (GEngine) GEngine->AddOnScreenDebugMessage(77, 4.f, FColor::Cyan, FString::Printf(TEXT("[ทดสอบสกิล %d/%d] %s %s — กด 1"), TestIdx + 1, All.Num(), *TestSkill.ToString(), *Th));
 }
 
 FName ADFPlayerCharacter::SlotSkill(int32 Slot) const
 {
+	if (Slot == 0 && !TestSkill.IsNone()) return TestSkill;
 	UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this);
 	if (!P) return NAME_None;
 	if (Slot == 3) return P->GetUltimate();
@@ -145,16 +245,26 @@ FName ADFPlayerCharacter::SlotSkill(int32 Slot) const
 float ADFPlayerCharacter::SlotCooldownLeft(int32 Slot) const { return (Slot >= 0 && Slot < 4) ? CdLeft[Slot] : 0.f; }
 float ADFPlayerCharacter::SlotCooldownTotal(int32 Slot) const { return (Slot >= 0 && Slot < 4) ? CdTotal[Slot] : 1.f; }
 
+static void DFDebug(const FString& Msg)
+{
+	UE_LOG(LogTemp, Display, TEXT("DrawFight skill: %s"), *Msg);
+	// on-screen debug off (log only)
+}
+
 bool ADFPlayerCharacter::TryCastSlot(int32 Slot)
 {
-	if (Slot < 0 || Slot > 3 || CdLeft[Slot] > 0.f || !Combat || Combat->IsDead() || Combat->IsStunned()) return false;
+	if (Slot < 0 || Slot > 3 || !Combat) return false;
+	if (CdLeft[Slot] > 0.f) { DFDebug(FString::Printf(TEXT("slot %d cooldown %.1f"), Slot + 1, CdLeft[Slot])); return false; }
+	if (Combat->IsDead() || Combat->IsStunned()) { DFDebug(TEXT("dead or stunned")); return false; }
 	const FName Skill = SlotSkill(Slot);
-	if (Skill.IsNone()) return false;
+	if (Skill.IsNone()) { DFDebug(FString::Printf(TEXT("slot %d is empty"), Slot + 1)); return false; }
+	DFDebug(FString::Printf(TEXT("cast slot %d: %s"), Slot + 1, *Skill.ToString()));
 
 	float Cd = Slot == 3 ? 40.f : 5.f;
 	FDFSkillRow Row;
 	if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this))
 		if (P->GetSkill(Skill, Row)) Cd = FMath::Max(1.5f, Row.Cooldown);
+	if (Slot == 0 && !TestSkill.IsNone()) Cd = 1.f; // test mode: fast repeat
 	CdLeft[Slot] = CdTotal[Slot] = Cd;
 
 	OnSkillCast.Broadcast(Slot, Skill);
@@ -169,11 +279,10 @@ bool ADFPlayerCharacter::TryCastSlot(int32 Slot)
 		int32 Lv = 1;
 		if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this))
 		{
-			FDFCharacterRow H;
-			if (P->GetCharacter(P->GetSelected(), H) && H.Color.StartsWith(TEXT("#"))) Col = FLinearColor(FColor::FromHex(H.Color));
+			Col = P->GetPowerColor();
 			Lv = FMath::Max(1, P->GetSkillLevel(Skill));
 		}
-		ADFSkillFX::CastSkill(this, Skill, Lv, Col, Slot == 3 ? 2.5f : 1.f);
+		ADFSkillFX::CastSkill(this, Skill, Lv, Col, (Slot == 3 || Skill.ToString().StartsWith(TEXT("ult_"))) ? 2.5f : 1.f);
 		Combat->TryAttack(); // swing animation
 	}
 	return true;
@@ -192,6 +301,9 @@ void ADFPlayerCharacter::Tick(float Dt)
 		for (int32 I = 0; I < 3; ++I) AutoPilot->SkillReady[I] = CdLeft[I] <= 0.f && !SlotSkill(I).IsNone();
 	ReadInput(Dt);
 	CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, TargetZoom, Dt, 8.f);
+	const float RealDt = FApp::GetDeltaTime();
+	Shake = FMath::Max(0.f, Shake - RealDt * (25.f + Shake * 6.f));
+	FollowCamera->SetRelativeLocation(Shake > .1f ? FVector(0, FMath::FRandRange(-Shake, Shake), FMath::FRandRange(-Shake, Shake)) : FVector::ZeroVector);
 }
 
 void ADFPlayerCharacter::ReadInput(float Dt)
@@ -206,15 +318,7 @@ void ADFPlayerCharacter::ReadInput(float Dt)
 	My += PC->GetInputAnalogKeyState(EKeys::Gamepad_RightY) * 2.5f;
 	AddControllerYawInput(Mx * MouseSensitivity);
 	AddControllerPitchInput(-My * MouseSensitivity);
-	if (PC->WasInputKeyJustPressed(EKeys::MouseScrollUp)) TargetZoom = FMath::Max(MinZoom, TargetZoom - 120.f);
-	if (PC->WasInputKeyJustPressed(EKeys::MouseScrollDown)) TargetZoom = FMath::Min(MaxZoom, TargetZoom + 120.f);
 
-	if (PC->WasInputKeyJustPressed(EKeys::T) || PC->WasInputKeyJustPressed(EKeys::Gamepad_Special_Left)) AutoPilot->Toggle();
-	if (PC->WasInputKeyJustPressed(EKeys::Escape) || PC->WasInputKeyJustPressed(EKeys::Gamepad_Special_Right))
-	{
-		UGameplayStatics::OpenLevel(this, TEXT("MainMenu"));
-		return;
-	}
 	if (AutoPilot->bEnabled) return; // the AI drives the body
 
 	// movement relative to the camera
@@ -222,32 +326,13 @@ void ADFPlayerCharacter::ReadInput(float Dt)
 	const FVector Fwd = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 	const FVector Right = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 	float F = PC->GetInputAnalogKeyState(EKeys::Gamepad_LeftY), R = PC->GetInputAnalogKeyState(EKeys::Gamepad_LeftX);
-	if (PC->IsInputKeyDown(EKeys::W)) F += 1.f;
-	if (PC->IsInputKeyDown(EKeys::S)) F -= 1.f;
-	if (PC->IsInputKeyDown(EKeys::D)) R += 1.f;
-	if (PC->IsInputKeyDown(EKeys::A)) R -= 1.f;
+	if (bKeyW) F += 1.f;
+	if (bKeyS) F -= 1.f;
+	if (bKeyD) R += 1.f;
+	if (bKeyA) R -= 1.f;
 	const FVector Dir = (Fwd * F + Right * R).GetClampedToMaxSize(1.f);
 	if (!Combat->IsBusy()) AddMovementInput(Dir);
 
-	if (PC->WasInputKeyJustPressed(EKeys::LeftMouseButton) || PC->WasInputKeyJustPressed(EKeys::J)
-		|| PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Left))
-	{
-		// face the nearest enemy in reach so melee feels sticky
-		if (UDFCombatComponent* E = Combat->FindNearestEnemy(Combat->Reach * 2.f))
-		{
-			FVector To = E->GetOwner()->GetActorLocation() - GetActorLocation(); To.Z = 0;
-			if (!To.IsNearlyZero()) SetActorRotation(To.Rotation());
-		}
-		Combat->TryAttack();
-	}
-	if (PC->WasInputKeyJustPressed(EKeys::LeftShift) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))
-		Combat->TryDash(Dir.IsNearlyZero() ? GetActorForwardVector() : Dir);
-	if (PC->WasInputKeyJustPressed(EKeys::SpaceBar) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Bottom)) Jump();
-
-	if (PC->WasInputKeyJustPressed(EKeys::One) || PC->WasInputKeyJustPressed(EKeys::Gamepad_LeftShoulder)) TryCastSlot(0);
-	if (PC->WasInputKeyJustPressed(EKeys::Two) || PC->WasInputKeyJustPressed(EKeys::Gamepad_RightShoulder)) TryCastSlot(1);
-	if (PC->WasInputKeyJustPressed(EKeys::Three) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Top)) TryCastSlot(2);
-	if (PC->WasInputKeyJustPressed(EKeys::R) || PC->WasInputKeyJustPressed(EKeys::Gamepad_RightTrigger)) TryCastSlot(3);
 }
 
 // ===================== enemy =====================

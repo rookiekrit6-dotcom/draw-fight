@@ -66,9 +66,32 @@ public:
 
 	virtual void Tick(float Dt) override;
 
+	// camera shake strength (units); skills add to it, it decays every frame
+	void AddShake(float Amount) { Shake = FMath::Min(Shake + Amount, 60.f); }
+
 protected:
+	float Shake = 0.f;
 	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* IC) override;
 	UFUNCTION() void HandleAutoSkill(int32 Slot);
+	// key events (bound directly so quick taps are never missed)
+	void KeySkill1() { TryCastSlot(0); }
+	void KeySkill2() { TryCastSlot(1); }
+	void KeySkill3() { TryCastSlot(2); }
+	void KeyUltimate() { TryCastSlot(3); }
+	void KeyAttack();
+	void KeyDash();
+	void KeyJump();
+	void KeyAuto();
+	void KeyMenu();
+	// dev: K / L cycle every skill in DT_Skills onto key 1 (no cooldown) to preview effects
+	void KeyTestNext() { CycleTest(1); }
+	void KeyTestPrev() { CycleTest(-1); }
+	void CycleTest(int32 Step);
+	FName TestSkill;
+	int32 TestIdx = -1;
+	bool CanAct() const;
+	bool bKeyW = false, bKeyA = false, bKeyS = false, bKeyD = false;
 	void ReadInput(float Dt);
 	FName SlotSkill(int32 Slot) const;
 	float CdLeft[4] = { 0, 0, 0, 0 };

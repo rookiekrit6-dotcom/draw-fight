@@ -16,6 +16,14 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Layout/SWrapBox.h"
+#include "Brushes/SlateRoundedBoxBrush.h"
+#include "Engine/Texture2D.h"
+#include "HAL/FileManager.h"
+#include "Misc/Paths.h"
+#include "DFMenuStage.h"
+#include "DFMenuGameMode.h"
 
 namespace
 {
@@ -63,14 +71,85 @@ TSharedRef<SWidget> UDFMenuWidget::Label(const FString& Text, int32 Size, FLinea
 		.ColorAndOpacity(FSlateColor(Color)).AutoWrapText(true);
 }
 
+namespace
+{
+	// rounded, tintable button look shared by every menu button
+	const FButtonStyle& FlatStyle()
+	{
+		static FButtonStyle S = []()
+		{
+			FButtonStyle B = FCoreStyle::Get().GetWidgetStyle<FButtonStyle>("Button");
+			B.SetNormal(FSlateRoundedBoxBrush(FLinearColor(1.f, 1.f, 1.f, .82f), 14.f));
+			B.SetHovered(FSlateRoundedBoxBrush(FLinearColor(1.f, 1.f, 1.f, 1.f), 14.f, FLinearColor(1.f, 1.f, 1.f, .9f), 2.f));
+			B.SetPressed(FSlateRoundedBoxBrush(FLinearColor(.7f, .7f, .7f, 1.f), 14.f));
+			B.SetDisabled(FSlateRoundedBoxBrush(FLinearColor(.35f, .35f, .4f, .45f), 14.f));
+			B.SetNormalPadding(FMargin(0.f));
+			B.SetPressedPadding(FMargin(0.f));
+			return B;
+		}();
+		return S;
+	}
+	const FSlateBrush* CardBrush()
+	{
+		static FSlateRoundedBoxBrush B(FLinearColor::White, 22.f, FLinearColor(1.f, 1.f, 1.f, .08f), 1.f);
+		return &B;
+	}
+	const FSlateBrush* ChipBrush()
+	{
+		static FSlateRoundedBoxBrush B(FLinearColor::White, 8.f);
+		return &B;
+	}
+}
+
+const FSlateBrush* UDFMenuWidget::Icon(const TCHAR* Name)
+{
+	const FName Key(Name);
+	if (const TSharedPtr<FSlateBrush>* B = Icons.Find(Key)) return B->Get();
+	TSharedPtr<FSlateBrush> Br = MakeShared<FSlateBrush>();
+	if (UTexture2D* T = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("/Game/DrawFight/UI/Icons/%s.%s"), Name, Name)))
+	{
+		IconTex.Add(T);
+		Br->SetResourceObject(T);
+		Br->ImageSize = FVector2D(64.f, 64.f);
+		Br->DrawAs = ESlateBrushDrawType::Image;
+	}
+	else Br->DrawAs = ESlateBrushDrawType::NoDrawType;
+	Icons.Add(Key, Br);
+	return Br.Get();
+}
+
+ADFMenuStage* UDFMenuWidget::Stage() const
+{
+	const ADFMenuPlayerController* PC = Cast<ADFMenuPlayerController>(GetOwningPlayer());
+	return PC ? PC->Stage.Get() : nullptr;
+}
+
+void UDFMenuWidget::SyncStage()
+{
+	ADFMenuStage* S = Stage();
+	UDFProfileSubsystem* P = Profile();
+	if (!S || !P) return;
+	if (Page == EPage::Create)
+	{
+		S->SetFocus(1.f);
+		S->ShowHero(NewHero.IsNone() ? P->GetSelected() : NewHero, NewElement.IsNone() ? FLinearColor(.9f, .9f, 1.f) : P->ElementColor(NewElement));
+	}
+	else
+	{
+		S->SetFocus(0.f);
+		S->ShowHero(P->GetSelected(), P->GetPowerColor());
+	}
+}
+
 TSharedRef<SWidget> UDFMenuWidget::Button(const FString& Text, TFunction<void()> OnClick, FLinearColor Color, int32 Size, bool bEnabled)
 {
 	TWeakObjectPtr<UDFMenuWidget> Self(this);
 	return SNew(SButton)
+		.ButtonStyle(&FlatStyle())
 		.ButtonColorAndOpacity(Color)
 		.IsEnabled(bEnabled)
 		.HAlign(HAlign_Center).VAlign(VAlign_Center)
-		.ContentPadding(FMargin(18.f, 10.f))
+		.ContentPadding(FMargin(20.f, 11.f))
 		.OnClicked_Lambda([Self, OnClick]()
 		{
 			if (Self.IsValid()) OnClick();
@@ -81,17 +160,42 @@ TSharedRef<SWidget> UDFMenuWidget::Button(const FString& Text, TFunction<void()>
 		];
 }
 
+TSharedRef<SWidget> UDFMenuWidget::IconButton(const TCHAR* IconName, const FString& Text, const FString& Sub, TFunction<void()> OnClick, FLinearColor Color, bool bBig, bool bEnabled)
+{
+	TWeakObjectPtr<UDFMenuWidget> Self(this);
+	const float IconSize = bBig ? 46.f : 34.f;
+	TSharedRef<SVerticalBox> Txt = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()[ Label(Text, bBig ? 30 : 22, FLinearColor::White, true) ];
+	if (!Sub.IsEmpty()) Txt->AddSlot().AutoHeight()[ Label(Sub, 15, FLinearColor(1.f, 1.f, 1.f, .7f)) ];
+	return SNew(SButton)
+		.ButtonStyle(&FlatStyle())
+		.ButtonColorAndOpacity(Color)
+		.IsEnabled(bEnabled)
+		.ContentPadding(FMargin(bBig ? 24.f : 18.f, bBig ? 16.f : 11.f))
+		.OnClicked_Lambda([Self, OnClick]() { if (Self.IsValid()) OnClick(); return FReply::Handled(); })
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 16, 0)
+			[ SNew(SBox).WidthOverride(IconSize).HeightOverride(IconSize)[ SNew(SImage).Image(Icon(IconName)).ColorAndOpacity(FSlateColor(FLinearColor::White)) ] ]
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[ Txt ]
+		];
+}
+
+TSharedRef<SWidget> UDFMenuWidget::Card(TSharedRef<SWidget> Inner, FLinearColor Tint, float Pad) const
+{
+	return SNew(SBorder).BorderImage(CardBrush()).BorderBackgroundColor(Tint).Padding(Pad)[ Inner ];
+}
+
+TSharedRef<SWidget> UDFMenuWidget::Wrap(TSharedRef<SWidget> PageW) const
+{
+	return Card(PageW, FLinearColor(0.02f, 0.025f, 0.045f, 0.9f), 32.f);
+}
+
 TSharedRef<SWidget> UDFMenuWidget::RebuildWidget()
 {
 	SAssignNew(Root, SBox);
 	Refresh();
-	return SNew(SBorder)
-		.BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
-		.BorderBackgroundColor(BG)
-		.Padding(40.f)
-		[
-			Root.ToSharedRef()
-		];
+	return SNew(SBox).Padding(FMargin(48.f, 36.f))[ Root.ToSharedRef() ];
 }
 
 void UDFMenuWidget::ReleaseSlateResources(bool bReleaseChildren)
@@ -100,7 +204,23 @@ void UDFMenuWidget::ReleaseSlateResources(bool bReleaseChildren)
 	Root.Reset();
 }
 
-void UDFMenuWidget::ShowMain()   { Page = EPage::Main;   Toast.Reset(); Refresh(); }
+void UDFMenuWidget::ShowMain()
+{
+	UDFProfileSubsystem* P = Profile();
+	if (P && P->HasData() && !P->IsCreated()) { ShowCreate(); return; }
+	Page = EPage::Main; Toast.Reset(); Refresh();
+}
+void UDFMenuWidget::ShowCreate()
+{
+	Page = EPage::Create; Step = 0; Toast.Reset();
+	if (UDFProfileSubsystem* P = Profile())
+	{
+		NewHero = P->GetSelected();
+		NewName = P->GetPlayerName();
+		NewElement = P->GetPlayerElement();
+	}
+	Refresh();
+}
 void UDFMenuWidget::ShowHeroes() { Page = EPage::Heroes; Toast.Reset(); Refresh(); }
 void UDFMenuWidget::ShowAura()    { Page = EPage::Aura;    Toast.Reset(); LastRolls.Reset(); Refresh(); }
 void UDFMenuWidget::ShowClasses() { Page = EPage::Classes; Toast.Reset(); Refresh(); }
@@ -111,16 +231,19 @@ void UDFMenuWidget::Refresh()
 	UDFProfileSubsystem* P = Profile();
 	if (!P || !P->HasData())
 	{
-		Root->SetContent(Label(TEXT("ไม่พบตารางข้อมูล ให้ import CSV ไปไว้ที่ /Game/DrawFight/Data ก่อน\n(DT_Characters, DT_Skills, DT_WeaponClasses, DT_Elements)"), 22, Accent));
+		Root->SetContent(Card(Label(TEXT("ไม่พบตารางข้อมูล ให้ import CSV ไปไว้ที่ /Game/DrawFight/Data ก่อน\n(DT_Characters, DT_Skills, DT_WeaponClasses, DT_Elements)"), 22, Accent)));
 		return;
 	}
 	switch (Page)
 	{
-	case EPage::Main:   Root->SetContent(BuildMain()); break;
-	case EPage::Heroes: Root->SetContent(BuildHeroes()); break;
-	case EPage::Aura:    Root->SetContent(BuildAura()); break;
-	case EPage::Classes: Root->SetContent(BuildClasses()); break;
+	case EPage::Title:   Root->SetContent(BuildTitle()); break;
+	case EPage::Create:  Root->SetContent(BuildCreate()); break;
+	case EPage::Main:    Root->SetContent(BuildMain()); break;
+	case EPage::Heroes:  Root->SetContent(Wrap(BuildHeroes())); break;
+	case EPage::Aura:    Root->SetContent(Wrap(BuildAura())); break;
+	case EPage::Classes: Root->SetContent(Wrap(BuildClasses())); break;
 	}
+	SyncStage();
 }
 
 TSharedRef<SWidget> UDFMenuWidget::TopBar(const FText& Title)
@@ -128,55 +251,246 @@ TSharedRef<SWidget> UDFMenuWidget::TopBar(const FText& Title)
 	UDFProfileSubsystem* P = Profile();
 	return SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-		[ Button(TEXT("< กลับ"), [this]() { ShowMain(); }, Panel, 18) ]
-		+ SHorizontalBox::Slot().FillWidth(1.f).Padding(20.f, 0.f).VAlign(VAlign_Center)
-		[ Label(Title.ToString(), 34, FLinearColor::White, true) ]
+		[ SNew(SBox).WidthOverride(170.f)[ IconButton(TEXT("I_Back"), TEXT("กลับ"), FString(), [this]() { ShowMain(); }, Panel) ] ]
+		+ SHorizontalBox::Slot().FillWidth(1.f).Padding(24.f, 0.f).VAlign(VAlign_Center)
+		[ Label(Title.ToString(), 36, FLinearColor::White, true) ]
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-		[ Label(FString::Printf(TEXT("ทอง %d"), P->GetGold()), 26, Gold, true) ];
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 8, 0)
+			[ SNew(SBox).WidthOverride(30.f).HeightOverride(30.f)[ SNew(SImage).Image(Icon(TEXT("I_Coin"))).ColorAndOpacity(FSlateColor(Gold)) ] ]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			[ Label(FString::FromInt(P->GetGold()), 28, Gold, true) ]
+		];
 }
 
-// ================= MAIN =================
+// ================= TITLE =================
+TSharedRef<SWidget> UDFMenuWidget::BuildTitle()
+{
+	TWeakObjectPtr<UDFMenuWidget> Self(this);
+	return SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center)
+		[
+			SNew(SBox).WidthOverride(600.f)
+			[
+				Card(SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[ Label(TEXT("วาดแล้วสู้"), 92, FLinearColor::White, true) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(4, 0, 0, 8)[ Label(TEXT("D R A W   F I G H T"), 24, Gold, true) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(4, 0, 0, 34)[ Label(TEXT("วาดอาวุธ · ปั้นตัวละคร · สู้ให้สุดฝีมือ"), 22, Dim) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)
+					[ IconButton(TEXT("I_Play"), TEXT("เริ่มเกม"), FString(), [this]() { ShowMain(); }, Accent, true) ]
+					+ SVerticalBox::Slot().AutoHeight()
+					[ IconButton(TEXT("I_Exit"), TEXT("ออกจากเกม"), FString(), [Self]() {
+						if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayer(), EQuitPreference::Quit, false); }, Panel) ],
+				FLinearColor(0.f, 0.f, 0.f, .5f), 40.f)
+			]
+		];
+}
+
+// ================= CHARACTER CREATION =================
+TSharedRef<SWidget> UDFMenuWidget::BuildCreate()
+{
+	UDFProfileSubsystem* P = Profile();
+	static const TCHAR* StepNames[4] = { TEXT("เลือกร่าง"), TEXT("ตั้งชื่อ"), TEXT("เลือกพลัง"), TEXT("ยืนยัน") };
+
+	// step dots
+	TSharedRef<SHorizontalBox> Dots = SNew(SHorizontalBox);
+	for (int32 I = 0; I < 4; ++I)
+	{
+		const bool bOn = I <= Step;
+		Dots->AddSlot().AutoWidth().Padding(0, 0, 10, 0).VAlign(VAlign_Center)
+		[
+			SNew(SBorder).BorderImage(ChipBrush()).BorderBackgroundColor(bOn ? Accent : FLinearColor(1, 1, 1, .12f)).Padding(FMargin(12.f, 4.f))
+			[ Label(FString::Printf(TEXT("%d %s"), I + 1, StepNames[I]), 15, FLinearColor::White, I == Step) ]
+		];
+	}
+
+	TSharedRef<SVerticalBox> Body = SNew(SVerticalBox);
+	bool bCanNext = true;
+	if (Step == 0)
+	{
+		Body->AddSlot().AutoHeight().Padding(0, 0, 0, 12)[ Label(TEXT("เลือกร่างเริ่มต้นของคุณ (เปลี่ยนทีหลังได้)"), 20, Dim) ];
+		TSharedRef<SWrapBox> Grid = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(10.f, 10.f));
+		for (const FName& Id : P->GetCharacterIds())
+		{
+			FDFCharacterRow R;
+			if (!P->GetCharacter(Id, R) || (R.UnlockCost > 0 && !P->IsUnlocked(Id))) continue;
+			const bool bSel = Id == NewHero;
+			const FLinearColor HC = Hex(R.Color, Blue);
+			Grid->AddSlot()
+			[
+				SNew(SBox).WidthOverride(250.f)
+				[
+					SNew(SButton).ButtonStyle(&FlatStyle())
+					.ButtonColorAndOpacity(bSel ? HC : HC * FLinearColor(.35f, .35f, .35f, .9f))
+					.ContentPadding(FMargin(14.f, 10.f))
+					.OnClicked_Lambda([this, Id]() { NewHero = Id; Refresh(); return FReply::Handled(); })
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight()[ Label(R.NameTH, 22, FLinearColor::White, true) ]
+						+ SVerticalBox::Slot().AutoHeight()[ Label(R.TitleTH, 14, FLinearColor(1, 1, 1, .75f)) ]
+					]
+				]
+			];
+		}
+		Grid->AddSlot()
+		[
+			SNew(SBox).WidthOverride(250.f)
+			[ IconButton(TEXT("I_Folder"), TEXT("นำเข้า .glb"), TEXT("ใช้โมเดลของคุณเอง"), [this]() {
+				const FString Dir = FPaths::ProjectSavedDir() / TEXT("ImportedCharacters");
+				IFileManager::Get().MakeDirectory(*Dir, true);
+				FPlatformProcess::ExploreFolder(*Dir);
+				Toast = TEXT("วางไฟล์ .glb ไว้ในโฟลเดอร์ที่เปิดขึ้นมา (ระบบอ่านโมเดลจะเชื่อมในอัปเดตถัดไป)");
+				Refresh(); }, Panel) ]
+		];
+		Body->AddSlot().AutoHeight()[ Grid ];
+		bCanNext = !NewHero.IsNone();
+	}
+	else if (Step == 1)
+	{
+		Body->AddSlot().AutoHeight().Padding(0, 0, 0, 12)[ Label(TEXT("ชื่อที่จะแสดงในเกม (ไม่เกิน 16 ตัวอักษร)"), 20, Dim) ];
+		Body->AddSlot().AutoHeight()
+		[
+			SNew(SBox).HeightOverride(64.f)
+			[
+				SNew(SEditableTextBox)
+				.Text(FText::FromString(NewName))
+				.HintText(FText::FromString(TEXT("พิมพ์ชื่อของคุณ")))
+				.Font(Font(28, true))
+				.OnTextChanged_Lambda([this](const FText& T) { NewName = T.ToString().Left(16); })
+				.OnTextCommitted_Lambda([this](const FText& T, ETextCommit::Type How) {
+					NewName = T.ToString().Left(16);
+					if (How == ETextCommit::OnEnter && !NewName.TrimStartAndEnd().IsEmpty()) { Step = 2; Refresh(); } })
+			]
+		];
+		bCanNext = true; // checked on click (text box updates live)
+	}
+	else if (Step == 2)
+	{
+		Body->AddSlot().AutoHeight().Padding(0, 0, 0, 12)[ Label(TEXT("ธาตุของคุณ = สีและพลังของสกิลทุกท่า"), 20, Dim) ];
+		TSharedRef<SWrapBox> Grid = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(10.f, 10.f));
+		for (const FName& E : P->GetElementIds())
+		{
+			const bool bSel = E == NewElement;
+			const FLinearColor EC = P->ElementColor(E);
+			Grid->AddSlot()
+			[
+				SNew(SBox).WidthOverride(170.f)
+				[
+					SNew(SButton).ButtonStyle(&FlatStyle())
+					.ButtonColorAndOpacity(bSel ? EC : EC * FLinearColor(.4f, .4f, .4f, .85f))
+					.ContentPadding(FMargin(12.f, 12.f))
+					.HAlign(HAlign_Center)
+					.OnClicked_Lambda([this, E]() { NewElement = E; Refresh(); return FReply::Handled(); })
+					[ Label(P->ElementNameTH(E), 24, FLinearColor::White, true) ]
+				]
+			];
+		}
+		Body->AddSlot().AutoHeight()[ Grid ];
+		bCanNext = !NewElement.IsNone();
+	}
+	else
+	{
+		FDFCharacterRow R; P->GetCharacter(NewHero, R);
+		Body->AddSlot().AutoHeight()[ Label(NewName.TrimStartAndEnd(), 52, P->ElementColor(NewElement), true) ];
+		Body->AddSlot().AutoHeight().Padding(0, 4, 0, 18)[ Label(FString::Printf(TEXT("%s · %s  —  ธาตุ%s"), *R.NameTH, *R.TitleTH, *P->ElementNameTH(NewElement)), 22, FLinearColor::White) ];
+		Body->AddSlot().AutoHeight()[ Label(TEXT("\"") + R.QuoteTH + TEXT("\""), 20, Gold) ];
+	}
+	if (!Toast.IsEmpty()) Body->AddSlot().AutoHeight().Padding(0, 12, 0, 0)[ Label(Toast, 17, Gold) ];
+
+	// footer
+	TSharedRef<SHorizontalBox> Foot = SNew(SHorizontalBox);
+	if (Step > 0 || P->IsCreated())
+		Foot->AddSlot().AutoWidth()
+		[ SNew(SBox).WidthOverride(170.f)[ IconButton(TEXT("I_Back"), TEXT("ย้อนกลับ"), FString(), [this]() {
+			Toast.Reset();
+			if (Step > 0) { --Step; Refresh(); } else ShowMain(); }, Panel) ] ];
+	Foot->AddSlot().FillWidth(1.f)[ SNew(SSpacer) ];
+	if (Step < 3)
+		Foot->AddSlot().AutoWidth()
+		[ SNew(SBox).WidthOverride(200.f)[ IconButton(TEXT("I_Next"), TEXT("ถัดไป"), FString(), [this]() {
+			Toast.Reset();
+			if (Step == 1 && NewName.TrimStartAndEnd().IsEmpty()) { Toast = TEXT("ใส่ชื่อก่อนนะ"); Refresh(); return; }
+			++Step; Refresh(); }, Blue, false, bCanNext) ] ];
+	else
+		Foot->AddSlot().AutoWidth()
+		[ SNew(SBox).WidthOverride(300.f)[ IconButton(TEXT("I_Check"), TEXT("เริ่มผจญภัย"), FString(), [this]() {
+			Profile()->CreateCharacter(NewHero, NewName, NewElement);
+			Page = EPage::Main; Toast.Reset(); Refresh(); }, Accent, true) ] ];
+
+	return SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center)
+		[
+			SNew(SBox).WidthOverride(820.f)
+			[
+				Card(SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[ Label(P->IsCreated() ? TEXT("แก้ไขตัวละคร") : TEXT("สร้างตัวละคร"), 44, FLinearColor::White, true) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 10, 0, 22)[ Dots ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 26)[ SNew(SBox).MinDesiredHeight(240.f)[ Body ] ]
+					+ SVerticalBox::Slot().AutoHeight()[ Foot ],
+				FLinearColor(0.f, 0.f, 0.f, .6f), 36.f)
+			]
+		];
+}
+
+// ================= LOBBY =================
 TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 {
 	UDFProfileSubsystem* P = Profile();
 	FDFCharacterRow Hero;
 	P->GetCharacter(P->GetSelected(), Hero);
 	TWeakObjectPtr<UDFMenuWidget> Self(this);
+	const FLinearColor PC = P->GetPowerColor();
 
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 40, 0, 6)
-		[ Label(TEXT("วาดแล้วสู้"), 72, FLinearColor::White, true) ]
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, 30)
-		[ Label(TEXT("DRAW FIGHT"), 24, Dim, true) ]
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, 30)
+	FString Extra;
+	{
+		FDFAuraRow A; FDFSecretClassRow K;
+		if (P->GetAura(P->GetEquippedAura(), A)) Extra += FString::Printf(TEXT("ออร่า %s"), *A.NameTH);
+		if (P->GetSecretClass(P->GetEquippedClass(), K)) Extra += (Extra.IsEmpty() ? TEXT("") : TEXT("   ·   ")) + FString::Printf(TEXT("อาชีพ %s"), *K.NameTH);
+	}
+
+	TSharedRef<SVerticalBox> Menu = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 14)
+		[ IconButton(TEXT("I_Swords"), TEXT("เข้าสู้"), TEXT("ฝ่าคลื่นศัตรูและบอส"), [Self]() {
+			if (Self.IsValid()) UGameplayStatics::OpenLevel(Self.Get(), Self->ArenaLevel); }, Accent, true) ]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+		[ IconButton(TEXT("I_Bag"), TEXT("ตัวละครและสกิล"), TEXT("จัดสกิล · เปลี่ยนร่าง · เสียงพากย์"), [this]() { ShowHeroes(); }, Blue) ]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+		[ IconButton(TEXT("I_Sparkle"), TEXT("ออร่า"), TEXT("สุ่มออร่าหายาก"), [this]() { ShowAura(); }, FLinearColor(0.55f, 0.35f, 0.9f)) ]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+		[ IconButton(TEXT("I_Crown"), TEXT("อาชีพลับ"), TEXT("ปลดล็อกด้วยเงื่อนไขลับ"), [this]() { ShowClasses(); }, FLinearColor(0.75f, 0.55f, 0.12f)) ]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+		[ IconButton(TEXT("I_User"), TEXT("แก้ไขตัวละคร"), TEXT("ชื่อ · ร่าง · ธาตุ"), [this]() { ShowCreate(); }, Panel) ]
+		+ SVerticalBox::Slot().AutoHeight()
+		[ IconButton(TEXT("I_Exit"), TEXT("ออกจากเกม"), FString(), [Self]() {
+			if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayer(), EQuitPreference::Quit, false); }, FLinearColor(0.12f, 0.12f, 0.16f)) ];
+
+	TSharedRef<SWidget> Wallet = Card(SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 8, 0)
+		[ SNew(SBox).WidthOverride(30.f).HeightOverride(30.f)[ SNew(SImage).Image(Icon(TEXT("I_Coin"))).ColorAndOpacity(FSlateColor(Gold)) ] ]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 24, 0)[ Label(FString::FromInt(P->GetGold()), 28, Gold, true) ]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[ Label(FString::Printf(TEXT("ชนะ %d"), P->GetWins()), 22, FLinearColor::White, true) ],
+		FLinearColor(0.f, 0.f, 0.f, .55f), 16.f);
+
+	TSharedRef<SVerticalBox> PlateBox = SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()[ Label(P->GetPlayerName().IsEmpty() ? Hero.NameTH : P->GetPlayerName(), 46, PC, true) ]
+		+ SVerticalBox::Slot().AutoHeight()[ Label(FString::Printf(TEXT("%s · %s  —  ธาตุ%s"), *Hero.NameTH, *Hero.TitleTH,
+			*P->ElementNameTH(P->GetPlayerElement().IsNone() ? Hero.Element : P->GetPlayerElement())), 19, FLinearColor::White) ];
+	if (!Extra.IsEmpty()) PlateBox->AddSlot().AutoHeight().Padding(0, 6, 0, 0)[ Label(Extra, 17, Gold) ];
+	TSharedRef<SWidget> Plate = Card(PlateBox, FLinearColor(0.f, 0.f, 0.f, .5f), 22.f);
+
+	return SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center)
 		[
-			Label(FString::Printf(TEXT("ตัวละคร: %s · %s      ทอง %d      ชนะ %d"),
-				*Hero.NameTH, *Hero.TitleTH, P->GetGold(), P->GetWins())
-				+ [P]() {
-					FString X; FDFAuraRow A; FDFSecretClassRow K;
-					if (P->GetAura(P->GetEquippedAura(), A)) X += FString::Printf(TEXT("\nออร่า: %s"), *A.NameTH);
-					if (P->GetSecretClass(P->GetEquippedClass(), K)) X += FString::Printf(TEXT("      อาชีพ: %s"), *K.NameTH);
-					return X; }(), 22, Hex(Hero.Color, Gold))
-		]
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-		[
-			SNew(SBox).WidthOverride(380.f)
+			SNew(SBox).WidthOverride(470.f)
 			[
 				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
-				[ Button(TEXT("เริ่มสู้"), [Self]() {
-					if (Self.IsValid()) UGameplayStatics::OpenLevel(Self.Get(), Self->ArenaLevel); }, Accent, 30) ]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
-				[ Button(TEXT("เลือกตัวละคร"), [this]() { ShowHeroes(); }, Blue, 24) ]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
-				[ Button(TEXT("หมุนออร่า"), [this]() { ShowAura(); }, FLinearColor(0.55f, 0.35f, 0.9f), 24) ]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
-				[ Button(TEXT("อาชีพลับ"), [this]() { ShowClasses(); }, FLinearColor(0.15f, 0.12f, 0.2f), 24) ]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
-				[ Button(TEXT("ออกจากเกม"), [Self]() {
-					if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayer(), EQuitPreference::Quit, false); }, Panel, 20) ]
+				+ SVerticalBox::Slot().AutoHeight().Padding(4, 0, 0, 18)[ Label(TEXT("วาดแล้วสู้"), 54, FLinearColor::White, true) ]
+				+ SVerticalBox::Slot().AutoHeight()[ Menu ]
 			]
-		];
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top)[ Wallet ]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)[ SNew(SBox).MaxDesiredWidth(560.f)[ Plate ] ];
 }
 
 // ================= HEROES =================

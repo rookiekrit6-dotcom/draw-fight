@@ -41,3 +41,26 @@
 "ult_dragonform","ร่างมังกร","Dragon Form","แปลงร่างเป็นมังกรไฟ 8 วินาที พ่นไฟเป็นกรวยและบินได้","","40","Signature","","","Any","","-1"
 "ult_thousandblades","พันดาบ","Thousand Blades","ดาบแสงนับพันเล่มตกลงทั่วสนาม","","40","Signature","","","Any","","-1"
 "ult_livingcanvas","ผืนผ้าใบมีชีวิต","Living Canvas","อาวุธที่วาดไว้ทุกชิ้นลอยขึ้นมาสู้เองพร้อมกัน 10 วินาที","","40","Signature","","","Any","","-1"
+"seeker","ลูกพลังไล่ล่า","Seeker Orbs","ปล่อยลูกพลัง 5 ลูก โค้งไล่ตามศัตรูเอง ลูกละ 1 เท่า","Release 5 orbs that curve and chase enemies, 1x each",6,"Rare","คทา","","Ranged","light;psy",14
+"boomerang","ใบมีดบูมเมอแรง","Boomerang Blade","ขว้างใบมีดหมุนออกไปแล้วย้อนกลับ ฟันทั้งขาไปและขากลับ","Throw a spinning blade that cuts on the way out and back",5,"Common","มีดบิน","","Ranged","wind",7
+"ricochet","กระสุนเด้ง","Ricochet","ยิงกระสุนที่เด้งต่อศัตรู 5 ตัว ยิ่งเด้งยิ่งแรง","A shot that bounces through 5 enemies, stronger each bounce",6,"Rare","ปืน","","Ranged","mech",14
+"spikeline","หนามผลึก","Crystal Spikes","ผลึกแทงขึ้นจากพื้นเป็นแนวยาว ตีศัตรูลอย","Crystals erupt in a line and launch enemies",6,"Rare","","","Any","earth",3
+"mines","กับระเบิด","Mines","วางกับระเบิด 4 ลูก ระเบิดต่อเนื่องตีศัตรูกระเด็น","Drop 4 mines that blow up one after another",7,"Common","","","Any","mech;fire",10
+"beam","ลำแสงทำลายล้าง","Annihilation Beam","ยิงลำแสงค้างไว้ 1.6 วินาที เผาทุกอย่างในแนว 4 เท่า","Hold a beam for 1.6s that burns everything in line for 4x",12,"Legendary","คทา","","Ranged","light;fire",14
+"breath","ลมหายใจเพลิง","Dragon Breath","พ่นไฟเป็นรูปกรวยต่อเนื่อง 1.4 วินาที","Breathe a cone of fire for 1.4s",8,"Rare","","","Any","fire",6
+"blink","วาร์ปเงา","Shadow Blink","วาร์ปไปด้านหลังศัตรูแล้วฟัน 2.2 เท่า","Teleport behind an enemy and strike for 2.2x",6,"Rare","ดาบ","","Melee","dark",7
+"hook","โซ่ตะขอ","Chain Hook","เหวี่ยงโซ่เกี่ยวศัตรูดึงเข้ามาหาตัว แล้วสตัน","Hook an enemy, yank it to you and stun it",6,"Common","","","Melee","fight",12
+"uppercut","ฟันเสยฟ้า","Sky Uppercut","ฟันเสยศัตรูลอยกลางอากาศ แล้วฟันซ้ำกลางอากาศ","Launch enemies into the air and juggle them",6,"Common","ดาบ","","Melee","wind;fight",7
+"frost","ระเบิดน้ำแข็ง","Frost Nova","แช่แข็งศัตรูรอบตัวไว้ในผลึก 2.2 วินาที แล้วทำให้ช้า","Freeze nearby enemies in crystals for 2.2s, then slow them",9,"Rare","","","Any","water",8
+"wall","กำแพงศิลา","Stone Wall","เรียกกำแพงหินขวางทาง กันศัตรูและผลักกระเด็น","Raise a stone wall that blocks and shoves enemies",10,"Common","","","Any","earth",3
+"chill","ทุ่งเยือกแข็ง","Frost Field","สร้างทุ่งน้ำแข็ง 4.5 วินาที ศัตรูในวงช้าลงและโดนดาเมจ","A frost field for 4.5s that slows and chips enemies",8,"Common","","","Any","water",8
+"bloodpact","สูบโลหิต","Blood Drain","ดูดเลือดศัตรูรอบตัว ฟื้นเลือดตัวเอง 60% ของดาเมจ","Drain nearby enemies and heal 60% of the damage dealt",9,"Rare","","","Any","dark;zombie",12
+"vanish","หายตัว","Vanish","ระเบิดควันแล้วหายตัว อมตะช่วงสั้น การโจมตีถัดไปแรงขึ้น","Smoke bomb: vanish, become briefly untouchable and hit harder",10,"Rare","มีด","","Melee","dark",12
+"warcry","ออร่าคำราม","War Cry","ปลุกออร่าการต่อสู้ 6 วินาที ตีแรงขึ้น เร็วขึ้น และเผาศัตรูรอบตัว","A 6s battle aura: more damage, more speed, burns nearby enemies",12,"Common","","","Any","fight;fire",9
+"wolf","หมาป่าวิญญาณ","Spirit Wolf","เรียกหมาป่าวิญญาณกระโจนกัดศัตรูต่อกันหลายตัว","Summon a spirit wolf that pounces from enemy to enemy",9,"Rare","","","Any","wind;light",10
+"clone","ร่างแยกเงา","Shadow Clone","สร้างร่างแยกเงาของตัวเองมาช่วยสู้ 8 วินาที","Create a shadow copy of yourself that fights for 8s",14,"Legendary","","","Any","dark",12
+"orbit","ดาบวงโคจร","Orbiting Blades","ดาบเรืองแสงหมุนรอบตัว 6 วินาที บาดทุกอย่างที่เข้าใกล้","Glowing blades circle you for 6s and cut anything close",11,"Rare","ดาบ","","Any","light;mech",7
+"turret","ป้อมผลึก","Crystal Turret","ตั้งป้อมผลึกยิงศัตรูที่ใกล้ที่สุดอัตโนมัติ 6 วินาที","Place a crystal turret that shoots the nearest enemy for 6s",12,"Rare","","","Ranged","mech;earth",14
+"chargeshot","ชาร์จพลังยิง","Charged Blast","รวบรวมพลัง 0.9 วินาที แล้วปล่อยลำพลังทะลุทุกอย่าง","Gather power for 0.9s, then release a piercing blast",10,"Legendary","คทา","","Ranged","light;psy",14
+"mark","ตราประทับระเบิด","Death Mark","ประทับตราบนศัตรู 5 ตัว แล้วตราระเบิดพร้อมกัน 2.2 เท่า","Brand 5 enemies; the brands explode for 2.2x",8,"Rare","","","Any","dark;psy",12
+"combo","คอมโบสี่ดาบ","Four-Blade Combo","ฟันต่อเนื่อง 4 จังหวะ จังหวะสุดท้ายเสยศัตรูลอย","Four quick slashes, the last launches enemies",5,"Rare","ดาบ","","Melee","fight;wind",7

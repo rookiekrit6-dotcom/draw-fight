@@ -46,6 +46,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") TArray<FName> GetCharacterIds() const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") bool GetCharacter(FName Id, FDFCharacterRow& Out) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") bool GetSkill(FName Id, FDFSkillRow& Out) const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") TArray<FName> GetAllSkillIds() const;
+	// ---- character creation ----
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") bool IsCreated() const;
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void CreateCharacter(FName Hero, const FString& Name, FName Element);
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString GetPlayerName() const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FName GetPlayerElement() const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") TArray<FName> GetElementIds() const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FLinearColor ElementColor(FName Id) const;
+	// colour of the player's skills: chosen element, else the hero colour
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FLinearColor GetPowerColor() const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString SkillNameTH(FName Id) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString ElementNameTH(FName Id) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString WeaponNameTH(FName Id) const;

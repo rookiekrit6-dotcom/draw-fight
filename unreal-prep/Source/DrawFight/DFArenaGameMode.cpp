@@ -21,6 +21,11 @@ ADFArenaGameMode::ADFArenaGameMode()
 void ADFArenaGameMode::StartPlay()
 {
 	Super::StartPlay();
+#if !WITH_EDITOR
+	// a character must be created before any fight (editor play-tests skip this)
+	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this))
+		if (Prof->HasData() && !Prof->IsCreated()) { UGameplayStatics::OpenLevel(this, MenuLevel); return; }
+#endif
 	if (!bAutoStart) return;
 	FTimerHandle T;
 	GetWorldTimerManager().SetTimer(T, [this]()

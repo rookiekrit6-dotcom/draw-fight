@@ -8,6 +8,7 @@
 #include "DFMenuGameMode.generated.h"
 
 class UDFMenuWidget;
+class ADFMenuStage;
 
 UCLASS()
 class ADFMenuPlayerController : public APlayerController
@@ -17,6 +18,7 @@ public:
 	// Leave empty to use the code-only menu; set a Blueprint child to change font / arena level
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu") TSubclassOf<UDFMenuWidget> MenuClass;
 	UPROPERTY(BlueprintReadOnly, Category = "Menu") TObjectPtr<UDFMenuWidget> Menu;
+	UPROPERTY(BlueprintReadOnly, Category = "Menu") TObjectPtr<ADFMenuStage> Stage;
 protected:
 	virtual void BeginPlay() override;
 };

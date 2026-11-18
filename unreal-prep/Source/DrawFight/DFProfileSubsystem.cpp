@@ -90,6 +90,52 @@ bool UDFProfileSubsystem::GetCharacter(FName Id, FDFCharacterRow& Out) const
 	return R != nullptr;
 }
 
+bool UDFProfileSubsystem::IsCreated() const { return Save && Save->bCreated; }
+FString UDFProfileSubsystem::GetPlayerName() const { return Save ? Save->PlayerName : FString(); }
+FName UDFProfileSubsystem::GetPlayerElement() const { return Save ? Save->Element : NAME_None; }
+
+void UDFProfileSubsystem::CreateCharacter(FName Hero, const FString& Name, FName Element)
+{
+	if (!Save) return;
+	if (!Hero.IsNone())
+	{
+		if (!Save->Unlocked.Contains(Hero)) Save->Unlocked.Add(Hero);
+		Save->Selected = Hero;
+	}
+	Save->PlayerName = Name.TrimStartAndEnd().Left(16);
+	Save->Element = Element;
+	Save->bCreated = true;
+	SaveNow();
+}
+
+TArray<FName> UDFProfileSubsystem::GetElementIds() const
+{
+	TArray<FName> Out;
+	if (Elements)
+		for (const FName& N : Elements->GetRowNames())
+			if (N != FName(TEXT("none")) && N != FName(TEXT("inf"))) Out.Add(N);
+	return Out;
+}
+
+FLinearColor UDFProfileSubsystem::ElementColor(FName Id) const
+{
+	const FDFElementRow* R = Elements ? Elements->FindRow<FDFElementRow>(Id, TEXT("DF"), false) : nullptr;
+	return R && R->Color.StartsWith(TEXT("#")) ? FLinearColor(FColor::FromHex(R->Color)) : FLinearColor(1.f, .45f, .15f);
+}
+
+FLinearColor UDFProfileSubsystem::GetPowerColor() const
+{
+	if (Save && !Save->Element.IsNone()) return ElementColor(Save->Element);
+	FDFCharacterRow H;
+	if (GetCharacter(GetSelected(), H) && H.Color.StartsWith(TEXT("#"))) return FLinearColor(FColor::FromHex(H.Color));
+	return FLinearColor(1.f, .45f, .15f);
+}
+
+TArray<FName> UDFProfileSubsystem::GetAllSkillIds() const
+{
+	return Skills ? Skills->GetRowNames() : TArray<FName>();
+}
+
 bool UDFProfileSubsystem::GetSkill(FName Id, FDFSkillRow& Out) const
 {
 	const FDFSkillRow* R = Skills ? Skills->FindRow<FDFSkillRow>(Id, TEXT("DF"), false) : nullptr;

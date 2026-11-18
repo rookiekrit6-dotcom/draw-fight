@@ -12,6 +12,9 @@
 class SBox;
 class UFont;
 class UDFProfileSubsystem;
+class ADFMenuStage;
+class UTexture2D;
+struct FSlateBrush;
 
 UCLASS()
 class UDFMenuWidget : public UUserWidget
@@ -22,7 +25,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu") FName ArenaLevel = TEXT("Lvl_ThirdPerson");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu") TObjectPtr<UFont> ThaiFont;
 
-	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowMain();
+	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowMain();   // lobby (or creation if no character yet)
+	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowCreate();
 	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowHeroes();
 	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowAura();
 	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowClasses();
@@ -32,8 +36,18 @@ protected:
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
 private:
-	enum class EPage : uint8 { Main, Heroes, Aura, Classes };
-	EPage Page = EPage::Main;
+	enum class EPage : uint8 { Title, Create, Main, Heroes, Aura, Classes };
+	EPage Page = EPage::Title;
+	// creation wizard
+	int32 Step = 0;
+	FName NewHero, NewElement;
+	FString NewName;
+	// icon textures (kept alive) + their brushes
+	UPROPERTY() TArray<TObjectPtr<UTexture2D>> IconTex;
+	TMap<FName, TSharedPtr<FSlateBrush>> Icons;
+	const FSlateBrush* Icon(const TCHAR* Name);
+	ADFMenuStage* Stage() const;
+	void SyncStage();
 	FName Viewing;                         // hero shown on the right of the hero page
 	TArray<FName> LastRolls;
 	FString Toast;                         // one-line message (not enough gold, etc.)
@@ -42,7 +56,12 @@ private:
 	void Refresh();
 	UDFProfileSubsystem* Profile() const;
 
+	TSharedRef<SWidget> BuildTitle();
+	TSharedRef<SWidget> BuildCreate();
 	TSharedRef<SWidget> BuildMain();
+	TSharedRef<SWidget> Card(TSharedRef<SWidget> Inner, FLinearColor Tint = FLinearColor(0.f, 0.f, 0.f, .62f), float Pad = 28.f) const;
+	TSharedRef<SWidget> IconButton(const TCHAR* IconName, const FString& Text, const FString& Sub, TFunction<void()> OnClick, FLinearColor Color, bool bBig = false, bool bEnabled = true);
+	TSharedRef<SWidget> Wrap(TSharedRef<SWidget> Page) const; // dark panel for the old full pages
 	TSharedRef<SWidget> BuildHeroes();
 	TSharedRef<SWidget> BuildAura();
 	TSharedRef<SWidget> BuildClasses();

@@ -23,6 +23,10 @@ public:
 	UPROPERTY(SaveGame) FDFGachaState Gacha;          // gold, pity, skill card levels
 	UPROPERTY(SaveGame) TArray<FName> Unlocked;       // DT_Characters rows
 	UPROPERTY(SaveGame) FName Selected;
+	// character creation (must be done once before playing)
+	UPROPERTY(SaveGame) bool bCreated = false;
+	UPROPERTY(SaveGame) FString PlayerName;
+	UPROPERTY(SaveGame) FName Element;              // chosen power colour (DT_Elements)
 	UPROPERTY(SaveGame) TMap<FName, FDFLoadout> Loadouts;
 	UPROPERTY(SaveGame) int32 Wins = 0;
 	UPROPERTY(SaveGame) int32 Losses = 0;
