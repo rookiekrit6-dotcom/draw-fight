@@ -119,6 +119,18 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(P->SkillNameTH(L[I])), 18, FLinearColor::White) ]
 				]
 			];
+		const FName Ult = P->GetUltimate();
+		if (!Ult.IsNone())
+			Skills->AddSlot().AutoWidth().Padding(14.f, 0.f, 6.f, 0.f)
+			[
+				SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.35f, .05f, .1f, .9f))
+				.Padding(FMargin(20.f, 10.f))
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(TEXT("R")), 16, HudGold) ]
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(P->SkillNameTH(Ult)), 18, FLinearColor::White) ]
+				]
+			];
 	}
 
 	SAssignNew(EndBox, SBox).Visibility(EVisibility::Collapsed);
@@ -201,6 +213,25 @@ void UDFHudWidget::HandleEnd(bool bVictory)
 	};
 	const FString Again = UGameplayStatics::GetCurrentLevelName(this);
 
+	// rewards: free skill card + newly unlocked secret classes
+	TSharedRef<SVerticalBox> Rewards = SNew(SVerticalBox);
+	if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this))
+	{
+		FDFGachaResult Card;
+		if (P->GetLastCardDrop(Card))
+			Rewards->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 4)
+			[ Label(FText::FromString(Card.NewLevel > 0
+				? FString::Printf(TEXT("ได้การ์ดสกิล: %s  Lv%d"), *P->SkillNameTH(Card.Skill), Card.NewLevel)
+				: FString::Printf(TEXT("การ์ด %s เต็มแล้ว  คืน %d ทอง"), *P->SkillNameTH(Card.Skill), Card.Refund)), 26, FLinearColor::White) ];
+		for (const FName& Id : P->PopNewClasses())
+		{
+			FDFSecretClassRow K;
+			if (P->GetClass(Id, K))
+				Rewards->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 10)
+				[ Label(FText::FromString(FString::Printf(TEXT("ปลดล็อกอาชีพลับ: %s !"), *K.NameTH)), 40, HudGold) ];
+		}
+	}
+
 	EndBox->SetVisibility(EVisibility::Visible);
 	EndBox->SetContent(
 		SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
@@ -211,6 +242,8 @@ void UDFHudWidget::HandleEnd(bool bVictory)
 			[ Label(FText::FromString(bVictory ? TEXT("ชนะ!") : TEXT("แพ้...")), 90, bVictory ? HudGold : HudRed) ]
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 6, 0, 30)
 			[ Label(FText::FromString(FString::Printf(TEXT("+%d ทอง"), Reward)), 32, HudGold) ]
+			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, 24)
+			[ Rewards ]
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 			[
 				SNew(SHorizontalBox)

@@ -32,3 +32,12 @@
 "pageflip","พลิกหน้ากระดาษ","Page Flip","สลับตำแหน่งกับศัตรู ศัตรูมึน ส่วนเราได้เร่งความเร็วชั่วครู่","Swap places with the enemy. It is stunned and you gain a short speed boost",9,"Legendary","","","Any","psy",2
 "clip","คลิปหนีบ","Paper Clip","หนีบศัตรูรอบตัวยกลอยค้างกลางอากาศ แล้วกระแทกลงพื้น ดาเมจ 2 เท่า","Clip nearby enemies, hold them in the air, then slam them down for 2x damage",9,"Rare","","","Any","mech",12
 "pause","กดหยุดชั่วคราว","Pause","หยุดเวลาของศัตรูในระยะ 1.3 วินาที ไม่ทำดาเมจ แต่ตีฟรีได้เต็มที่","Stop time for enemies in range for 1.3 seconds. No damage, but you get free hits",13,"Legendary","","","Any","psy",6
+"ult_demonlord","ราชันย์อเวจี","Abyssal Throne","เปิดวงเวทนรกใต้เท้า ศัตรูในวงโดนไฟเผาและดูดเลือดคืนให้ 6 วินาที","","40","Signature","","","Any","","-1"
+"ult_riftwalk","ก้าวข้ามมิติ","Rift Walk","วาร์ปผ่านรอยแยก 3 ครั้งติด ทุกครั้งที่ออกจากรอยแยกฟันศัตรูรอบตัว","","40","Signature","","","Any","","-1"
+"ult_beastcall","เสียงเรียกแห่งป่า","Call of the Wild","เรียกหมาป่าวิญญาณ 2 ตัวกับนกอินทรี 1 ตัวมาสู้ด้วย 12 วินาที","","40","Signature","","","Any","","-1"
+"ult_shadowarmy","กองทัพเงา","Shadow Army","ดึงเงาของศัตรูขึ้นมาเป็นทหาร 4 ตัว สู้ให้ 10 วินาที","","40","Signature","","","Any","","-1"
+"ult_soulharvest","เก็บเกี่ยววิญญาณ","Soul Harvest","ดึงวิญญาณศัตรูรอบตัวออกมา ดาเมจ 2.5 เท่า และฮีลตามจำนวนที่โดน","","40","Signature","","","Any","","-1"
+"ult_timerewind","ย้อนกาล","Rewind","ย้อนเลือดตัวเองไปเท่ากับ 3 วินาทีก่อน และทำให้ศัตรูทั้งสนามช้าลง 50%","","40","Signature","","","Any","","-1"
+"ult_dragonform","ร่างมังกร","Dragon Form","แปลงร่างเป็นมังกรไฟ 8 วินาที พ่นไฟเป็นกรวยและบินได้","","40","Signature","","","Any","","-1"
+"ult_thousandblades","พันดาบ","Thousand Blades","ดาบแสงนับพันเล่มตกลงทั่วสนาม","","40","Signature","","","Any","","-1"
+"ult_livingcanvas","ผืนผ้าใบมีชีวิต","Living Canvas","อาวุธที่วาดไว้ทุกชิ้นลอยขึ้นมาสู้เองพร้อมกัน 10 วินาที","","40","Signature","","","Any","","-1"

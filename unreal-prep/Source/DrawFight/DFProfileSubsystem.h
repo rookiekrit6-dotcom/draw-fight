@@ -30,6 +30,10 @@ public:
 	static constexpr float BaseHP = 100.f;
 	static constexpr float BaseDamage = 12.f;
 	static constexpr float BaseReach = 170.f;
+	static constexpr int32 RollCost = 10;
+	static constexpr int32 LuckEvery = 10;      // every 10th roll has double luck
+	static constexpr float LowHpLine = .1f;     // "won with HP below 10%"
+
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
@@ -67,14 +71,41 @@ public:
 	// Moves the slot to the next usable skill not already in another slot
 	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") FName CycleLoadoutSlot(FName Hero, int32 Slot);
 
-	// --- gacha (uses the selected hero's weapon + element for the odds) ---
+	// --- skill cards: no shop any more, one free card drops after every win ---
 	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") TArray<FDFGachaResult> Pull(int32 Count);
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") bool GetLastCardDrop(FDFGachaResult& Out) const { Out = LastCard; return bHasLastCard; }
+
+	// --- auras (roll with luck, equip one) ---
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Aura") TArray<FName> GetAuraIds() const;   // common first
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Aura") bool GetAura(FName Id, FDFAuraRow& Out) const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Aura") int32 AuraCount(FName Id) const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Aura") int32 GetTotalRolls() const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Aura") float LuckForNextRoll() const;
+	// Spends RollCost per roll; returns the aura rolled each time (empty if not enough gold)
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Aura") TArray<FName> RollAuras(int32 Count);
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Aura") bool EquipAura(FName Id);
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Aura") FName GetEquippedAura() const;
+
+	// --- secret classes ---
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") TArray<FName> GetClassIds() const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") bool GetClass(FName Id, FDFSecretClassRow& Out) const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") bool IsClassUnlocked(FName Id) const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") void ClassProgress(FName Id, int32& Current, int32& Needed) const;
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Class") bool EquipClass(FName Id); // None = no class
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") FName GetEquippedClass() const;
+	// The equipped class's ultimate skill (key R), or None
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") FName GetUltimate() const;
+	// Classes unlocked since the last call (for a "secret class unlocked!" popup)
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Class") TArray<FName> PopNewClasses();
+	// Call when the player finishes drawing a weapon (counts toward Divine Painter)
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Class") void RecordDraw();
 
 	// --- fight ---
 	// Applies the selected hero's stats to a fighter (call when the arena starts)
 	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void ApplySelectedTo(UDFCombatComponent* Combat, ACharacter* Body);
-	// Returns the gold awarded
-	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") int32 RecordFight(bool bVictory);
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void AddKill(bool bBoss);
+	// Returns the gold awarded. A win also drops one free skill card (see GetLastCardDrop)
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") int32 RecordFight(bool bVictory, float PlayerHPFraction = 1.f, bool bNoHit = false);
 
 	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void SaveNow();
 	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void ResetProfile();
@@ -83,10 +114,17 @@ public:
 	UPROPERTY() TObjectPtr<UDataTable> Skills;
 	UPROPERTY() TObjectPtr<UDataTable> Weapons;
 	UPROPERTY() TObjectPtr<UDataTable> Elements;
+	UPROPERTY() TObjectPtr<UDataTable> AuraTable;
+	UPROPERTY() TObjectPtr<UDataTable> ClassTable;
 
 private:
 	UPROPERTY() TObjectPtr<UDFSaveGame> Save;
 	void EnsureDefaults();
+	void CheckClassUnlocks();
+	int32 ConditionValue(const FDFSecretClassRow& R) const;
+	TArray<FName> NewClasses;
+	FDFGachaResult LastCard;
+	bool bHasLastCard = false;
 	void Changed();
 	static const TCHAR* SlotName;
 };

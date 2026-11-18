@@ -40,17 +40,6 @@ namespace
 		}
 	}
 
-	const TCHAR* RarityTH(EDFRarity R)
-	{
-		switch (R)
-		{
-		case EDFRarity::Legendary: return TEXT("ตำนาน");
-		case EDFRarity::Rare:      return TEXT("หายาก");
-		case EDFRarity::Signature: return TEXT("ประจำตัว");
-		default:                   return TEXT("ธรรมดา");
-		}
-	}
-
 	FString Bar(float Mult) // 1.0 = 5 blocks
 	{
 		const int32 N = FMath::Clamp(FMath::RoundToInt(Mult * 5.f), 1, 9);
@@ -111,7 +100,8 @@ void UDFMenuWidget::ReleaseSlateResources(bool bReleaseChildren)
 
 void UDFMenuWidget::ShowMain()   { Page = EPage::Main;   Toast.Reset(); Refresh(); }
 void UDFMenuWidget::ShowHeroes() { Page = EPage::Heroes; Toast.Reset(); Refresh(); }
-void UDFMenuWidget::ShowGacha()  { Page = EPage::Gacha;  Toast.Reset(); LastPull.Reset(); Refresh(); }
+void UDFMenuWidget::ShowAura()    { Page = EPage::Aura;    Toast.Reset(); LastRolls.Reset(); Refresh(); }
+void UDFMenuWidget::ShowClasses() { Page = EPage::Classes; Toast.Reset(); Refresh(); }
 
 void UDFMenuWidget::Refresh()
 {
@@ -126,7 +116,8 @@ void UDFMenuWidget::Refresh()
 	{
 	case EPage::Main:   Root->SetContent(BuildMain()); break;
 	case EPage::Heroes: Root->SetContent(BuildHeroes()); break;
-	case EPage::Gacha:  Root->SetContent(BuildGacha()); break;
+	case EPage::Aura:    Root->SetContent(BuildAura()); break;
+	case EPage::Classes: Root->SetContent(BuildClasses()); break;
 	}
 }
 
@@ -158,7 +149,12 @@ TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, 30)
 		[
 			Label(FString::Printf(TEXT("ตัวละคร: %s · %s      ทอง %d      ชนะ %d"),
-				*Hero.NameTH, *Hero.TitleTH, P->GetGold(), P->GetWins()), 22, Hex(Hero.Color, Gold))
+				*Hero.NameTH, *Hero.TitleTH, P->GetGold(), P->GetWins())
+				+ [P]() {
+					FString X; FDFAuraRow A; FDFSecretClassRow K;
+					if (P->GetAura(P->GetEquippedAura(), A)) X += FString::Printf(TEXT("\nออร่า: %s"), *A.NameTH);
+					if (P->GetClass(P->GetEquippedClass(), K)) X += FString::Printf(TEXT("      อาชีพ: %s"), *K.NameTH);
+					return X; }(), 22, Hex(Hero.Color, Gold))
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 		[
@@ -171,7 +167,9 @@ TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
 				[ Button(TEXT("เลือกตัวละคร"), [this]() { ShowHeroes(); }, Blue, 24) ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
-				[ Button(TEXT("สุ่มการ์ดสกิล"), [this]() { ShowGacha(); }, FLinearColor(0.55f, 0.35f, 0.9f), 24) ]
+				[ Button(TEXT("หมุนออร่า"), [this]() { ShowAura(); }, FLinearColor(0.55f, 0.35f, 0.9f), 24) ]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
+				[ Button(TEXT("อาชีพลับ"), [this]() { ShowClasses(); }, FLinearColor(0.15f, 0.12f, 0.2f), 24) ]
 				+ SVerticalBox::Slot().AutoHeight().Padding(0, 6)
 				[ Button(TEXT("ออกจากเกม"), [Self]() {
 					if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayer(), EQuitPreference::Quit, false); }, Panel, 20) ]
@@ -222,7 +220,7 @@ TSharedRef<SWidget> UDFMenuWidget::BuildHeroes()
 
 	// skill slots
 	Info->AddSlot().AutoHeight().Padding(0, 16, 0, 4)[ Label(bOwn
-		? TEXT("ช่องสกิล (กดเพื่อเปลี่ยน · การ์ดจากกาชาใส่ได้ทุกตัว)")
+		? TEXT("ช่องสกิล (ช่อง 1 เป็นสกิลประจำตัว · ช่อง 2-3 กดเพื่อเปลี่ยน)")
 		: TEXT("สกิลเริ่มต้น"), 20, FLinearColor::White, true) ];
 	const TArray<FName> Slots = P->GetLoadout(Viewing);
 	for (int32 S = 0; S < Slots.Num(); ++S)
@@ -232,11 +230,12 @@ TSharedRef<SWidget> UDFMenuWidget::BuildHeroes()
 		const int32 Lv = P->GetSkillLevel(Slots[S]);
 		FString T = FString::Printf(TEXT("%d. %s"), S + 1, bHas ? *SR.NameTH : TEXT("(ว่าง)"));
 		if (Lv > 0) T += FString::Printf(TEXT("  Lv%d"), Lv);
+		if (S == 0) T += TEXT("  [ประจำตัว]");
 		if (bHas) T += TEXT("  — ") + SR.DescTH;
 		const FName Hero = Viewing;
 		Info->AddSlot().AutoHeight().Padding(0, 3)
 		[ Button(T, [this, Hero, S]() { Profile()->CycleLoadoutSlot(Hero, S); Refresh(); },
-			bHas ? RarityColor(SR.Rarity) * FLinearColor(.5f, .5f, .5f, 1.f) : Panel, 17, bOwn) ];
+			bHas ? RarityColor(SR.Rarity) * FLinearColor(.5f, .5f, .5f, 1.f) : Panel, 17, bOwn && S > 0) ];
 	}
 
 	// action button
@@ -268,60 +267,114 @@ TSharedRef<SWidget> UDFMenuWidget::BuildHeroes()
 		];
 }
 
-// ================= GACHA =================
-TSharedRef<SWidget> UDFMenuWidget::BuildGacha()
+// ================= AURA =================
+TSharedRef<SWidget> UDFMenuWidget::BuildAura()
 {
 	UDFProfileSubsystem* P = Profile();
-	FDFCharacterRow Hero;
-	P->GetCharacter(P->GetSelected(), Hero);
-
-	auto DoPull = [this](int32 N)
+	auto DoRoll = [this](int32 N)
 	{
-		LastPull = Profile()->Pull(N);
-		Toast = LastPull.Num() ? FString() : FString(TEXT("ทองไม่พอ"));
+		LastRolls = Profile()->RollAuras(N);
+		Toast = LastRolls.Num() ? FString() : FString(TEXT("ทองไม่พอ"));
 		Refresh();
 	};
+	auto OneIn = [](int32 N) { return FString::Printf(TEXT("1 ใน %s"), *FText::AsNumber(N).ToString()); };
 
+	// last roll results (rarest first)
 	TSharedRef<SVerticalBox> Results = SNew(SVerticalBox);
-	for (const FDFGachaResult& R : LastPull)
+	TArray<FName> Sorted = LastRolls;
+	Sorted.Sort([P](const FName& A, const FName& B) { FDFAuraRow X, Y; P->GetAura(A, X); P->GetAura(B, Y); return X.Chance > Y.Chance; });
+	for (int32 I = 0; I < FMath::Min(Sorted.Num(), 10); ++I)
 	{
-		FDFSkillRow SR;
-		P->GetSkill(R.Skill, SR);
-		FString T = FString::Printf(TEXT("[%s]  %s"), RarityTH(R.Rarity), *SR.NameTH);
-		T += R.NewLevel > 0 ? FString::Printf(TEXT("   Lv%d"), R.NewLevel) : FString::Printf(TEXT("   เต็มแล้ว คืน %d ทอง"), R.Refund);
-		if (R.bFitsHero) T += TEXT("   * เข้ากับตัวละคร");
-		Results->AddSlot().AutoHeight().Padding(0, 3)[ Label(T, 22, RarityColor(R.Rarity), R.Rarity == EDFRarity::Legendary) ];
+		FDFAuraRow A; P->GetAura(Sorted[I], A);
+		Results->AddSlot().AutoHeight().Padding(0, 2)
+		[ Label(FString::Printf(TEXT("%s   (%s)"), *A.NameTH, *OneIn(A.Chance)), A.Chance >= 1000 ? 30 : 20, Hex(A.Color2, FLinearColor::White), A.Chance >= 1000) ];
 	}
-	if (!LastPull.Num())
-		Results->AddSlot().AutoHeight()[ Label(TEXT("กดสุ่มเพื่อรับการ์ดสกิล ได้ซ้ำจะอัปเลเวล (สูงสุด Lv3)"), 20, Dim) ];
+	if (!LastRolls.Num())
+		Results->AddSlot().AutoHeight()[ Label(TEXT("หมุนเพื่อรับออร่า ยิ่งหายากยิ่งแรงและสวย ทุกครั้งที่ 10 โชคคูณ 2"), 20, Dim) ];
+
+	// collection
+	TSharedRef<SVerticalBox> Coll = SNew(SVerticalBox);
+	for (const FName& Id : P->GetAuraIds())
+	{
+		FDFAuraRow A; P->GetAura(Id, A);
+		const int32 N = P->AuraCount(Id);
+		if (A.bSecret && N == 0) { Coll->AddSlot().AutoHeight().Padding(0, 2)[ Label(TEXT("???   (ความลับ)"), 18, Dim) ]; continue; }
+		const bool bOn = P->GetEquippedAura() == Id;
+		FString T = FString::Printf(TEXT("%s  %s   ·   HP +%d%%  ตี +%d%%  เร็ว +%d%%"),
+			*A.NameTH, *OneIn(A.Chance), FMath::RoundToInt(A.HpBonus * 100), FMath::RoundToInt(A.DamageBonus * 100), FMath::RoundToInt(A.SpeedBonus * 100));
+		if (N > 0) T += FString::Printf(TEXT("   x%d"), N);
+		if (bOn) T += TEXT("   (ใส่อยู่)");
+		Coll->AddSlot().AutoHeight().Padding(0, 2)
+		[ Button(N > 0 ? T : FString::Printf(TEXT("ยังไม่มี  ·  %s"), *OneIn(A.Chance)),
+			[this, Id]() { Profile()->EquipAura(Id); Refresh(); },
+			N > 0 ? Hex(A.Color, Panel) * FLinearColor(.6f, .6f, .6f, 1.f) : Panel, 16, N > 0 && !bOn) ];
+	}
 
 	TSharedRef<SVerticalBox> Col = SNew(SVerticalBox);
-	Col->AddSlot().AutoHeight().Padding(0, 0, 0, 20)[ TopBar(FText::FromString(TEXT("สุ่มการ์ดสกิล"))) ];
-	Col->AddSlot().AutoHeight()[ Label(FString::Printf(
-		TEXT("ตัวละคร %s (%s · %s) — สกิลที่เข้ากับอาวุธและธาตุจะออกง่ายขึ้น"),
-		*Hero.NameTH, *P->WeaponNameTH(Hero.WeaponClass), *P->ElementNameTH(Hero.Element)), 20, Dim) ];
-	Col->AddSlot().AutoHeight().Padding(0, 6, 0, 16)[ Label(FString::Printf(
-		TEXT("การันตีตำนานใน %d ครั้ง"), FMath::Max(0, UDFGacha::PityPulls - P->GetPity())), 20, Gold) ];
-	Col->AddSlot().AutoHeight()
+	Col->AddSlot().AutoHeight().Padding(0, 0, 0, 16)[ TopBar(FText::FromString(TEXT("หมุนออร่า"))) ];
+	Col->AddSlot().AutoHeight()[ Label(FString::Printf(TEXT("หมุนแล้ว %d ครั้ง   ·   โชคครั้งถัดไป x%.1f"), P->GetTotalRolls(), P->LuckForNextRoll()), 20, Gold) ];
+	Col->AddSlot().AutoHeight().Padding(0, 10)
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 12, 0)
-		[ Button(FString::Printf(TEXT("สุ่ม 1 ครั้ง (%d)"), UDFGacha::CostSingle), [DoPull]() { DoPull(1); },
-			Blue, 24, P->GetGold() >= UDFGacha::CostSingle) ]
+		[ Button(FString::Printf(TEXT("หมุน 1 (%d)"), UDFProfileSubsystem::RollCost), [DoRoll]() { DoRoll(1); }, Blue, 24, P->GetGold() >= UDFProfileSubsystem::RollCost) ]
 		+ SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 12, 0)
-		[ Button(FString::Printf(TEXT("สุ่ม 10 ครั้ง (%d)"), UDFGacha::CostTen), [DoPull]() { DoPull(10); },
-			FLinearColor(0.55f, 0.35f, 0.9f), 24, P->GetGold() >= UDFGacha::CostTen) ]
+		[ Button(FString::Printf(TEXT("หมุน 10 (%d)"), UDFProfileSubsystem::RollCost * 10), [DoRoll]() { DoRoll(10); },
+			FLinearColor(0.55f, 0.35f, 0.9f), 24, P->GetGold() >= UDFProfileSubsystem::RollCost * 10) ]
 #if !UE_BUILD_SHIPPING
 		+ SHorizontalBox::Slot().AutoWidth()
 		[ Button(TEXT("+1000 ทอง (ทดสอบ)"), [this]() { Profile()->AddGold(1000); Refresh(); }, Panel, 16) ]
 #endif
 	];
-	if (!Toast.IsEmpty()) Col->AddSlot().AutoHeight().Padding(0, 8)[ Label(Toast, 20, Accent) ];
-	Col->AddSlot().FillHeight(1.f).Padding(0, 20, 0, 0)
+	if (!Toast.IsEmpty()) Col->AddSlot().AutoHeight()[ Label(Toast, 20, Accent) ];
+	Col->AddSlot().FillHeight(1.f).Padding(0, 12, 0, 0)
 	[
-		SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
-		.BorderBackgroundColor(Panel).Padding(20.f)
-		[ SNew(SScrollBox) + SScrollBox::Slot()[ Results ] ]
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().FillWidth(.4f).Padding(0, 0, 16, 0)
+		[ SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(20.f)
+			[ SNew(SScrollBox) + SScrollBox::Slot()[ Results ] ] ]
+		+ SHorizontalBox::Slot().FillWidth(.6f)
+		[ SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(Panel).Padding(20.f)
+			[ SNew(SScrollBox) + SScrollBox::Slot()[ Coll ] ] ]
 	];
 	return Col;
+}
+
+// ================= SECRET CLASSES =================
+TSharedRef<SWidget> UDFMenuWidget::BuildClasses()
+{
+	UDFProfileSubsystem* P = Profile();
+	TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
+	for (const FName& Id : P->GetClassIds())
+	{
+		FDFSecretClassRow K; P->GetClass(Id, K);
+		int32 Cur, Need; P->ClassProgress(Id, Cur, Need);
+		const bool bOpen = P->IsClassUnlocked(Id);
+		const bool bOn = P->GetEquippedClass() == Id;
+		TSharedRef<SVerticalBox> Card = SNew(SVerticalBox);
+		if (bOpen)
+		{
+			Card->AddSlot().AutoHeight()[ Label(K.NameTH + TEXT("  ") + K.NameEN, 28, Hex(K.Color, Gold), true) ];
+			Card->AddSlot().AutoHeight()[ Label(K.DescTH, 18, FLinearColor::White) ];
+			Card->AddSlot().AutoHeight().Padding(0, 4)[ Label(FString::Printf(TEXT("ท่าไม้ตาย (R): %s   ·   ติดตัว: %s"),
+				*P->SkillNameTH(K.Ultimate), *K.PassiveTH), 18, Gold) ];
+			Card->AddSlot().AutoHeight().Padding(0, 6, 0, 0)
+			[ bOn ? Button(TEXT("ถอดอาชีพ"), [this]() { Profile()->EquipClass(NAME_None); Refresh(); }, Panel, 18)
+				  : Button(TEXT("ใช้อาชีพนี้"), [this, Id]() { Profile()->EquipClass(Id); Refresh(); }, Green, 18) ];
+		}
+		else
+		{
+			Card->AddSlot().AutoHeight()[ Label(TEXT("??? อาชีพลับ"), 26, Dim, true) ];
+			Card->AddSlot().AutoHeight()[ Label(TEXT("เบาะแส: ") + K.HintTH, 18, FLinearColor::White) ];
+			if (Need > 1 && Cur > 0)
+				Card->AddSlot().AutoHeight()[ Label(FString::Printf(TEXT("ความคืบหน้า %d%%"), Cur * 100 / Need), 16, Gold) ];
+		}
+		List->AddSlot().AutoHeight().Padding(0, 6)
+		[ SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(bOn ? Hex(K.Color, Panel) * FLinearColor(.35f, .35f, .35f, 1.f) : Panel).Padding(18.f)[ Card ] ];
+	}
+	return SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 16)[ TopBar(FText::FromString(TEXT("อาชีพลับ"))) ]
+		+ SVerticalBox::Slot().AutoHeight()[ Label(TEXT("อาชีพลับปลดล็อกจากการเล่นแบบพิเศษ ใส่ได้กับทุกตัวละคร ได้ท่าไม้ตายปุ่ม R"), 20, Dim) ]
+		+ SVerticalBox::Slot().FillHeight(1.f).Padding(0, 12, 0, 0)[ SNew(SScrollBox) + SScrollBox::Slot()[ List ] ];
 }

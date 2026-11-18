@@ -179,3 +179,43 @@ struct FDFCharacterRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) TSoftObjectPtr<class USkeletalMesh> Mesh;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) TSoftClassPtr<class UAnimInstance> AnimClass;
 };
+
+// DT_Auras.csv  (rolled with luck; Chance = "1 in N")
+USTRUCT(BlueprintType)
+struct FDFAuraRow : public FTableRowBase
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString NameTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString NameEN;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) int32 Chance = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float HpBonus = 0.f;      // +0.10 = +10%
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float DamageBonus = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float SpeedBonus = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString Color;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString Color2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString EffectTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString EffectEN;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) bool bSecret = false;     // hidden in the list until owned
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) TSoftObjectPtr<class UNiagaraSystem> Effect;
+};
+
+// DT_SecretClasses.csv  (hidden jobs unlocked by doing something special)
+USTRUCT(BlueprintType)
+struct FDFSecretClassRow : public FTableRowBase
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString NameTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString NameEN;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString DescTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName Ultimate;            // DT_Skills row (key R)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString PassiveTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float HpMult = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float DamageMult = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float SpeedMult = 1.f;
+	// Kills, Rolls, Wins, NoHitWins, LowHpWins, AuraOwned, BossKills, WeaponKills, Draws
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName Condition;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) int32 ConditionValue = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName ConditionParam;      // aura / weapon class key
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString HintTH;            // shown while still locked
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString Color;
+};

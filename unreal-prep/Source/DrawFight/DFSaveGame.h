@@ -26,4 +26,21 @@ public:
 	UPROPERTY(SaveGame) TMap<FName, FDFLoadout> Loadouts;
 	UPROPERTY(SaveGame) int32 Wins = 0;
 	UPROPERTY(SaveGame) int32 Losses = 0;
+
+	// auras
+	UPROPERTY(SaveGame) TMap<FName, int32> Auras;     // how many times each was rolled
+	UPROPERTY(SaveGame) FName EquippedAura;
+	UPROPERTY(SaveGame) int32 TotalRolls = 0;
+
+	// secret classes
+	UPROPERTY(SaveGame) TArray<FName> Classes;        // unlocked
+	UPROPERTY(SaveGame) FName EquippedClass;
+
+	// counters for unlock conditions
+	UPROPERTY(SaveGame) int32 Kills = 0;
+	UPROPERTY(SaveGame) int32 BossKills = 0;
+	UPROPERTY(SaveGame) int32 NoHitWins = 0;
+	UPROPERTY(SaveGame) int32 LowHpWins = 0;
+	UPROPERTY(SaveGame) int32 Draws = 0;
+	UPROPERTY(SaveGame) TMap<FName, int32> WeaponKills;
 };

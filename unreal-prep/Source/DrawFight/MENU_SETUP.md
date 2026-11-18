@@ -9,6 +9,8 @@
    - DT_Skills.csv → `DFSkillRow`
    - DT_WeaponClasses.csv → `DFWeaponClassRow`
    - DT_Elements.csv → `DFElementRow`
+   - DT_Auras.csv → `DFAuraRow`
+   - DT_SecretClasses.csv → `DFSecretClassRow`
    (ชื่อ asset ต้องตรงตามนี้ โค้ดโหลดจาก `/Game/DrawFight/Data/<ชื่อ>`)
 3. สร้างเลเวลว่างชื่อ `MainMenu` → World Settings → GameMode Override = `DFMenuGameMode`
 4. Project Settings → Maps & Modes → Game Default Map = `MainMenu`

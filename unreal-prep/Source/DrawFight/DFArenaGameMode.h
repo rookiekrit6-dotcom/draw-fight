@@ -50,6 +50,8 @@ private:
 	ACharacter* SpawnEnemy(float Scale, float HP, float Speed, float Damage, bool bBoss);
 	UFUNCTION() void HandleEnemyDied(class UDFCombatComponent* Who);
 	UFUNCTION() void HandlePlayerDied(class UDFCombatComponent* Who);
+	UFUNCTION() void HandlePlayerDamaged(class UDFCombatComponent* Victim, float Amount, AActor* Source);
+	bool bPlayerHit = false;
 
 	int32 Wave = 0;
 	int32 Alive = 0;

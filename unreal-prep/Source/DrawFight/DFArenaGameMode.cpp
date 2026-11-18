@@ -43,7 +43,9 @@ void ADFArenaGameMode::StartFight()
 			C->Team = 0;
 			if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->ApplySelectedTo(C, P);
 			C->OnDied.AddUniqueDynamic(this, &ADFArenaGameMode::HandlePlayerDied);
+			C->OnDamaged.AddUniqueDynamic(this, &ADFArenaGameMode::HandlePlayerDamaged);
 		}
+	bPlayerHit = false;
 	SpawnWave();
 }
 
@@ -94,11 +96,15 @@ void ADFArenaGameMode::HandleEnemyDied(UDFCombatComponent* Who)
 {
 	if (Who && Who->GetOwner()) Who->GetOwner()->SetLifeSpan(.6f); // leave time for a death effect
 	Alive = FMath::Max(0, Alive - 1);
+	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->AddKill(Who && Who->bIsBoss);
 	if (!bRunning || Alive > 0) return;
 	if (Wave >= 3)
 	{
 		bRunning = false;
-		if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) LastReward = Prof->RecordFight(true);
+		float Frac = 1.f;
+		if (ACharacter* P = UGameplayStatics::GetPlayerCharacter(this, 0))
+			if (UDFCombatComponent* C = P->FindComponentByClass<UDFCombatComponent>()) Frac = C->HPFraction();
+		if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) LastReward = Prof->RecordFight(true, Frac, !bPlayerHit);
 		OnFightEnded.Broadcast(true);
 		return;
 	}
@@ -107,11 +113,16 @@ void ADFArenaGameMode::HandleEnemyDied(UDFCombatComponent* Who)
 	NextWaveDelay = 1.f; // short breather before the next wave
 }
 
+void ADFArenaGameMode::HandlePlayerDamaged(UDFCombatComponent* Victim, float Amount, AActor* Source)
+{
+	if (Amount > 0.f) bPlayerHit = true;
+}
+
 void ADFArenaGameMode::HandlePlayerDied(UDFCombatComponent* Who)
 {
 	if (!bRunning) return;
 	bRunning = false;
-	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) LastReward = Prof->RecordFight(false);
+	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) LastReward = Prof->RecordFight(false, 0.f, false);
 	OnFightEnded.Broadcast(false);
 }
 
