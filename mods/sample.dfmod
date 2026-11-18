@@ -1,0 +1,148 @@
+{
+ "format": "dfmod",
+ "v": 1,
+ "name": "ม็อดตัวอย่าง",
+ "author": "วาดแล้วสู้",
+ "desc": "ตัวอย่างม็อด สายฟ้า ลูกไฟ และประตูมิติ",
+ "skills": [
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "หอกฟ้าผ่าสามสาย",
+   "desc": "เรียกสายฟ้าสามสายลงใส่ศัตรู",
+   "color": "#7fd1ff",
+   "cd": 7,
+   "steps": [
+    {
+     "at": 0,
+     "do": "sound",
+     "f": 200,
+     "f2": 900,
+     "dur": 0.4
+    },
+    {
+     "at": 0,
+     "do": "circle",
+     "where": "self",
+     "r": 2.2,
+     "dur": 0.8
+    },
+    {
+     "at": 0.3,
+     "do": "fall",
+     "where": "target",
+     "r": 3,
+     "n": 3,
+     "gap": 0.15,
+     "dmg": 14,
+     "size": 1.4
+    },
+    {
+     "at": 0.35,
+     "do": "shake",
+     "amt": 0.3
+    }
+   ]
+  },
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "ลูกไฟพัด",
+   "desc": "ยิงลูกไฟห้าลูกเป็นรูปพัด",
+   "color": "#ff7a2e",
+   "cd": 5,
+   "steps": [
+    {
+     "at": 0,
+     "do": "shot",
+     "n": 5,
+     "spread": 22,
+     "speed": 13,
+     "dmg": 7
+    },
+    {
+     "at": 0,
+     "do": "burst",
+     "where": "self",
+     "y": 1.5,
+     "n": 16,
+     "speed": 5,
+     "color": "#ffb020"
+    }
+   ]
+  },
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "ประตูกลืนดาว",
+   "desc": "เปิดประตูมิติดูดศัตรูแล้วระเบิดเสาแสง",
+   "color": "#a45cff",
+   "cd": 10,
+   "steps": [
+    {
+     "at": 0,
+     "do": "circle",
+     "where": "self",
+     "r": 3,
+     "dur": 1
+    },
+    {
+     "at": 0.4,
+     "do": "portal",
+     "where": "target",
+     "y": 1.5,
+     "size": 5,
+     "r": 4,
+     "pull": 3,
+     "dur": 2,
+     "dmg": 24
+    },
+    {
+     "at": 2.4,
+     "do": "pillar",
+     "where": "target",
+     "w": 3,
+     "h": 20,
+     "r": 3.5,
+     "dmg": 30
+    },
+    {
+     "at": 2.4,
+     "do": "shake",
+     "amt": 0.5
+    }
+   ]
+  }
+ ],
+ "classes": [
+  {
+   "id": "stormlancer",
+   "name": "ทหารม้าอัสนี",
+   "desc": "ทหารม้าที่ขี่สายฟ้า",
+   "hp": 1.1,
+   "dmg": 1.15,
+   "spd": 1.1,
+   "cond": "Casts",
+   "val": 50,
+   "hint": "ใช้สกิลรวม 50 ครั้ง",
+   "color": "#7fd1ff",
+   "skill": "@0",
+   "perks": {
+    "crit": 0.12
+   }
+  }
+ ],
+ "auras": [
+  {
+   "id": "aurora",
+   "name": "แสงเหนือ",
+   "chance": 500,
+   "hp": 0.04,
+   "dmg": 0.04,
+   "spd": 0.02,
+   "c1": "#3cffb4",
+   "c2": "#7f5cff",
+   "desc": "ม่านแสงเขียวม่วงพลิ้วรอบตัว"
+  }
+ ]
+}

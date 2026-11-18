@@ -1,0 +1,142 @@
+{
+ "format": "dfmod",
+ "v": 1,
+ "name": "เงานินจา",
+ "author": "วาดแล้วสู้",
+ "desc": "สกิลสายนินจา 3 ท่า และอาชีพลับโชกุนเงา",
+ "skills": [
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "ดาวกระจายเงา",
+   "desc": "ปาดาวกระจายห้าดอกทะลุศัตรู",
+   "color": "#9a9ab0",
+   "cd": 4,
+   "steps": [
+    {
+     "at": 0,
+     "do": "shot",
+     "n": 5,
+     "spread": 12,
+     "speed": 18,
+     "dmg": 5,
+     "pierce": true,
+     "gap": 0.04
+    },
+    {
+     "at": 0,
+     "do": "sound",
+     "f": 1800,
+     "f2": 600,
+     "dur": 0.15
+    }
+   ]
+  },
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "ฟันพริบตา",
+   "desc": "วาร์ปไปหลังศัตรูแล้วฟันสองครั้ง",
+   "color": "#5c4cff",
+   "cd": 6,
+   "steps": [
+    {
+     "at": 0,
+     "do": "blink",
+     "range": 14
+    },
+    {
+     "at": 0.1,
+     "do": "area",
+     "where": "self",
+     "r": 2,
+     "dmg": 14,
+     "kb": 200
+    },
+    {
+     "at": 0.3,
+     "do": "area",
+     "where": "self",
+     "r": 2,
+     "dmg": 14,
+     "kb": 300,
+     "launch": 350
+    },
+    {
+     "at": 0.1,
+     "do": "ring",
+     "where": "self",
+     "y": 1,
+     "r": 2,
+     "dur": 0.3,
+     "color": "#9a8cff"
+    }
+   ]
+  },
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "ระเบิดควัน",
+   "desc": "ระเบิดควันทำให้ศัตรูมึน แล้วหายตัวเร่งความเร็ว",
+   "color": "#6a6a7a",
+   "cd": 9,
+   "steps": [
+    {
+     "at": 0,
+     "do": "burst",
+     "where": "self",
+     "y": 1,
+     "n": 50,
+     "speed": 5,
+     "up": 1,
+     "grav": -1,
+     "life": 1.4,
+     "size": 0.5,
+     "color": "#9a9aaa",
+     "color2": "#5a5a6a",
+     "rad": 2
+    },
+    {
+     "at": 0,
+     "do": "stun",
+     "where": "self",
+     "r": 3,
+     "dur": 1.2
+    },
+    {
+     "at": 0,
+     "do": "buff",
+     "kind": "haste",
+     "dur": 4
+    },
+    {
+     "at": 0,
+     "do": "buff",
+     "kind": "inv",
+     "dur": 1
+    }
+   ]
+  }
+ ],
+ "classes": [
+  {
+   "id": "shadowshogun",
+   "name": "โชกุนเงา",
+   "desc": "ผู้นำนินจาที่ไม่มีใครเคยเห็นหน้า",
+   "hp": 0.95,
+   "dmg": 1.2,
+   "spd": 1.2,
+   "cond": "WeaponKills",
+   "val": 150,
+   "param": "dagger",
+   "hint": "ล้มศัตรูด้วยมีดสั้น 150 ตัว",
+   "color": "#5c4cff",
+   "skill": "@1",
+   "perks": {
+    "ev": 0.15,
+    "exe": 0.3
+   }
+  }
+ ],
+ "auras": []
+}

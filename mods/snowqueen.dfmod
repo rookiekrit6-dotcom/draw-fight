@@ -1,0 +1,163 @@
+{
+ "format": "dfmod",
+ "v": 1,
+ "name": "ราชินีหิมะ",
+ "author": "วาดแล้วสู้",
+ "desc": "สกิลน้ำแข็ง 3 ท่า อาชีพลับราชินีหิมะ และออร่าเกล็ดหิมะ",
+ "skills": [
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "พายุเกล็ดหิมะ",
+   "desc": "ลูกน้ำแข็งเจ็ดลูกพุ่งเป็นพัดแล้วไล่ตามศัตรู",
+   "color": "#9fe3ff",
+   "cd": 6,
+   "steps": [
+    {
+     "at": 0,
+     "do": "sound",
+     "f": 2400,
+     "f2": 1200,
+     "dur": 0.4
+    },
+    {
+     "at": 0,
+     "do": "orb",
+     "n": 7,
+     "spread": 40,
+     "speed": 7,
+     "dmg": 5,
+     "gap": 0.05
+    },
+    {
+     "at": 0,
+     "do": "burst",
+     "where": "self",
+     "y": 1.5,
+     "n": 24,
+     "speed": 4,
+     "color": "#ffffff",
+     "color2": "#9fe3ff",
+     "grav": -2
+    }
+   ]
+  },
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "โลงน้ำแข็ง",
+   "desc": "แช่แข็งศัตรูรอบตัวให้นิ่ง 2 วินาที",
+   "color": "#bfefff",
+   "cd": 11,
+   "steps": [
+    {
+     "at": 0,
+     "do": "circle",
+     "where": "self",
+     "r": 4,
+     "dur": 1.2,
+     "color": "#bfefff"
+    },
+    {
+     "at": 0.3,
+     "do": "stun",
+     "where": "self",
+     "r": 4,
+     "dur": 2
+    },
+    {
+     "at": 0.3,
+     "do": "area",
+     "where": "self",
+     "r": 4,
+     "dmg": 12,
+     "kb": 0
+    },
+    {
+     "at": 0.3,
+     "do": "burst",
+     "where": "self",
+     "y": 1,
+     "n": 40,
+     "speed": 7,
+     "up": 3,
+     "color": "#ffffff",
+     "color2": "#6fc8ff",
+     "solid": true
+    },
+    {
+     "at": 0.3,
+     "do": "sound",
+     "f": 3000,
+     "f2": 800,
+     "dur": 0.5
+    }
+   ]
+  },
+  {
+   "format": "dfskill",
+   "v": 1,
+   "name": "หอกน้ำแข็งฟ้าถล่ม",
+   "desc": "หอกน้ำแข็งห้าเล่มตกจากฟ้าใส่ศัตรู",
+   "color": "#6fc8ff",
+   "cd": 8,
+   "steps": [
+    {
+     "at": 0,
+     "do": "circle",
+     "where": "self",
+     "r": 2.5,
+     "dur": 0.9
+    },
+    {
+     "at": 0.25,
+     "do": "fall",
+     "where": "target",
+     "r": 3.5,
+     "n": 5,
+     "gap": 0.1,
+     "dmg": 12,
+     "size": 1.2,
+     "color": "#bfefff"
+    },
+    {
+     "at": 0.8,
+     "do": "shake",
+     "amt": 0.35
+    }
+   ]
+  }
+ ],
+ "classes": [
+  {
+   "id": "snowqueen",
+   "name": "ราชินีหิมะ",
+   "desc": "ลมหายใจของนางทำให้สนามรบกลายเป็นน้ำแข็ง",
+   "hp": 1.05,
+   "dmg": 1.15,
+   "spd": 1.05,
+   "cond": "Casts",
+   "val": 150,
+   "hint": "ใช้สกิลรวม 150 ครั้ง",
+   "color": "#9fe3ff",
+   "skill": "@1",
+   "perks": {
+    "cdr": 0.15,
+    "armor": 0.08
+   }
+  }
+ ],
+ "auras": [
+  {
+   "id": "snowflake",
+   "name": "เกล็ดหิมะ",
+   "chance": 800,
+   "hp": 0.05,
+   "dmg": 0.03,
+   "spd": 0.02,
+   "c1": "#ffffff",
+   "c2": "#9fe3ff",
+   "desc": "เกล็ดหิมะหมุนวนรอบตัว"
+  }
+ ]
+}
