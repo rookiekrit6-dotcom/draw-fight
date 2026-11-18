@@ -90,7 +90,7 @@ void UDFVoiceSubsystem::ScanPacks()
 			for (const auto& KV : (*Lines)->Values)
 			{
 				EDFVoiceEvent E;
-				if (!ParseEvent(KV.Key, E)) continue;
+				if (!ParseEvent(FString(*KV.Key), E)) continue;
 				const TArray<TSharedPtr<FJsonValue>>* Arr;
 				if (!KV.Value->TryGetArray(Arr)) continue;
 				for (const TSharedPtr<FJsonValue>& V : *Arr)

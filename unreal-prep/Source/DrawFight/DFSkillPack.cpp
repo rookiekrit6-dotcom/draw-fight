@@ -4,7 +4,7 @@
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
 
-const TSet<FName>& UDFSkillPack::KnownSteps()
+const TSet<FName>& UDFSkillPackLib::KnownSteps()
 {
 	static const TSet<FName> S = {
 		"burst","ring","shot","area","fall","beam","dash","heal","shake","sound","sprite",
@@ -41,7 +41,7 @@ static bool IsHexColor(const FString& S)
 	return true;
 }
 
-bool UDFSkillPack::ParseSkillPack(const FString& Json, FDFSkillPack& Out, FString& Error)
+bool UDFSkillPackLib::ParseSkillPack(const FString& Json, FDFSkillPack& Out, FString& Error)
 {
 	Out = FDFSkillPack();
 	TSharedPtr<FJsonObject> O;
@@ -70,7 +70,7 @@ bool UDFSkillPack::ParseSkillPack(const FString& Json, FDFSkillPack& Out, FStrin
 			if (Out.ImagesBase64.Num() >= 4 || KV.Value->Type != EJson::String) continue;
 			const FString U = KV.Value->AsString();
 			if (U.Len() < 2200000 && (U.StartsWith(TEXT("data:image/png;base64,")) || U.StartsWith(TEXT("data:image/jpeg;base64,")) || U.StartsWith(TEXT("data:image/webp;base64,"))))
-				Out.ImagesBase64.Add(KV.Key.Left(40), U);
+				Out.ImagesBase64.Add(FString(*KV.Key).Left(40), U);
 		}
 
 	// steps: max 40, unknown "do" dropped
@@ -87,7 +87,7 @@ bool UDFSkillPack::ParseSkillPack(const FString& Json, FDFSkillPack& Out, FStrin
 		{
 			if (KV.Key == TEXT("do") || KV.Key == TEXT("at")) continue;
 			const FString V = ValueToString(KV.Value);
-			if (!V.IsEmpty()) St.Params.Add(FName(*KV.Key.Left(16)), V);
+			if (!V.IsEmpty()) St.Params.Add(FName(*FString(*KV.Key).Left(16)), V);
 		}
 		Out.Steps.Add(St);
 	}
@@ -116,7 +116,7 @@ bool UDFSkillPack::ParseSkillPack(const FString& Json, FDFSkillPack& Out, FStrin
 						if (!B.Value->TryGetArray(A)) continue;
 						auto At = [&](int32 J) { return J < A->Num() ? ClampNum((*A)[J], 0.f, -360.f, 360.f) : 0.f; };
 						// web order is [x, y, z] Euler degrees -> Pitch=x, Yaw=y, Roll=z
-						K.Bones.Add(FName(*B.Key.Left(12)), FRotator(At(0), At(1), At(2)));
+						K.Bones.Add(FName(*FString(*B.Key).Left(12)), FRotator(At(0), At(1), At(2)));
 					}
 			}
 			Out.AnimKeys.Add(K);
@@ -126,14 +126,14 @@ bool UDFSkillPack::ParseSkillPack(const FString& Json, FDFSkillPack& Out, FStrin
 	return true;
 }
 
-bool UDFSkillPack::LoadSkillPackFile(const FString& Path, FDFSkillPack& Out, FString& Error)
+bool UDFSkillPackLib::LoadSkillPackFile(const FString& Path, FDFSkillPack& Out, FString& Error)
 {
 	FString Text;
 	if (!FFileHelper::LoadFileToString(Text, *Path)) { Error = TEXT("เปิดไฟล์ไม่ได้"); return false; }
 	return ParseSkillPack(Text, Out, Error);
 }
 
-float UDFSkillPack::Num(const FDFSkillStep& Step, FName Key, float Default, float Min, float Max)
+float UDFSkillPackLib::Num(const FDFSkillStep& Step, FName Key, float Default, float Min, float Max)
 {
 	const FString* V = Step.Params.Find(Key);
 	double D = 0.0;
@@ -141,19 +141,19 @@ float UDFSkillPack::Num(const FDFSkillStep& Step, FName Key, float Default, floa
 	return FMath::Clamp((float)D, Min, Max);
 }
 
-FString UDFSkillPack::Str(const FDFSkillStep& Step, FName Key, const FString& Default)
+FString UDFSkillPackLib::Str(const FDFSkillStep& Step, FName Key, const FString& Default)
 {
 	const FString* V = Step.Params.Find(Key);
 	return V ? *V : Default;
 }
 
-bool UDFSkillPack::Bool(const FDFSkillStep& Step, FName Key)
+bool UDFSkillPackLib::Bool(const FDFSkillStep& Step, FName Key)
 {
 	const FString* V = Step.Params.Find(Key);
 	return V && (*V == TEXT("true") || *V == TEXT("1"));
 }
 
-int32 UDFSkillPack::Power(const FDFSkillPack& P)
+int32 UDFSkillPackLib::Power(const FDFSkillPack& P)
 {
 	float Sum = 0.f;
 	for (const FDFSkillStep& Q : P.Steps)
@@ -171,7 +171,7 @@ int32 UDFSkillPack::Power(const FDFSkillPack& P)
 	return FMath::RoundToInt(Sum);
 }
 
-float UDFSkillPack::EffectiveCooldown(const FDFSkillPack& P)
+float UDFSkillPackLib::EffectiveCooldown(const FDFSkillPack& P)
 {
 	const float FromPower = FMath::RoundToFloat(Power(P) / 14.f * 10.f) / 10.f;
 	return FMath::Max3(P.DeclaredCooldown, 1.5f, FromPower);

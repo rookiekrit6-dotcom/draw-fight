@@ -29,7 +29,7 @@ public:
 
 	// Starts the fight 1 s after the level loads and shows the HUD (DFHudWidget)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") bool bAutoStart = true;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") TSubclassOf<class UDFHudWidget> HudClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") TSubclassOf<class UDFHudWidget> DFHudClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") FName MenuLevel = TEXT("MainMenu");
 	UPROPERTY(BlueprintReadOnly, Category = "Arena") int32 LastReward = 0;   // gold from the last fight
 	UPROPERTY(BlueprintReadOnly, Category = "Arena") TObjectPtr<class UDFHudWidget> Hud;

@@ -99,7 +99,7 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 	auto BossPct = [Self]() -> TOptional<float> { const UDFCombatComponent* B = Self.IsValid() ? Self->Boss() : nullptr; return B ? B->HPFraction() : 0.f; };
 	auto BannerText = [Self]() { return Self.IsValid() ? FText::FromString(Self->Banner) : FText(); };
 	auto BannerVis = [Self]() { return (Self.IsValid() && Self->BannerLeft > 0.f) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
-	auto BannerColor = [Self]() { return FSlateColor(Self.IsValid() ? Self->BannerColor : FLinearColor::White); };
+	auto BannerCol = [Self]() { return FSlateColor(Self.IsValid() ? Self->BannerColor : FLinearColor::White); };
 	auto SubText = [Self]() { return Self.IsValid() ? FText::FromString(Self->Subtitle) : FText(); };
 	auto SubVis = [Self]() { return (Self.IsValid() && Self->SubtitleLeft > 0.f) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
 	auto DashText = [Self]()
@@ -166,7 +166,7 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 		[
 			SNew(STextBlock).Visibility(TAttribute<EVisibility>::CreateLambda(BannerVis))
 			.Text(TAttribute<FText>::CreateLambda(BannerText)).Font(Font(64))
-			.ColorAndOpacity(TAttribute<FSlateColor>::CreateLambda(BannerColor))
+			.ColorAndOpacity(TAttribute<FSlateColor>::CreateLambda(BannerCol))
 			.ShadowOffset(FVector2D(3.f, 3.f)).ShadowColorAndOpacity(FLinearColor(0, 0, 0, .85f))
 		]
 		// bottom: skills + dash
@@ -244,7 +244,7 @@ void UDFHudWidget::HandleEnd(bool bVictory)
 		for (const FName& Id : P->PopNewClasses())
 		{
 			FDFSecretClassRow K;
-			if (P->GetClass(Id, K))
+			if (P->GetSecretClass(Id, K))
 				Rewards->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0, 10)
 				[ Label(FText::FromString(FString::Printf(TEXT("ปลดล็อกอาชีพลับ: %s !"), *K.NameTH)), 40, HudGold) ];
 		}
@@ -289,7 +289,7 @@ void UDFHudWidget::NativeTick(const FGeometry& Geo, float Dt)
 		{
 			FFloat F;
 			F.World = C->GetOwner()->GetActorLocation() + FVector(FMath::FRandRange(-30.f, 30.f), 0.f, 110.f * C->GetOwner()->GetActorScale3D().Z);
-			F.Text = FString::Printf(D > 0 ? TEXT("+%d") : TEXT("%d"), FMath::RoundToInt(FMath::Abs(D)));
+			F.Text = (D > 0 ? FString(TEXT("+")) : FString()) + FString::FromInt(FMath::RoundToInt(FMath::Abs(D)));
 			F.Color = D > 0 ? HudGreen : (C->Team == 0 ? HudRed : FLinearColor::White);
 			F.Size = (C->bIsBoss || FMath::Abs(D) >= 20.f) ? 34.f : 24.f;
 			Floats.Add(F);

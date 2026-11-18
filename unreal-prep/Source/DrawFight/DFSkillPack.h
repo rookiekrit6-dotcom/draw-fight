@@ -17,7 +17,7 @@ struct FDFSkillStep
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadOnly) float At = 0.f;   // seconds after cast, 0..6
 	UPROPERTY(BlueprintReadOnly) FName Do;         // shot, area, fall, beam, ...
-	// Every other field as text; read with UDFSkillPack::Num / Str / Bool
+	// Every other field as text; read with UDFSkillPackLib::Num / Str / Bool
 	UPROPERTY(BlueprintReadOnly) TMap<FName, FString> Params;
 };
 
@@ -45,7 +45,7 @@ struct FDFSkillPack
 };
 
 UCLASS()
-class UDFSkillPack : public UBlueprintFunctionLibrary
+class UDFSkillPackLib : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:

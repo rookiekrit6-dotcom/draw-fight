@@ -27,7 +27,7 @@ void ADFArenaGameMode::StartPlay()
 	{
 		if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 		{
-			UClass* C = HudClass ? HudClass.Get() : UDFHudWidget::StaticClass();
+			UClass* C = DFHudClass ? DFHudClass.Get() : UDFHudWidget::StaticClass();
 			Hud = CreateWidget<UDFHudWidget>(PC, C);
 			if (Hud) Hud->AddToViewport();
 		}

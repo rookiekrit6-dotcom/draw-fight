@@ -154,7 +154,7 @@ TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 				+ [P]() {
 					FString X; FDFAuraRow A; FDFSecretClassRow K;
 					if (P->GetAura(P->GetEquippedAura(), A)) X += FString::Printf(TEXT("\nออร่า: %s"), *A.NameTH);
-					if (P->GetClass(P->GetEquippedClass(), K)) X += FString::Printf(TEXT("      อาชีพ: %s"), *K.NameTH);
+					if (P->GetSecretClass(P->GetEquippedClass(), K)) X += FString::Printf(TEXT("      อาชีพ: %s"), *K.NameTH);
 					return X; }(), 22, Hex(Hero.Color, Gold))
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
@@ -380,7 +380,7 @@ TSharedRef<SWidget> UDFMenuWidget::BuildClasses()
 	TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
 	for (const FName& Id : P->GetClassIds())
 	{
-		FDFSecretClassRow K; P->GetClass(Id, K);
+		FDFSecretClassRow K; P->GetSecretClass(Id, K);
 		int32 Cur, Need; P->ClassProgress(Id, Cur, Need);
 		const bool bOpen = P->IsClassUnlocked(Id);
 		const bool bOn = P->GetEquippedClass() == Id;

@@ -19,7 +19,7 @@ class UDFMenuWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	// Level opened by "เริ่มสู้" (must use DFArenaGameMode)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu") FName ArenaLevel = TEXT("ThirdPersonMap");
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu") FName ArenaLevel = TEXT("Lvl_ThirdPerson");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu") TObjectPtr<UFont> ThaiFont;
 
 	UFUNCTION(BlueprintCallable, Category = "Menu") void ShowMain();

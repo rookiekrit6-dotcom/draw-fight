@@ -88,7 +88,7 @@ public:
 
 	// --- secret classes ---
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") TArray<FName> GetClassIds() const;
-	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") bool GetClass(FName Id, FDFSecretClassRow& Out) const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") bool GetSecretClass(FName Id, FDFSecretClassRow& Out) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") bool IsClassUnlocked(FName Id) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Class") void ClassProgress(FName Id, int32& Current, int32& Needed) const;
 	UFUNCTION(BlueprintCallable, Category = "DrawFight|Class") bool EquipClass(FName Id); // None = no class

@@ -253,7 +253,7 @@ void UDFProfileSubsystem::ApplySelectedTo(UDFCombatComponent* Combat, ACharacter
 	FDFAuraRow A;
 	if (GetAura(GetEquippedAura(), A)) { HpM *= 1.f + A.HpBonus; DmgM *= 1.f + A.DamageBonus; SpdM *= 1.f + A.SpeedBonus; }
 	FDFSecretClassRow K;
-	if (GetClass(GetEquippedClass(), K)) { HpM *= K.HpMult; DmgM *= K.DamageMult; SpdM *= K.SpeedMult; }
+	if (GetSecretClass(GetEquippedClass(), K)) { HpM *= K.HpMult; DmgM *= K.DamageMult; SpdM *= K.SpeedMult; }
 	float WDmg = 1.f, WReach = 1.f;
 	if (const FDFWeaponClassRow* W = Weapons ? Weapons->FindRow<FDFWeaponClassRow>(R.WeaponClass, TEXT("DF"), false) : nullptr)
 	{
@@ -398,7 +398,7 @@ bool UDFProfileSubsystem::EquipAura(FName Id)
 // ---------- secret classes ----------
 TArray<FName> UDFProfileSubsystem::GetClassIds() const { return ClassTable ? ClassTable->GetRowNames() : TArray<FName>(); }
 
-bool UDFProfileSubsystem::GetClass(FName Id, FDFSecretClassRow& Out) const
+bool UDFProfileSubsystem::GetSecretClass(FName Id, FDFSecretClassRow& Out) const
 {
 	const FDFSecretClassRow* R = ClassTable ? ClassTable->FindRow<FDFSecretClassRow>(Id, TEXT("DF"), false) : nullptr;
 	if (R) Out = *R;
@@ -411,7 +411,7 @@ FName UDFProfileSubsystem::GetEquippedClass() const { return Save ? Save->Equipp
 FName UDFProfileSubsystem::GetUltimate() const
 {
 	FDFSecretClassRow K;
-	return GetClass(GetEquippedClass(), K) ? K.Ultimate : NAME_None;
+	return GetSecretClass(GetEquippedClass(), K) ? K.Ultimate : NAME_None;
 }
 
 bool UDFProfileSubsystem::EquipClass(FName Id)
@@ -441,7 +441,7 @@ void UDFProfileSubsystem::ClassProgress(FName Id, int32& Current, int32& Needed)
 {
 	Current = 0; Needed = 1;
 	FDFSecretClassRow R;
-	if (!Save || !GetClass(Id, R)) return;
+	if (!Save || !GetSecretClass(Id, R)) return;
 	Needed = FMath::Max(1, R.ConditionValue);
 	Current = FMath::Min(ConditionValue(R), Needed);
 }
