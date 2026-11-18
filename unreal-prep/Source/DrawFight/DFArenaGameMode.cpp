@@ -2,6 +2,7 @@
 #include "DFCombatComponent.h"
 #include "DFAutoPilotComponent.h"
 #include "DFProfileSubsystem.h"
+#include "DFFighterCharacter.h"
 #include "DFHudWidget.h"
 #include "DFVoiceSubsystem.h"
 #include "TimerManager.h"
@@ -12,6 +13,8 @@
 
 ADFArenaGameMode::ADFArenaGameMode()
 {
+	DefaultPawnClass = ADFPlayerCharacter::StaticClass();
+	EnemyClass = ADFEnemyCharacter::StaticClass();
 	PrimaryActorTick.bCanEverTick = true;
 }
 
