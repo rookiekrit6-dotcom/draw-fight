@@ -75,6 +75,29 @@ a{color:#2b7de9}
   "c1":"#3cffb4", "c2":"#7f5cff", "desc":"ม่านแสงพลิ้วรอบตัว" }</pre>
 <p><code>chance</code> 500 = โอกาส 1 ใน 500 ต่อการหมุน · โบนัสค่าพลังสูงสุด hp/dmg 0.5, spd 0.3</p>
 
+<h2>แพ็กตัวละคร (โมเดล + กระดูก + ท่า + เสียงของคุณเอง)</h2>
+<p>แพ็กคือไฟล์ <code>.zip</code> ไฟล์เดียว เกมเปิดไฟล์ข้างในตามต้นฉบับ ไม่แปลง ไม่บีบ ไม่แก้ไข ใช้ได้ทั้งเวอร์ชัน 3D และ 2D</p>
+<p><b>วิธีง่ายที่สุด:</b> เปิด <a href="./3d/">เวอร์ชัน 3D</a> → กล่อง "แพ็กตัวละครของคุณ" → "สร้างแพ็กเอง" → เลือกโมเดล .glb ไฟล์เสียง และภาพ → "ทดลองใช้" → "บันทึกแพ็ก (.zip)" แล้วส่งไฟล์นั้นทาง <a href="https://docs.google.com/forms/d/e/1FAIpQLSc6Itrfo509f0Kno32hv9hAmFD1kmmeOrUfSGDYCHiYJQLMyw/viewform">แบบฟอร์มส่งผลงาน</a> (หรือแนบไฟล์แยกได้สูงสุด 10 ไฟล์)</p>
+<ul>
+<li><b>กระดูกและท่าเคลื่อนไหว:</b> ถ้าไฟล์ .glb มีกระดูก (skin) และท่า (animation) ของตัวเอง เกมใช้ของไฟล์ตรงๆ ไม่มีก็ใส่กระดูกให้อัตโนมัติ เกมจับคู่ท่าจากชื่อ เช่น Idle, Walk/Run, Attack/Punch, Cast/Spell, Hit/Hurt, Death หรือเลือกเองใน pack.json / หน้าโมเดลในเกม รองรับกระดูกได้ประมาณ 128 ชิ้นบนคอมทั่วไป</li>
+<li><b>เสียง:</b> wav mp3 ogg m4a flac webm opus ช่อง <code>swing</code> (ตอนตี) <code>hit</code> (ตีโดน) <code>hurt</code> (โดนตี) <code>die</code> (แพ้) <code>ult</code> (ท่าไม้ตายช่อง 10) และตั้งชื่อเสียงเองได้ แต่ละเสียงเล่นได้ยาวสุด 8 วินาที</li>
+<li><b>สกิล:</b> ใส่สกิลแบบ .dfskill ได้ 10 ท่า ถ้าอยากให้สกิลเล่นเสียงของคุณ ใช้ขั้น <code>{"do":"sfx","name":"ชื่อเสียง"}</code></li>
+<li><b>ภาพ 2D:</b> ใส่ <code>sprite</code> เป็น png พื้นใส (ถ้าไม่ใส่ ตอนขึ้นคลังเราจะทำภาพจากโมเดลให้)</li>
+<li>ขนาดแพ็กรวมไม่เกิน 80 MB ไม่เกิน 64 ไฟล์</li>
+</ul>
+<pre>{
+ "format": "dfpack", "v": 1,
+ "name": "หุ่นเหล็กพิทักษ์", "author": "ชื่อคุณ", "desc": "หุ่นยนต์หมัดหนัก",
+ "model": "robot.glb", "sprite": "sprite.png", "icon": "icon.png",
+ "move": "biped", "scale": 1, "color": "#33aaff",
+ "anims": {"idle": "Idle", "run": "Running", "atk": "Punch", "cast": "Wave", "hurt": "Hit", "die": "Death"},
+ "attack": {"style": "melee", "reach": 1.8, "dmg": 14, "element": "thunder", "weapon2d": "hammer", "name": "หมัดเหล็ก"},
+ "sounds": {"swing": "s/swing.wav", "hit": "s/hit.wav", "hurt": "s/hurt.wav", "die": "s/die.wav", "ult": "s/ult.wav", "roar": "s/roar.ogg"},
+ "skills": [ { "format": "dfskill", "v": 1, "name": "คำราม", "cd": 6,
+   "steps": [ {"at": 0, "do": "sfx", "name": "roar"}, {"at": 0.2, "do": "area", "where": "self", "r": 3, "dmg": 15} ] } ]
+}</pre>
+<p>style: melee claw lunge slam aura shot · element: none fire ice water wind thunder earth light dark poison · weapon2d: sword hammer staff knife bomb shield claw · move: biped quad float hop slide · ไม่มี pack.json ก็ได้ เกมจะหาไฟล์ .glb และเดาเสียงจากชื่อไฟล์</p>
+
 <h2>แชร์ม็อด</h2>
 <p>ส่งไฟล์ <code>.dfmod</code> ให้เพื่อนได้เลย (ไม่เกิน 3 MB) ม็อดเก็บอยู่ในเบราว์เซอร์ของแต่ละคน ถ้าสู้ออนไลน์ ทั้งสองฝ่ายต้องติดตั้งม็อดเดียวกันถึงจะเห็นสกิลจากม็อด</p>
 <p><a href="./">← กลับไปเล่นเกม</a></p>
