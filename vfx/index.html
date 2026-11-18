@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>สตูดิโอสร้างเอฟเฟกต์สกิล · วาดแล้วสู้</title>
+<style>
+:root{--ink:#1d1b2e;--bg:#f4f2fa;--hi:#ffd84a;--mute:#6b6880;--pan:#fff}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:"Kanit","Sarabun",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button,select,input{font:inherit}
+button{border:2px solid var(--ink);border-radius:9px;background:#fff;padding:4px 9px;cursor:pointer;font-weight:600;font-size:13px}
+button:hover{background:#fff6cc}button.on{background:var(--hi)}button.big{font-size:15px;padding:7px 14px}
+#app{display:grid;grid-template-columns:1fr 360px;grid-template-rows:auto 1fr auto;height:100vh;gap:8px;padding:8px}
+#top{grid-column:1/3;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#top h1{font-size:18px;margin:0 8px 0 0}
+#view{position:relative;background:#000;border:2px solid var(--ink);border-radius:12px;overflow:hidden;min-height:300px}
+#gl{width:100%;height:100%;display:block;touch-action:none}
+#hud{position:absolute;left:8px;top:8px;color:#fff;font-size:12px;opacity:.8;pointer-events:none;text-shadow:0 1px 2px #000}
+#pathHint{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--hi);border:2px solid var(--ink);border-radius:10px;padding:4px 10px;font-weight:700;display:none}
+#side{grid-row:2/4;grid-column:2;background:var(--pan);border:2px solid var(--ink);border-radius:12px;overflow:auto;display:flex;flex-direction:column}
+#tabs{display:flex;gap:4px;padding:6px;border-bottom:2px solid var(--ink);position:sticky;top:0;background:#fff;z-index:2}
+#tabs button{flex:1}
+.pg{padding:8px;display:none}.pg.on{display:block}
+.grp{border:2px solid var(--ink);border-radius:10px;padding:6px 8px;margin:6px 0}
+.grp>b{display:block;margin-bottom:4px}
+.f{display:grid;grid-template-columns:96px 1fr 52px;gap:6px;align-items:center;margin:3px 0;font-size:13px}
+.f input[type=range]{width:100%}.f input[type=number]{width:52px;padding:2px}
+.f select,.f input[type=color]{grid-column:2/4;width:100%}
+#tlWrap{grid-column:1;max-height:230px;overflow:auto;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:6px}
+#tlBar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#tl{width:100%;display:block;cursor:pointer}
+#lays .ly{display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:9px;padding:4px 6px;margin:4px 0;cursor:pointer;font-size:13px}
+#lays .ly.sel{background:var(--hi)}#lays .ly span{flex:1}
+.mute{color:var(--mute);font-size:12px}
+#draw{background:#111;border:2px solid var(--ink);border-radius:10px;touch-action:none;cursor:crosshair;width:256px;height:256px;display:block;margin:4px auto}
+#frames{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}#frames canvas{width:40px;height:40px;border:2px solid var(--ink);border-radius:6px;background:#111;cursor:pointer}#frames canvas.on{outline:3px solid var(--hi)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0}
+@media (max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:auto 50vh auto auto;height:auto}#side{grid-row:auto;grid-column:1}#view{height:50vh}}
+</style></head>
+<body>
+<div id="app">
+ <div id="top"><h1>สตูดิโอสร้างเอฟเฟกต์สกิล</h1>
+  <select id="preset" title="แบบสำเร็จรูป"></select><button id="loadPre">ใช้แบบนี้</button>
+  <button id="newB">เริ่มใหม่</button><button id="saveB">บันทึก (.dfvfx)</button><label style="border:2px solid var(--ink);border-radius:9px;padding:4px 9px;font-weight:600;font-size:13px;background:#fff;cursor:pointer">เปิดไฟล์<input type="file" id="openF" accept=".dfvfx,.json" hidden></label>
+  <button id="recB">อัดเป็นวิดีโอ</button><span class="mute" id="msg"></span>
+  <a href="../" style="margin-left:auto;font-weight:700;color:var(--ink)">← กลับไปเกม</a></div>
+ <div id="view"><canvas id="gl"></canvas><div id="hud"></div><div id="pathHint">ลากเมาส์บนจอเพื่อวาดเส้นทาง แล้วปล่อย</div></div>
+ <div id="side">
+  <div id="tabs"><button data-t="lay" class="on">เลเยอร์</button><button data-t="set">ตั้งค่า</button><button data-t="drw">วาดภาพ</button></div>
+  <div class="pg on" id="pg_lay">
+   <p class="mute" style="margin:2px 0">สกิล 1 ท่าประกอบด้วยหลายเลเยอร์ แต่ละเลเยอร์ปล่อยอนุภาคแบบหนึ่ง เช่น วงแหวน ประกายไฟ ควัน เศษหิน กดชื่อเพื่อแก้ ติ๊กเพื่อซ่อน</p>
+   <div class="row"><button id="addL">+ เลเยอร์ใหม่</button><button id="dupL">ทำสำเนา</button><button id="delL">ลบ</button><button id="upL">▲</button><button id="dnL">▼</button></div>
+   <div id="lays"></div>
+   <div class="grp"><b>ทั้งสกิล</b>
+    <div class="f"><span>ความยาว (วิ)</span><input type="range" id="gDur" min="1" max="20" step=".5"><input type="number" id="gDurN" step=".5"></div>
+    <div class="f"><span>แสงฟุ้ง</span><input type="range" id="gBloom" min="0" max="2" step=".05"><input type="number" id="gBloomN" step=".05"></div>
+    <div class="f"><span>ความสว่าง</span><input type="range" id="gExpo" min=".3" max="2.5" step=".05"><input type="number" id="gExpoN" step=".05"></div>
+    <label class="row" style="font-size:13px"><input type="checkbox" id="gMan" checked> โชว์ตัวละครเทียบขนาด</label></div>
+  </div>
+  <div class="pg" id="pg_set"><div id="props"></div></div>
+  <div class="pg" id="pg_drw">
+   <p class="mute" style="margin:2px 0">วาดภาพเอฟเฟกต์เอง พื้นดำ = โปร่งใส วาดหลายเฟรมเพื่อให้ภาพขยับได้ แล้วกด "ใช้กับเลเยอร์ที่เลือก"</p>
+   <div class="row"><select id="dTool"><option value="glow">พู่กันเรืองแสง</option><option value="soft">พู่กันนุ่ม</option><option value="hard">ปากกา</option><option value="erase">ยางลบ</option></select><input type="color" id="dCol" value="#b06bff"><label class="mute">ขนาด <input type="range" id="dSize" min="2" max="80" value="18" style="width:90px"></label></div>
+   <div class="row"><label class="mute">สมมาตรรอบวง <select id="dSym"><option value="1">ไม่มี</option><option value="2">2 ทาง</option><option value="4">4 ทาง</option><option value="6">6 ทาง</option><option value="8">8 ทาง</option><option value="12">12 ทาง</option></select></label><label class="mute"><input type="checkbox" id="dMir"> กระจกซ้ายขวา</label><label class="mute"><input type="checkbox" id="dOnion" checked> เห็นเฟรมก่อน</label></div>
+   <canvas id="draw" width="256" height="256"></canvas>
+   <div id="frames"></div>
+   <div class="row"><button id="fAdd">+ เฟรม</button><button id="fCopy">+ คัดลอกเฟรมนี้</button><button id="fDel">ลบเฟรม</button><button id="fClr">ล้างเฟรม</button><label style="border:2px solid var(--ink);border-radius:9px;padding:4px 9px;font-weight:600;font-size:13px;cursor:pointer">ใส่รูป<input type="file" id="fImg" accept="image/*" hidden></label></div>
+   <div class="row"><input id="dName" placeholder="ชื่อภาพ เช่น ไฟม่วงของฉัน" maxlength="24" style="flex:1"><button id="dUse" class="on">ใช้กับเลเยอร์ที่เลือก</button></div>
+   <div class="row"><label class="mute">ความเร็วเฟรม <input type="range" id="dFps" min="0" max="30" value="12" style="width:100px"></label><span class="mute" id="dFpsV"></span></div>
+   <div class="mute">ภาพที่วาดไว้: <span id="dList"></span></div>
+  </div>
+ </div>
+ <div id="tlWrap"><div id="tlBar"><button id="playB" class="big">⏸ หยุด</button><button id="rstB">⟲ เริ่มต้น</button><label class="mute"><input type="checkbox" id="loopC" checked> วนซ้ำ</label><label class="mute">ความเร็ว <select id="spdS"><option value=".25">0.25x</option><option value=".5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select></label><span class="mute">ลากแถบเพื่อเลื่อนเวลาเริ่ม ลากขอบขวาเพื่อปรับความยาว คลิกบนไม้บรรทัดเพื่อกรอเวลา · ลากจอเพื่อหมุนกล้อง ล้อเมาส์ซูม</span></div><canvas id="tl" height="120"></canvas></div>
+</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+/* ===================== math ===================== */
+const V3={sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],len:a=>Math.hypot(a[0],a[1],a[2]),norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];}};
+function persp(f,a,n,fa){const t=1/Math.tan(f/2);return [t/a,0,0,0,0,t,0,0,0,0,(fa+n)/(n-fa),-1,0,0,2*fa*n/(n-fa),0];}
+function lookAt(e,c,u){const z=V3.norm(V3.sub(e,c)),x=V3.norm(V3.cross(u,z)),y=V3.cross(z,x);return [x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-V3.dot(x,e),-V3.dot(y,e),-V3.dot(z,e),1];}
+function mmul(a,b){const o=new Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o;}
+function minv(m){const a=m,o=new Array(16),b00=a[0]*a[5]-a[1]*a[4],b01=a[0]*a[6]-a[2]*a[4],b02=a[0]*a[7]-a[3]*a[4],b03=a[1]*a[6]-a[2]*a[5],b04=a[1]*a[7]-a[3]*a[5],b05=a[2]*a[7]-a[3]*a[6],b06=a[8]*a[13]-a[9]*a[12],b07=a[8]*a[14]-a[10]*a[12],b08=a[8]*a[15]-a[11]*a[12],b09=a[9]*a[14]-a[10]*a[13],b10=a[9]*a[15]-a[11]*a[13],b11=a[10]*a[15]-a[11]*a[14];let d=1/(b00*b11-b01*b10+b02*b09+b03*b08-b04*b07+b05*b06);
+ o[0]=(a[5]*b11-a[6]*b10+a[7]*b09)*d;o[1]=(a[2]*b10-a[1]*b11-a[3]*b09)*d;o[2]=(a[13]*b05-a[14]*b04+a[15]*b03)*d;o[3]=(a[10]*b04-a[9]*b05-a[11]*b03)*d;o[4]=(a[6]*b08-a[4]*b11-a[7]*b07)*d;o[5]=(a[0]*b11-a[2]*b08+a[3]*b07)*d;o[6]=(a[14]*b02-a[12]*b05-a[15]*b01)*d;o[7]=(a[8]*b05-a[10]*b02+a[11]*b01)*d;o[8]=(a[4]*b10-a[5]*b08+a[7]*b06)*d;o[9]=(a[1]*b08-a[0]*b10-a[3]*b06)*d;o[10]=(a[12]*b04-a[13]*b02+a[15]*b00)*d;o[11]=(a[9]*b02-a[8]*b04-a[11]*b00)*d;o[12]=(a[5]*b07-a[4]*b09-a[6]*b06)*d;o[13]=(a[0]*b09-a[1]*b07+a[2]*b06)*d;o[14]=(a[13]*b01-a[12]*b03-a[14]*b00)*d;o[15]=(a[8]*b03-a[9]*b01+a[10]*b00)*d;return o;}
+const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let R=mulberry(7);const rr=(a,b)=>a+(b-a)*R(),rnd=v=>Array.isArray(v)?rr(v[0],v[1]):v;
+function runit(){const z=R()*2-1,a=R()*6.2832,s=Math.sqrt(1-z*z);return [s*Math.cos(a),z,s*Math.sin(a)];}
+function curve(c,t,d){if(!c||!c.length)return d;if(t<=c[0][0])return c[0][1];for(let i=1;i<c.length;i++)if(t<=c[i][0]){const a=c[i-1],b=c[i];return lerp(a[1],b[1],(t-a[0])/((b[0]-a[0])||1));}return c[c.length-1][1];}
+function hex2lin(h){const n=parseInt(h.slice(1),16);return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255].map(v=>Math.pow(v,2.2));}
+
+/* ===================== GL setup ===================== */
+const cv=$('gl'),gl=cv.getContext('webgl2',{antialias:false,alpha:false,preserveDrawingBuffer:true,premultipliedAlpha:false});
+if(!gl){document.body.innerHTML='<p style="padding:20px">เบราว์เซอร์นี้ไม่รองรับ WebGL2 ลองเปิดด้วย Chrome หรือ Edge รุ่นใหม่</p>';throw new Error('no webgl2');}
+const HDR=!!gl.getExtension('EXT_color_buffer_float');
+function sh(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s)+'\n'+src);return s;}
+function prog(vs,fs){const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,vs));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));gl.bindAttribLocation(p,0,'q');gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));const u={};const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);for(let i=0;i<n;i++){const a=gl.getActiveUniform(p,i);u[a.name.replace('[0]','')]=gl.getUniformLocation(p,a.name);}return {p,u};}
+const FSQ=`#version 300 es
+in vec2 q;out vec2 vU;void main(){vU=q*.5+.5;gl_Position=vec4(q,0.,1.);}`;
+const P_BG=prog(FSQ,`#version 300 es
+precision highp float;in vec2 vU;out vec4 o;uniform mat4 uIVP;uniform float uT;
+float h(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}
+void main(){vec4 a=uIVP*vec4(vU*2.-1.,1.,1.);vec3 d=normalize(a.xyz/a.w);float y=d.y;
+ vec3 c=mix(vec3(.010,.008,.022),vec3(.022,.016,.05),smoothstep(-.1,.5,y));c+=vec3(.03,.018,.05)*exp(-abs(y)*9.);
+ vec3 g=floor(d*220.);float s=h(g);float st=step(.9965,s)*smoothstep(0.,.3,y)*(.5+.5*sin(uT*2.+s*50.));c+=vec3(.8,.8,1.)*st*.6;o=vec4(c,1.);}`);
+const P_GND=prog(`#version 300 es
+in vec2 q;uniform mat4 uVP;out vec3 vW;void main(){vW=vec3(q.x*90.,0.,q.y*90.);gl_Position=uVP*vec4(vW,1.);}`,`#version 300 es
+precision highp float;in vec3 vW;out vec4 o;uniform vec3 uE;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+void main(){float d=length(vW.xz);float nn=n(vW.xz*.6)*.6+n(vW.xz*2.3)*.4;vec3 c=mix(vec3(.05,.04,.08),vec3(.02,.016,.035),clamp(d/40.,0.,1.))*(.75+.5*nn);
+ float fog=1.-exp(-length(vW-uE)*.025);c=mix(c,vec3(.018,.013,.035),fog);o=vec4(c,1.);}`);
+const P_PT=prog(`#version 300 es
+in vec2 q;in vec3 iP;in vec2 iS;in vec4 iC;in float iR;in float iF;in vec3 iV;
+uniform mat4 uVP;uniform vec3 uCR,uCU,uCF;uniform int uO;uniform float uFr;out vec2 vUV;out vec4 vC;
+void main(){float cs=cos(iR),sn=sin(iR);vec2 c=vec2(q.x*cs-q.y*sn,q.x*sn+q.y*cs);vec3 w;
+ if(uO==0)w=iP+uCR*c.x*iS.x+uCU*c.y*iS.y;
+ else if(uO==1)w=iP+vec3(c.x*iS.x,0.,c.y*iS.y);
+ else if(uO==2){float L=length(iV);vec3 d=L>1e-5?iV/L:uCU;vec3 sd=cross(d,uCF);float sl=length(sd);sd=sl>1e-4?sd/sl:uCR;w=iP+d*q.y*(iS.y+L)+sd*q.x*iS.x;}
+ else{vec3 sd=normalize(vec3(uCR.x,0.,uCR.z)+1e-5);w=iP+sd*c.x*iS.x+vec3(0.,1.,0.)*q.y*iS.y;}
+ gl_Position=uVP*vec4(w,1.);vUV=vec2((q.x+.5+floor(iF))/uFr,.5-q.y);vC=iC;}`,`#version 300 es
+precision highp float;in vec2 vUV;in vec4 vC;out vec4 o;uniform sampler2D uT;
+void main(){vec4 t=texture(uT,vUV);float a=t.a*vC.a;o=vec4(t.rgb*vC.rgb*a,a);}`);
+const P_BRT=prog(FSQ,`#version 300 es
+precision highp float;in vec2 vU;out vec4 o;uniform sampler2D uT;uniform float uTh;
+void main(){vec3 c=texture(uT,vU).rgb;float l=max(c.r,max(c.g,c.b));o=vec4(c*(max(0.,l-uTh)/max(l,1e-4)),1.);}`);
+const P_BLR=prog(FSQ,`#version 300 es
+precision highp float;in vec2 vU;out vec4 o;uniform sampler2D uT;uniform vec2 uD;
+void main(){vec3 c=texture(uT,vU).rgb*.227027;c+=(texture(uT,vU+uD*1.3846).rgb+texture(uT,vU-uD*1.3846).rgb)*.316216;c+=(texture(uT,vU+uD*3.2308).rgb+texture(uT,vU-uD*3.2308).rgb)*.070270;o=vec4(c,1.);}`);
+const P_FIN=prog(FSQ,`#version 300 es
+precision highp float;in vec2 vU;out vec4 o;uniform sampler2D uS,uB0,uB1,uB2,uB3;uniform float uBl,uEx,uFl;
+vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
+void main(){vec3 c=texture(uS,vU).rgb;vec3 b=texture(uB0,vU).rgb*.22+texture(uB1,vU).rgb*.26+texture(uB2,vU).rgb*.28+texture(uB3,vU).rgb*.3;
+ c=(c+b*uBl)*uEx+vec3(1.,.95,1.)*uFl;c=aces(c);vec2 v=vU-.5;c*=1.-dot(v,v)*.7;o=vec4(pow(c,vec3(1./2.2)),1.);}`);
+const quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+const fsVAO=gl.createVertexArray();gl.bindVertexArray(fsVAO);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+const ptQ=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,ptQ);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-.5,-.5,.5,-.5,-.5,.5,.5,.5]),gl.STATIC_DRAW);
+const ST=14,MAXP=6000,inst=new Float32Array(MAXP*ST),ib=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,ib);gl.bufferData(gl.ARRAY_BUFFER,inst.byteLength,gl.DYNAMIC_DRAW);
+const ptVAO=gl.createVertexArray();gl.bindVertexArray(ptVAO);gl.bindBuffer(gl.ARRAY_BUFFER,ptQ);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+{gl.bindBuffer(gl.ARRAY_BUFFER,ib);const at=[['iP',3],['iS',2],['iC',4],['iR',1],['iF',1],['iV',3]];let off=0;for(const [n,k] of at){const l=gl.getAttribLocation(P_PT.p,n);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,k,gl.FLOAT,false,ST*4,off*4);gl.vertexAttribDivisor(l,1);off+=k;}}
+gl.bindVertexArray(null);
+function mkTex(w,h,hdr){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,hdr&&HDR?gl.RGBA16F:gl.RGBA8,w,h,0,gl.RGBA,hdr&&HDR?gl.HALF_FLOAT:gl.UNSIGNED_BYTE,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);return t;}
+function mkFB(w,h,depth){const t=mkTex(w,h,true),f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);if(depth){const r=gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,r);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,w,h);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,r);}return {t,f,w,h};}
+let FB=null;
+function ensureFB(w,h){if(FB&&FB.w===w&&FB.h===h)return;FB={w,h,s:mkFB(w,h,true),b:[]};let bw=w>>1,bh=h>>1;for(let i=0;i<4;i++){FB.b.push([mkFB(Math.max(2,bw),Math.max(2,bh)),mkFB(Math.max(2,bw),Math.max(2,bh))]);bw>>=1;bh>>=1;}}
+
+/* ===================== textures ===================== */
+const TEX={};const TEXLIST=[['glow','แสงกลม'],['core','แสงแกนจัด'],['ring','วงแหวน'],['shock','คลื่นกระแทก'],['flare','ประกายดาว'],['streak','เส้นแสงยาว'],['electric','สายฟ้า (4 เฟรม)'],['smoke','ควัน (4 แบบ)'],['shard','เศษหิน (4 แบบ)'],['beam','ลำแสง'],['circle','วงเวท'],['dot','จุด']];
+function cvs(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+function radial(g,x,y,r,stops){const gr=g.createRadialGradient(x,y,0,x,y,r);for(const [t,c] of stops)gr.addColorStop(t,c);g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);}
+function upTex(name,c,frames){let t=TEX[name]&&TEX[name].t;if(!t){t=gl.createTexture();}gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);TEX[name]={t,fr:frames||1};}
+function buildTex(){const S=128,W=(f)=>cvs(S*f,S);let c,g;
+ c=W(1);g=c.getContext('2d');radial(g,64,64,64,[[0,'rgba(255,255,255,1)'],[.2,'rgba(255,255,255,.55)'],[.5,'rgba(255,255,255,.15)'],[1,'rgba(255,255,255,0)']]);upTex('glow',c);
+ c=W(1);g=c.getContext('2d');radial(g,64,64,64,[[0,'rgba(255,255,255,1)'],[.08,'rgba(255,255,255,1)'],[.25,'rgba(255,255,255,.35)'],[.6,'rgba(255,255,255,.06)'],[1,'rgba(255,255,255,0)']]);upTex('core',c);
+ c=cvs(256,256);g=c.getContext('2d');for(const [r,w,a] of [[96,30,.10],[96,14,.35],[96,6,1]]){g.strokeStyle='rgba(255,255,255,'+a+')';g.lineWidth=w;g.filter='blur('+(w/3)+'px)';g.beginPath();g.arc(128,128,r,0,7);g.stroke();}g.filter='none';upTex('ring',c);
+ c=cvs(256,256);g=c.getContext('2d');{const gr=g.createRadialGradient(128,128,40,128,128,128);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.7,'rgba(255,255,255,.25)');gr.addColorStop(.88,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,256,256);}upTex('shock',c);
+ c=cvs(256,256);g=c.getContext('2d');radial(g,128,128,128,[[0,'rgba(255,255,255,1)'],[.1,'rgba(255,255,255,.6)'],[.4,'rgba(255,255,255,.08)'],[1,'rgba(255,255,255,0)']]);for(const [w,h] of [[256,6],[6,256],[180,3],[3,180]]){const gr=g.createRadialGradient(128,128,0,128,128,Math.max(w,h)/2);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.save();g.translate(128,128);if(w===180||h===180)g.rotate(.785);g.fillRect(-w/2,-h/2,w,h);g.restore();}upTex('flare',c);
+ c=cvs(256,64);g=c.getContext('2d');{const gr=g.createLinearGradient(0,0,256,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,26,256,12);g.globalCompositeOperation='destination-in';const v=g.createLinearGradient(0,0,0,64);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(.5,'rgba(0,0,0,1)');v.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=v;g.fillRect(0,0,256,64);}
+ {const c2=cvs(128,128),g2=c2.getContext('2d');g2.translate(64,64);g2.rotate(Math.PI/2);g2.drawImage(c,-64,-16,128,32);upTex('streak',c2);}
+ c=W(4);g=c.getContext('2d');R=mulberry(11);for(let f=0;f<4;f++){g.save();g.translate(f*S,0);for(let k=0;k<3;k++){g.beginPath();let x=64+rr(-20,20),y=120;g.moveTo(x,y);for(let i=0;i<9;i++){x+=rr(-16,16);y-=rr(10,15);g.lineTo(x,y);}for(const [w,a,b] of [[9,.25,8],[3,.9,2],[1.4,1,0]]){g.strokeStyle='rgba(255,255,255,'+a+')';g.lineWidth=w;g.shadowColor='#fff';g.shadowBlur=b;g.stroke();}}g.restore();}upTex('electric',c,4);
+ c=W(4);g=c.getContext('2d');R=mulberry(23);for(let f=0;f<4;f++){for(let k=0;k<14;k++){const x=f*S+64+rr(-26,26),y=64+rr(-26,26),r=rr(14,30);radial(g,x,y,r,[[0,'rgba(255,255,255,'+rr(.18,.35)+')'],[1,'rgba(255,255,255,0)']]);}}upTex('smoke',c,4);
+ c=W(4);g=c.getContext('2d');R=mulberry(41);for(let f=0;f<4;f++){const n=rr(5,8)|0,pts=[];for(let i=0;i<n;i++){const a=i/n*6.283+rr(-.3,.3),r=rr(22,52)*(i%2?1:.7);pts.push([f*S+64+Math.cos(a)*r*rr(.7,1),64+Math.sin(a)*r]);}g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fillStyle='rgb(70,62,70)';g.fill();g.strokeStyle='rgb(255,235,210)';g.lineWidth=5;g.stroke();g.fillStyle='rgba(255,255,255,.18)';g.beginPath();g.moveTo(pts[0][0],pts[0][1]);g.lineTo(pts[1][0],pts[1][1]);g.lineTo(f*S+64,64);g.fill();}upTex('shard',c,4);
+ c=cvs(64,256);g=c.getContext('2d');{const gr=g.createLinearGradient(0,0,64,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.35,'rgba(255,255,255,.35)');gr.addColorStop(.5,'rgba(255,255,255,1)');gr.addColorStop(.65,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,256);g.globalCompositeOperation='destination-in';const v=g.createLinearGradient(0,0,0,256);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(.15,'rgba(0,0,0,1)');v.addColorStop(.9,'rgba(0,0,0,1)');v.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=v;g.fillRect(0,0,64,256);}upTex('beam',c);
+ c=cvs(256,256);g=c.getContext('2d');g.translate(128,128);g.strokeStyle='#fff';g.shadowColor='#fff';g.shadowBlur=6;for(const [r,w] of [[120,4],[106,2],[70,3]]){g.lineWidth=w;g.beginPath();g.arc(0,0,r,0,7);g.stroke();}g.lineWidth=2;for(let k=0;k<2;k++){g.beginPath();for(let i=0;i<4;i++){const a=(i*2/3+k/3)*Math.PI*2-Math.PI/2;g[i?'lineTo':'moveTo'](Math.cos(a)*106,Math.sin(a)*106);}g.stroke();}g.font='bold 13px sans-serif';g.textAlign='center';g.fillStyle='#fff';const RU='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';for(let i=0;i<24;i++){g.save();g.rotate(i/24*Math.PI*2);g.fillText(RU[i],0,-109);g.restore();}upTex('circle',c);
+ c=cvs(32,32);g=c.getContext('2d');radial(g,16,16,16,[[0,'#fff'],[.5,'rgba(255,255,255,.9)'],[1,'rgba(255,255,255,0)']]);upTex('dot',c);
+ R=mulberry(7);}
+buildTex();
+
+/* ===================== scene state ===================== */
+const S={name:'',dur:8,bloom:1,expo:1,man:true,layers:[],tex:{},time:0,simT:0,playing:true,loop:true,speed:1,sel:0,cam:{yaw:.25,pitch:.1,dist:15,tx:0,ty:3},shake:0,flash:0,seed:7};
+let UID=1;
+function layer(o){return Object.assign({id:UID++,name:'เลเยอร์',on:true,start:0,dur:1,rate:30,burst:0,max:600,shape:'point',r:1,plane:'xy',pos:[0,3,0],path:null,life:[.6,1.2],speed:[1,2],dir:'out',spread:.2,swirl:0,gravity:0,drag:0,attract:0,velY:0,tex:'glow',blend:'add',orient:'bill',size:[.5,.5],sizeVar:.3,aspect:1,stretch:0,rot:1,spin:[0,0],col:['#ffffff','#c070ff','#5020a0'],inten:2,fadeIn:.1,fadeOut:.5,fps:12,frameRand:true,shake:0,flash:0,ground:false,front:false},o);}
+
+/* ===================== simulation ===================== */
+function resetSim(){R=mulberry(S.seed);S.simT=0;S.shake=0;S.flash=0;S.flashCol=null;for(const L of S.layers){L._p=[];L._acc=0;L._fired=false;}}
+function emitterPos(L,et){if(!L.path||L.path.length<2)return L.pos;const P=L.path;let tot=0;const seg=[];for(let i=1;i<P.length;i++){const d=V3.len(V3.sub(P[i],P[i-1]));seg.push(d);tot+=d;}let k=clamp(et/(L.dur||1),0,1)*tot;for(let i=0;i<seg.length;i++){if(k<=seg[i])return V3.add(P[i],V3.mul(V3.sub(P[i+1],P[i]),seg[i]?k/seg[i]:0));k-=seg[i];}return P[P.length-1];}
+function axisOf(L){return L.plane==='xz'?[0,1,0]:L.plane==='yz'?[1,0,0]:[0,0,1];}
+function spawn(L,n,et){const c=emitterPos(L,et),r=L.r*curve(L.rC,clamp(et/(L.dur||1),0,1),1),ax=axisOf(L);
+ for(let i=0;i<n&&L._p.length<Math.min(L.max,MAXP);i++){let o=[0,0,0];
+  if(L.shape==='sphere'){o=V3.mul(runit(),r*(L.fill?Math.cbrt(R()):1));}
+  else if(L.shape==='ring'||L.shape==='disc'){const a=R()*6.2832,rad=L.shape==='disc'?r*Math.sqrt(R()):r*(1+rr(-1,1)*(L.thick||0));const u=Math.cos(a)*rad,v=Math.sin(a)*rad;o=L.plane==='xz'?[u,0,v]:L.plane==='yz'?[0,u,v]:[u,v,0];}
+  else if(L.shape==='line'){o=L.plane==='xz'?[0,0,rr(-r,r)]:[rr(-r,r),0,0];}
+  else if(L.shape==='box'){o=[rr(-r,r),rr(-r,r)*(L.plane==='xz'?0:1),rr(-r,r)*(L.plane==='xy'?0:1)];}
+  const p=V3.add(c,o);let d;const on=V3.len(o)>1e-4?V3.norm(o):runit();
+  switch(L.dir){case 'in':d=V3.mul(on,-1);break;case 'up':d=[0,1,0];break;case 'down':d=[0,-1,0];break;case 'tangent':d=V3.norm(V3.cross(ax,on));break;case 'flat':{const q=runit();d=V3.norm([q[0],0,q[2]]);break;}case 'random':d=runit();break;default:d=on;}
+  if(L.spread)d=V3.norm(V3.add(d,V3.mul(runit(),L.spread)));const sp=rnd(L.speed);const v=V3.mul(d,sp);v[1]+=L.velY||0;
+  L._p.push({p,v,age:0,life:Math.max(.02,rnd(L.life)),sv:1+rr(-1,1)*L.sizeVar,rot:L.rot?R()*6.2832*L.rot:0,spin:rnd(L.spin),fr:L.frameRand?Math.floor(R()*16):0,c,seed:R()});}}
+function step(dt){const t=S.simT;for(const L of S.layers){if(!L._p)L._p=[];const et=t-L.start;if(L.on&&et>=0&&et<=L.dur){if(!L._fired){L._fired=true;if(L.burst)spawn(L,L.burst,0);if(L.shake)S.shake=Math.max(S.shake,L.shake);if(L.flash){S.flash=Math.max(S.flash,L.flash);}}
+  L._acc+=L.rate*curve(L.rateC,et/(L.dur||1),1)*dt;const n=Math.floor(L._acc);L._acc-=n;if(n>0)spawn(L,n,et);}
+  const c0=emitterPos(L,clamp(et,0,L.dur)),ax=axisOf(L),g=L.gravity,dr=Math.max(0,1-L.drag*dt),sw=L.swirl*dt,cs=Math.cos(sw),sn=Math.sin(sw);
+  const ps=L._p;let j=0;for(let i=0;i<ps.length;i++){const q=ps[i];q.age+=dt;if(q.age>=q.life)continue;q.v[1]+=g*dt;if(L.attract){q.v=V3.add(q.v,V3.mul(V3.sub(c0,q.p),L.attract*dt));}q.v=V3.mul(q.v,dr);q.p=V3.add(q.p,V3.mul(q.v,dt));
+   if(sw){const o=V3.sub(q.p,c0);let a,b;if(ax[2]){a=o[0];b=o[1];q.p[0]=c0[0]+a*cs-b*sn;q.p[1]=c0[1]+a*sn+b*cs;}else if(ax[1]){a=o[0];b=o[2];q.p[0]=c0[0]+a*cs-b*sn;q.p[2]=c0[2]+a*sn+b*cs;}else{a=o[1];b=o[2];q.p[1]=c0[1]+a*cs-b*sn;q.p[2]=c0[2]+a*sn+b*cs;}}
+   if(L.ground&&q.p[1]<.05){q.p[1]=.05;q.v[1]=Math.abs(q.v[1])*.25;q.v[0]*=.6;q.v[2]*=.6;q.spin*=.5;}q.rot+=q.spin*dt;ps[j++]=q;}ps.length=j;}
+ S.simT+=dt;S.shake*=Math.exp(-dt*5);S.flash*=Math.exp(-dt*11);}
+function simTo(t){if(t<S.simT-1e-6)resetSim();let n=0;while(S.simT<t-1e-6&&n<2400){step(Math.min(1/60,t-S.simT));n++;}}
+
+/* ===================== camera + render ===================== */
+let VP,IVP,EYE,CR,CU,CF;
+function camera(w,h,t){const c=S.cam,sk=S.shake;const jx=sk?(Math.sin(t*61)+Math.sin(t*37))*sk*.08:0,jy=sk?(Math.cos(t*53)+Math.sin(t*29))*sk*.08:0;const tg=[c.tx+jx,c.ty+jy,0];EYE=[tg[0]+Math.sin(c.yaw)*Math.cos(c.pitch)*c.dist,tg[1]+Math.sin(c.pitch)*c.dist,tg[2]+Math.cos(c.yaw)*Math.cos(c.pitch)*c.dist];
+ const V=lookAt(EYE,tg,[0,1,0]),P=persp(.85,w/h,.05,400);VP=mmul(P,V);IVP=minv(mmul(P,[V[0],V[1],V[2],0,V[4],V[5],V[6],0,V[8],V[9],V[10],0,0,0,0,1]));CR=[V[0],V[4],V[8]];CU=[V[1],V[5],V[9]];CF=[-V[2],-V[6],-V[10]];}
+function drawFS(){gl.bindVertexArray(fsVAO);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}
+const MAN={p:[[0,0],[-.18,0],[-.12,.9],[0,1.05],[.12,.9],[.18,0]]};
+function fillInst(L,list){const fr=(TEX[L.tex]||TEX.glow).fr,t=S.simT,et=clamp((t-L.start)/(L.dur||1),0,1),iE=curve(L.iC,et,1);const c0=hex2lin(L.col[0]),c1=hex2lin(L.col[1]),c2=hex2lin(L.col[2]);let n=0;
+ for(const q of list){const f=q.age/q.life;const a=(L.fadeIn>0&&f<L.fadeIn?f/L.fadeIn:1)*(L.fadeOut>0&&f>1-L.fadeOut?(1-f)/L.fadeOut:1);if(a<=.001)continue;const cc=f<.5?[0,1,2].map(i=>lerp(c0[i],c1[i],f*2)):[0,1,2].map(i=>lerp(c1[i],c2[i],(f-.5)*2));
+  const s=lerp(L.size[0],L.size[1],f)*curve(L.sizeC,f,1)*q.sv;const o=n*ST,k=L.inten*iE;inst[o]=q.p[0];inst[o+1]=q.p[1];inst[o+2]=q.p[2];inst[o+3]=s*L.aspect;inst[o+4]=s;inst[o+5]=cc[0]*k;inst[o+6]=cc[1]*k;inst[o+7]=cc[2]*k;inst[o+8]=a;inst[o+9]=q.rot;
+  inst[o+10]=fr>1?(L.fps>0?(Math.floor(q.age*L.fps)+q.fr)%fr:q.fr%fr):0;const st=L.stretch;inst[o+11]=q.v[0]*st;inst[o+12]=q.v[1]*st;inst[o+13]=q.v[2]*st;n++;if(n>=MAXP)break;}return n;}
+function render(now){const dpr=Math.min(2,devicePixelRatio||1),w=Math.max(2,Math.floor(cv.clientWidth*dpr)),h=Math.max(2,Math.floor(cv.clientHeight*dpr));if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}ensureFB(w,h);camera(w,h,S.simT);
+ gl.bindFramebuffer(gl.FRAMEBUFFER,FB.s.f);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+ gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);gl.useProgram(P_BG.p);gl.uniformMatrix4fv(P_BG.u.uIVP,false,IVP);gl.uniform1f(P_BG.u.uT,now/1000);drawFS();
+ gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.useProgram(P_GND.p);gl.uniformMatrix4fv(P_GND.u.uVP,false,VP);gl.uniform3fv(P_GND.u.uE,EYE);drawFS();
+ gl.depthMask(false);gl.enable(gl.BLEND);gl.useProgram(P_PT.p);gl.uniformMatrix4fv(P_PT.u.uVP,false,VP);gl.uniform3fv(P_PT.u.uCR,CR);gl.uniform3fv(P_PT.u.uCU,CU);gl.uniform3fv(P_PT.u.uCF,CF);gl.uniform1i(P_PT.u.uT,0);gl.activeTexture(gl.TEXTURE0);gl.bindVertexArray(ptVAO);
+ const draw=(L,list,ori)=>{const n=fillInst(L,list);if(!n)return;gl.bindBuffer(gl.ARRAY_BUFFER,ib);gl.bufferSubData(gl.ARRAY_BUFFER,0,inst,0,n*ST);const T=TEX[L.tex]||TEX.glow;gl.bindTexture(gl.TEXTURE_2D,T.t);gl.uniform1f(P_PT.u.uFr,T.fr);gl.uniform1i(P_PT.u.uO,ori);gl.drawArraysInstanced(gl.TRIANGLE_STRIP,0,4,n);};
+ const OR={bill:0,flat:1,vel:2,axis:3};
+ if(S.man){const L={tex:'dot',col:['#05040a','#05040a','#05040a'],inten:1,size:[1,1],aspect:1,fadeIn:0,fadeOut:0,stretch:0,start:0,dur:1};gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);const pts=[];for(let y=0;y<1.7;y+=.12)pts.push({p:[5.2,y+.1,2],v:[0,0,0],age:0,life:1,sv:y>1.45?.32:.26,rot:0,fr:0});draw(L,pts,0);}
+ for(const pass of ['alpha','add','front'])for(const L of S.layers){if(!L.on||!L._p||!L._p.length)continue;const lp=L.blend==='add'?'add':(L.front?'front':'alpha');if(lp!==pass)continue;let list=L._p;if(pass!=='add'){list=list.slice().sort((a,b)=>V3.dot(V3.sub(b.p,EYE),CF)-V3.dot(V3.sub(a.p,EYE),CF));gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);}else gl.blendFunc(gl.ONE,gl.ONE);draw(L,list,OR[L.orient]||0);}
+ gl.disable(gl.BLEND);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);
+ // bloom
+ gl.useProgram(P_BRT.p);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.b[0][0].f);gl.viewport(0,0,FB.b[0][0].w,FB.b[0][0].h);gl.bindTexture(gl.TEXTURE_2D,FB.s.t);gl.uniform1i(P_BRT.u.uT,0);gl.uniform1f(P_BRT.u.uTh,HDR?1.:.6);drawFS();
+ gl.useProgram(P_BLR.p);gl.uniform1i(P_BLR.u.uT,0);for(let i=0;i<4;i++){const A=FB.b[i][0],B=FB.b[i][1];if(i>0){gl.bindFramebuffer(gl.FRAMEBUFFER,A.f);gl.viewport(0,0,A.w,A.h);gl.bindTexture(gl.TEXTURE_2D,FB.b[i-1][0].t);gl.uniform2f(P_BLR.u.uD,0,0);drawFS();}
+  gl.bindFramebuffer(gl.FRAMEBUFFER,B.f);gl.viewport(0,0,B.w,B.h);gl.bindTexture(gl.TEXTURE_2D,A.t);gl.uniform2f(P_BLR.u.uD,1/A.w,0);drawFS();gl.bindFramebuffer(gl.FRAMEBUFFER,A.f);gl.bindTexture(gl.TEXTURE_2D,B.t);gl.uniform2f(P_BLR.u.uD,0,1/A.h);drawFS();}
+ gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,w,h);gl.useProgram(P_FIN.p);const tu=[FB.s.t,FB.b[0][0].t,FB.b[1][0].t,FB.b[2][0].t,FB.b[3][0].t];['uS','uB0','uB1','uB2','uB3'].forEach((n,i)=>{gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(gl.TEXTURE_2D,tu[i]);gl.uniform1i(P_FIN.u[n],i);});gl.activeTexture(gl.TEXTURE0);
+ gl.uniform1f(P_FIN.u.uBl,S.bloom*(HDR?1:1.6));gl.uniform1f(P_FIN.u.uEx,S.expo);gl.uniform1f(P_FIN.u.uFl,S.flash);drawFS();}
+
+/* ===================== main loop ===================== */
+let lastT=performance.now(),fpsA=60,rec=null;
+function frame(now){const dt=Math.min(.1,(now-lastT)/1000);lastT=now;fpsA=fpsA*.95+(1/Math.max(dt,1e-3))*.05;
+ if(S.playing){let nt=S.time+(rec?1/30:dt)*S.speed;if(nt>S.dur){if(rec){stopRec();nt=S.dur;}else if(S.loop){nt=0;resetSim();}else{nt=S.dur;S.playing=false;syncPlay();}}S.time=nt;}
+ simTo(S.time);render(now);let np=0;for(const L of S.layers)np+=L._p?L._p.length:0;$('hud').textContent=S.time.toFixed(2)+' / '+S.dur.toFixed(1)+' วิ · อนุภาค '+np+' · '+Math.round(fpsA)+' fps'+(HDR?'':' · โหมดแสงพื้นฐาน');drawTL();requestAnimationFrame(frame);}
+
+/* ===================== presets ===================== */
+const PRE={
+ wormhole:{n:'หลุมดำระเบิด (ตามคลิป)',dur:10,bloom:1,expo:1,cam:{yaw:.15,pitch:.08,dist:13,tx:0,ty:3.4},layers:[
+  {name:'ประกายพลังก่อนเปิด',start:0,dur:.9,rate:160,shape:'sphere',r:4,pos:[0,3.6,0],dir:'in',speed:[3,5],life:[.5,.8],tex:'dot',orient:'vel',stretch:.06,size:[.05,.08],col:['#c9a0ff','#a050ff','#ffffff'],inten:3,fadeIn:.3,fadeOut:.2},
+  {name:'แกนวงแหวนพอร์ทัล',start:.6,dur:4.4,burst:1,rate:0,shape:'point',pos:[0,3.6,0],life:[4.4,4.4],speed:[0,0],tex:'ring',size:[4.2,4.2],sizeC:[[0,0],[.08,1.05],[.12,1],[.85,1.02],[.95,.35],[1,0]],sizeVar:0,rot:0,col:['#ffe8ff','#ffd8ff','#ffffff'],inten:5,fadeIn:.03,fadeOut:0},
+  {name:'แสงฟุ้งรอบวง',start:.6,dur:4.4,burst:1,rate:0,pos:[0,3.6,-.05],life:[4.4,4.4],speed:[0,0],tex:'shock',size:[6.2,6.2],sizeC:[[0,0],[.08,1],[.85,1.05],[.95,.3],[1,0]],sizeVar:0,rot:0,col:['#7a30ff','#8a40ff','#ff80ff'],inten:.9,fadeIn:.05,fadeOut:0},
+  {name:'เปลวสายฟ้ารอบวง',start:.7,dur:3.9,rate:260,max:800,shape:'ring',r:1.9,thick:.06,plane:'xy',pos:[0,3.6,0],rC:[[0,1],[.85,1],[1,.1]],dir:'out',speed:[1,2.5],spread:.5,swirl:1.6,life:[.18,.4],tex:'electric',fps:20,orient:'vel',stretch:.12,aspect:.7,size:[.9,1.3],sizeVar:.4,rot:0,col:['#ffffff','#c070ff','#6a20ff'],inten:4,fadeIn:.1,fadeOut:.5},
+  {name:'ประกายไฟหมุนวน',start:.7,dur:3.9,rate:140,max:600,shape:'ring',r:2.0,thick:.15,plane:'xy',pos:[0,3.6,0],rC:[[0,1],[.85,1],[1,.1]],dir:'out',speed:[.5,2.5],spread:.5,swirl:2.4,drag:.6,life:[.4,1.1],tex:'dot',orient:'vel',stretch:.09,size:[.05,.02],col:['#ffffff','#e090ff','#7030ff'],inten:6,fadeIn:.05,fadeOut:.6},
+  {name:'แสงสะท้อนพื้น',start:.6,dur:4.4,burst:1,rate:0,pos:[0,.03,0],life:[4.4,4.4],speed:[0,0],tex:'glow',orient:'flat',size:[9,9],sizeC:[[0,0],[.1,1],[.85,1],[1,0]],sizeVar:0,rot:0,col:['#6020e0','#7030f0','#a040ff'],inten:.45,fadeIn:.05,fadeOut:0},
+  {name:'ควันม่วงที่ฐาน',start:.8,dur:3.8,rate:14,shape:'disc',r:3,plane:'xz',pos:[0,.3,0],dir:'flat',speed:[.1,.4],velY:.15,life:[2,3],tex:'smoke',blend:'alpha',size:[1.8,3.2],col:['#3a2a66','#2a1f4a','#151025'],inten:1,fadeIn:.3,fadeOut:.5,spin:[-.2,.2]},
+  {name:'ยุบเป็นดาว',start:4.55,dur:.75,burst:1,rate:0,pos:[0,3.6,.1],life:[.75,.75],speed:[0,0],tex:'flare',size:[3,3],sizeC:[[0,.2],[.35,1.6],[.6,.8],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffe0f0','#ffb0e0'],inten:8,fadeIn:.05,fadeOut:.3},
+  {name:'เส้นแสงแนวนอน',start:4.6,dur:.6,burst:1,rate:0,pos:[0,3.6,.1],life:[.6,.6],speed:[0,0],tex:'streak',size:[1,1],aspect:14,sizeC:[[0,.3],[.4,1],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffd0ff','#c080ff'],inten:14,fadeIn:.05,fadeOut:.4},
+  {name:'ลูกไฟระเบิด',start:6,dur:.25,burst:40,rate:60,max:80,shape:'sphere',r:.4,pos:[0,1.2,0],dir:'out',speed:[1.5,4],drag:2.2,velY:.6,life:[.5,1.1],tex:'smoke',orient:'bill',size:[.8,2.6],sizeVar:.4,spin:[-1,1],col:['#ffffff','#ffa040','#b030ff'],inten:2.6,fadeIn:.03,fadeOut:.7,shake:2.2,flash:.03},
+  {name:'คลื่นกระแทกพื้น',start:6,dur:.1,burst:1,rate:0,pos:[0,.15,0],life:[1.1,1.1],speed:[0,0],tex:'shock',orient:'flat',size:[1,16],sizeVar:0,rot:0,col:['#ffd0a0','#c060ff','#6020c0'],inten:5,fadeIn:0,fadeOut:.7},
+  {name:'เส้นแสงพุ่งออกข้าง',start:6,dur:.15,burst:70,rate:0,shape:'sphere',r:.3,pos:[0,1.2,0],dir:'flat',spread:.15,speed:[8,18],drag:3,life:[.3,.7],tex:'streak',orient:'vel',stretch:.06,size:[.12,.08],col:['#ffffff','#ffb0ff','#a040ff'],inten:9,fadeIn:0,fadeOut:.6},
+  {name:'ประกายไฟระเบิด',start:6,dur:.2,burst:120,rate:0,shape:'sphere',r:.4,pos:[0,1.2,0],dir:'out',speed:[4,12],gravity:-6,drag:1.2,life:[.6,1.5],tex:'dot',orient:'vel',stretch:.05,size:[.08,.03],col:['#ffffff','#ffc060','#ff60c0'],inten:8,fadeIn:0,fadeOut:.5,ground:true},
+  {name:'ลำแสงจากฟ้า',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,12,0],life:[2.3,2.3],speed:[0,0],tex:'beam',orient:'axis',size:[24,24],aspect:.045,sizeC:[[0,.15],[.06,1],[.75,1],[1,.4]],sizeVar:0,rot:0,col:['#ffffff','#ffd8b0','#ff9a90'],inten:7,fadeIn:.04,fadeOut:.35,shake:1.2,flash:.05},
+  {name:'ลำแสงด้านนอก',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,12,0],life:[2.3,2.3],speed:[0,0],tex:'beam',orient:'axis',size:[24,24],aspect:.16,sizeC:[[0,.2],[.08,1],[.8,1.1],[1,.6]],sizeVar:0,rot:0,col:['#ffa060','#ff7090','#a040ff'],inten:2.2,fadeIn:.05,fadeOut:.4},
+  {name:'จุดกระแทกที่พื้น',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,.2,0],life:[2.3,2.3],speed:[0,0],tex:'core',size:[4,4],sizeC:[[0,0],[.06,1.4],[.8,1],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffb080','#ff60a0'],inten:3,fadeIn:.03,fadeOut:.3},
+  {name:'แสงไหม้บนพื้น',start:6,dur:3,burst:1,rate:0,pos:[0,.04,0],life:[3,3],speed:[0,0],tex:'glow',orient:'flat',size:[7,7],sizeVar:0,rot:0,col:['#ff9050','#ff5080','#401040'],inten:1.4,fadeIn:.05,fadeOut:.6},
+  {name:'เศษหินลอยขึ้น',start:6.5,dur:.4,burst:45,rate:30,max:80,shape:'disc',r:2.6,plane:'xz',pos:[0,.3,0],dir:'up',spread:.35,speed:[1,4.5],gravity:.15,drag:.5,life:[2.2,3.4],tex:'shard',blend:'alpha',front:true,orient:'bill',size:[.75,.65],sizeVar:.6,spin:[-2.5,2.5],col:['#b08070','#806060','#403040'],inten:1.1,fadeIn:.05,fadeOut:.25},
+  {name:'เศษหินร่วงลง',start:8.4,dur:.3,burst:40,rate:0,shape:'disc',r:2.5,plane:'xz',pos:[0,4.5,0],dir:'down',spread:.4,speed:[.5,2],gravity:-9,life:[1.2,1.8],tex:'shard',blend:'alpha',front:true,size:[.45,.4],sizeVar:.6,spin:[-4,4],col:['#806070','#5a4a55','#3a3040'],inten:1,fadeIn:.05,fadeOut:.2,ground:true},
+  {name:'ประกายลอยในลำแสง',start:6.5,dur:2.2,rate:90,shape:'disc',r:1,plane:'xz',pos:[0,.5,0],dir:'up',spread:.3,speed:[2,6],life:[.8,1.6],tex:'dot',orient:'vel',stretch:.05,size:[.06,.03],col:['#ffffff','#ffc090','#ff60c0'],inten:7,fadeIn:.1,fadeOut:.5},
+  {name:'ฝุ่นควันหลังระเบิด',start:6.2,dur:2.5,rate:22,shape:'disc',r:3.5,plane:'xz',pos:[0,.4,0],dir:'flat',speed:[.4,1.4],drag:.4,velY:.12,life:[2.5,4],tex:'smoke',blend:'alpha',size:[2,4.5],col:['#6a5070','#3a3048','#181420'],inten:1,fadeIn:.2,fadeOut:.6,spin:[-.2,.2]}]},
+ fireball:{n:'ลูกไฟพุ่งตามเส้นทาง',dur:4,bloom:1,expo:1,cam:{yaw:.0,pitch:.12,dist:15,tx:0,ty:2.5},layers:[
+  {name:'แกนลูกไฟ',start:.2,dur:1.6,rate:120,shape:'sphere',r:.25,path:[[-6,2,0],[-2,3.5,0],[2,3.2,0],[5,1,0]],dir:'random',speed:[.2,.8],life:[.25,.5],tex:'core',size:[1,.3],col:['#ffffff','#ffb040','#ff3010'],inten:3,fadeIn:.05,fadeOut:.6},
+  {name:'หางเปลวไฟ',start:.2,dur:1.6,rate:160,shape:'sphere',r:.35,path:[[-6,2,0],[-2,3.5,0],[2,3.2,0],[5,1,0]],dir:'random',speed:[.3,1],velY:.8,life:[.4,.9],tex:'smoke',size:[.9,.2],spin:[-2,2],col:['#ffe080','#ff6020','#401010'],inten:4,fadeIn:.05,fadeOut:.6},
+  {name:'ระเบิด',start:1.8,dur:.2,burst:60,rate:0,shape:'sphere',r:.3,pos:[5,1,0],dir:'out',speed:[3,8],drag:2,life:[.5,1.1],tex:'smoke',size:[1,3],spin:[-1,1],col:['#ffffff','#ff9030','#602010'],inten:6,fadeIn:0,fadeOut:.6,shake:1.5,flash:.1},
+  {name:'ประกาย',start:1.8,dur:.2,burst:80,rate:0,shape:'sphere',r:.3,pos:[5,1,0],dir:'out',speed:[4,11],gravity:-8,life:[.5,1.2],tex:'dot',orient:'vel',stretch:.05,size:[.07,.03],col:['#ffffff','#ffc060','#ff4010'],inten:7,fadeIn:0,fadeOut:.5,ground:true},
+  {name:'คลื่นที่พื้น',start:1.8,dur:.1,burst:1,rate:0,pos:[5,.1,0],life:[.8,.8],speed:[0,0],tex:'shock',orient:'flat',size:[1,8],sizeVar:0,rot:0,col:['#ffd080','#ff6020','#401010'],inten:4,fadeIn:0,fadeOut:.7}]},
+ circle:{n:'วงเวทสายฟ้าฟาด',dur:5,bloom:1.1,expo:1,cam:{yaw:.3,pitch:.35,dist:14,tx:0,ty:2},layers:[
+  {name:'วงเวทบนพื้น',start:0,dur:3.2,burst:1,rate:0,pos:[0,.05,0],life:[3.2,3.2],speed:[0,0],tex:'circle',orient:'flat',size:[7,7],sizeC:[[0,0],[.15,1.05],[.2,1],[.9,1],[1,1.3]],sizeVar:0,rot:0,spin:[.6,.6],col:['#a0f0ff','#40c0ff','#ffffff'],inten:5,fadeIn:.05,fadeOut:.15},
+  {name:'แสงจากวงเวท',start:.2,dur:2.8,rate:60,shape:'ring',r:3.3,plane:'xz',pos:[0,.1,0],dir:'up',speed:[1,3],life:[.6,1.2],tex:'dot',orient:'vel',stretch:.08,size:[.06,.02],col:['#ffffff','#60d0ff','#2060ff'],inten:6,fadeIn:.1,fadeOut:.5},
+  {name:'สายฟ้าฟาด',start:2.9,dur:.5,rate:30,shape:'disc',r:.6,plane:'xz',pos:[0,4,0],dir:'down',speed:[0,0],life:[.08,.16],tex:'electric',fps:0,orient:'axis',size:[8,8],aspect:.5,col:['#ffffff','#a0e0ff','#4080ff'],inten:12,fadeIn:0,fadeOut:.5,shake:2,flash:.15},
+  {name:'แสงแตกกระจาย',start:2.95,dur:.15,burst:90,rate:0,shape:'sphere',r:.3,pos:[0,.4,0],dir:'out',speed:[4,12],gravity:-7,life:[.4,1],tex:'dot',orient:'vel',stretch:.05,size:[.07,.03],col:['#ffffff','#80d0ff','#2040ff'],inten:8,fadeIn:0,fadeOut:.5,ground:true},
+  {name:'คลื่นไฟฟ้า',start:2.95,dur:.1,burst:1,rate:0,pos:[0,.12,0],life:[.9,.9],speed:[0,0],tex:'shock',orient:'flat',size:[1,12],sizeVar:0,rot:0,col:['#ffffff','#60c0ff','#2030a0'],inten:5,fadeIn:0,fadeOut:.7}]}};
+function loadPreset(k){const P=PRE[k];S.name=P.n;S.dur=P.dur;S.bloom=P.bloom;S.expo=P.expo;Object.assign(S.cam,P.cam);S.layers=P.layers.map(o=>layer(JSON.parse(JSON.stringify(o))));S.sel=0;S.time=0;resetSim();S.playing=true;syncPlay();uiAll();}
+
+/* ===================== timeline ===================== */
+const tl=$('tl'),NAMEW=130,RULER=18,ROWH=16;let tlDrag=null;
+function tlX(t){return NAMEW+(t/S.dur)*(tl.width-NAMEW-8);}function tlT(x){return clamp((x-NAMEW)/(tl.width-NAMEW-8)*S.dur,0,S.dur);}
+function drawTL(){const dpr=1,w=tl.clientWidth;const h=RULER+S.layers.length*ROWH+6;if(tl.width!==w)tl.width=w;if(tl.height!==h){tl.height=h;tl.style.height=h+'px';}const g=tl.getContext('2d');g.clearRect(0,0,w,h);g.font='11px sans-serif';
+ g.fillStyle='#f4f2fa';g.fillRect(0,0,w,RULER);g.fillStyle='#1d1b2e';for(let t=0;t<=S.dur+1e-6;t+=S.dur>10?2:1){const x=tlX(t);g.fillRect(x,RULER-6,1,6);g.fillText(t+'วิ',x+2,11);}
+ S.layers.forEach((L,i)=>{const y=RULER+i*ROWH;if(i===S.sel){g.fillStyle='#fff3b0';g.fillRect(0,y,w,ROWH);}g.fillStyle=L.on?'#1d1b2e':'#aaa';g.fillText((L.on?'':'(ซ่อน) ')+L.name.slice(0,16),4,y+12);
+  const life=Array.isArray(L.life)?L.life[1]:L.life,x0=tlX(L.start),x1=tlX(Math.min(S.dur,L.start+L.dur)),x2=tlX(Math.min(S.dur,L.start+L.dur+life));const c=L.col[1];g.globalAlpha=.25;g.fillStyle=c;g.fillRect(x0,y+3,Math.max(2,x2-x0),ROWH-6);g.globalAlpha=L.on?.95:.35;g.fillRect(x0,y+3,Math.max(3,x1-x0),ROWH-6);g.globalAlpha=1;g.strokeStyle='#1d1b2e';g.strokeRect(x0+.5,y+3.5,Math.max(3,x1-x0),ROWH-7);});
+ const px=tlX(S.time);g.fillStyle='#e5484d';g.fillRect(px-1,0,2,h);}
+tl.addEventListener('pointerdown',e=>{const r=tl.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;tl.setPointerCapture(e.pointerId);
+ if(y<RULER||x<NAMEW){if(y>=RULER){const i=Math.floor((y-RULER)/ROWH);if(S.layers[i]){S.sel=i;uiAll();}return;}tlDrag={k:'scrub'};scrub(tlT(x));return;}
+ const i=Math.floor((y-RULER)/ROWH),L=S.layers[i];if(!L){tlDrag={k:'scrub'};scrub(tlT(x));return;}S.sel=i;uiLayers();uiProps();const x1=tlX(L.start+L.dur);
+ tlDrag=Math.abs(x-x1)<7?{k:'dur',L,t0:tlT(x),d0:L.dur}:(x>=tlX(L.start)-3&&x<=x1+3)?{k:'move',L,t0:tlT(x),s0:L.start}:{k:'scrub'};if(tlDrag.k==='scrub')scrub(tlT(x));});
+tl.addEventListener('pointermove',e=>{const r=tl.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(!tlDrag){const i=Math.floor((y-RULER)/ROWH),L=S.layers[i];tl.style.cursor=L&&y>=RULER&&Math.abs(x-tlX(L.start+L.dur))<7?'ew-resize':'pointer';return;}const t=tlT(x);
+ if(tlDrag.k==='scrub')scrub(t);else if(tlDrag.k==='move'){tlDrag.L.start=Math.max(0,Math.round((tlDrag.s0+t-tlDrag.t0)*20)/20);changed(false);}else{tlDrag.L.dur=Math.max(.05,Math.round((tlDrag.d0+t-tlDrag.t0)*20)/20);changed(false);}});
+tl.addEventListener('pointerup',()=>{if(tlDrag&&tlDrag.k!=='scrub')uiProps();tlDrag=null;});
+function scrub(t){S.time=t;S.playing=false;syncPlay();}
+
+/* ===================== properties panel ===================== */
+const F=[
+ ['เวลา',[['start','เริ่มที่ (วิ)','n',0,20,.05],['dur','ปล่อยนาน (วิ)','n',.05,20,.05]]],
+ ['การปล่อย',[['rate','ปล่อยต่อวินาที','n',0,600,1],['burst','ปล่อยทีเดียวตอนเริ่ม','n',0,400,1],['max','จำนวนสูงสุด','n',1,3000,1]]],
+ ['รูปทรงจุดเกิด',[['shape','รูปทรง','s',[['point','จุด'],['sphere','ทรงกลม'],['ring','วงแหวน'],['disc','จาน'],['line','เส้น'],['box','กล่อง']]],['r','รัศมี','n',0,15,.05],['plane','ระนาบ','s',[['xy','ตั้งหันหน้า'],['xz','นอนบนพื้น'],['yz','ตั้งหันข้าง']]],['pos.0','ตำแหน่ง ซ้าย-ขวา','n',-15,15,.05],['pos.1','ตำแหน่ง สูง','n',-2,25,.05],['pos.2','ตำแหน่ง หน้า-หลัง','n',-15,15,.05]]],
+ ['การเคลื่อนที่',[['life.0','อายุสั้นสุด (วิ)','n',.02,10,.01],['life.1','อายุยาวสุด (วิ)','n',.02,10,.01],['speed.0','ความเร็วต่ำสุด','n',0,30,.1],['speed.1','ความเร็วสูงสุด','n',0,30,.1],['dir','ทิศทาง','s',[['out','พุ่งออกจากกลาง'],['in','ดูดเข้ากลาง'],['up','ขึ้น'],['down','ลง'],['tangent','วนรอบ'],['flat','กระจายแนวนอน'],['random','สุ่ม']]],['spread','ความกระจาย','n',0,2,.01],['swirl','หมุนวน','n',-10,10,.1],['gravity','แรงโน้มถ่วง','n',-20,20,.1],['drag','แรงหน่วง','n',0,10,.05],['attract','แรงดูดเข้ากลาง','n',0,20,.1],['velY','แรงลอยขึ้น','n',-10,10,.05],['ground','ชนพื้นแล้วเด้ง','b']]],
+ ['หน้าตา',[['tex','ภาพ','tex'],['blend','การผสมแสง','s',[['add','เรืองแสง (บวกแสง)'],['alpha','ทึบ (ควัน เศษหิน)']]],['front','วาดทับแสง (ของทึบ)','b'],['orient','การหัน','s',[['bill','หันหาจอเสมอ'],['flat','นอนบนพื้น'],['vel','ยืดตามทิศที่พุ่ง'],['axis','ตั้งตรง (ลำแสง)']]],['size.0','ขนาดตอนเกิด','n',0,30,.01],['size.1','ขนาดตอนหาย','n',0,30,.01],['sizeVar','สุ่มขนาด','n',0,1,.01],['aspect','กว้างต่อสูง','n',.02,20,.01],['stretch','ยืดตามความเร็ว','n',0,.5,.005],['spin.0','หมุนตัว ต่ำสุด','n',-10,10,.1],['spin.1','หมุนตัว สูงสุด','n',-10,10,.1],['fps','ความเร็วเฟรมภาพ','n',0,30,1]]],
+ ['สีและแสง',[['col.0','สีตอนเกิด','c'],['col.1','สีกลางอายุ','c'],['col.2','สีตอนหาย','c'],['inten','ความสว่าง','n',0,20,.1],['fadeIn','ค่อยๆ โผล่','n',0,1,.01],['fadeOut','ค่อยๆ จาง','n',0,1,.01]]],
+ ['ลูกเล่นจอ',[['shake','จอสั่นตอนเริ่ม','n',0,4,.05],['flash','จอแวบสว่าง','n',0,1.5,.05]]]];
+function gp(o,k){const a=k.split('.');return a.length>1?o[a[0]][+a[1]]:o[k];}function spv(o,k,v){const a=k.split('.');if(a.length>1)o[a[0]][+a[1]]=v;else o[k]=v;}
+function changed(full){const t=S.time;resetSim();simTo(t);if(full)uiLayers();}
+function uiProps(){const box=$('props');box.innerHTML='';const L=S.layers[S.sel];if(!L){box.innerHTML='<p class="mute">ยังไม่มีเลเยอร์</p>';return;}
+ const top=document.createElement('div');top.className='grp';top.innerHTML='<b>ชื่อเลเยอร์</b>';const nm=document.createElement('input');nm.value=L.name;nm.style.width='100%';nm.oninput=()=>{L.name=nm.value;uiLayers();};top.appendChild(nm);
+ const pr=document.createElement('div');pr.className='row';const pb=document.createElement('button');pb.textContent=L.path?'วาดเส้นทางใหม่':'วาดเส้นทางให้เคลื่อนที่';pb.onclick=()=>startPath();pr.appendChild(pb);if(L.path){const cb=document.createElement('button');cb.textContent='ลบเส้นทาง';cb.onclick=()=>{L.path=null;changed();uiProps();};pr.appendChild(cb);}top.appendChild(pr);box.appendChild(top);
+ for(const [gt,fs] of F){const g=document.createElement('div');g.className='grp';g.innerHTML='<b>'+gt+'</b>';
+  for(const [k,lb,ty,a,b,st] of fs){const row=document.createElement('div');row.className='f';const sp=document.createElement('span');sp.textContent=lb;row.appendChild(sp);
+   if(ty==='n'){const r=document.createElement('input');r.type='range';r.min=a;r.max=b;r.step=st;const n=document.createElement('input');n.type='number';n.step=st;const v=gp(L,k);r.value=v;n.value=v;const set=x=>{x=+x;if(!isFinite(x))return;spv(L,k,x);r.value=x;n.value=x;changed();};r.oninput=()=>set(r.value);n.onchange=()=>set(n.value);row.append(r,n);}
+   else if(ty==='s'||ty==='tex'){const s=document.createElement('select');const opts=ty==='tex'?TEXLIST.concat(Object.keys(S.tex).map(k=>[k,'ภาพวาด: '+S.tex[k].name])):a;for(const [v,t] of opts){const o=document.createElement('option');o.value=v;o.textContent=t;s.appendChild(o);}s.value=gp(L,k);s.onchange=()=>{spv(L,k,s.value);changed();};row.appendChild(s);}
+   else if(ty==='c'){const c=document.createElement('input');c.type='color';c.value=gp(L,k);c.oninput=()=>{spv(L,k,c.value);changed();drawTL();};row.appendChild(c);}
+   else if(ty==='b'){const c=document.createElement('input');c.type='checkbox';c.checked=!!gp(L,k);c.onchange=()=>{spv(L,k,c.checked);changed();};row.appendChild(c);}
+   g.appendChild(row);}box.appendChild(g);}}
+function uiLayers(){const box=$('lays');box.innerHTML='';S.layers.forEach((L,i)=>{const d=document.createElement('div');d.className='ly'+(i===S.sel?' sel':'');const c=document.createElement('input');c.type='checkbox';c.checked=L.on;c.onclick=e=>{e.stopPropagation();L.on=c.checked;changed();drawTL();};const sw=document.createElement('i');sw.style.cssText='width:14px;height:14px;border-radius:4px;border:2px solid var(--ink);background:'+L.col[1];const s=document.createElement('span');s.textContent=L.name;const t=document.createElement('small');t.className='mute';t.textContent=L.start.toFixed(2)+'วิ';d.append(c,sw,s,t);d.onclick=()=>{S.sel=i;uiLayers();uiProps();};d.ondblclick=()=>tab('set');box.appendChild(d);});}
+function uiGlobal(){for(const [id,k] of [['gDur','dur'],['gBloom','bloom'],['gExpo','expo']]){$(id).value=S[k];$(id+'N').value=S[k];}$('gMan').checked=S.man;}
+function uiAll(){uiLayers();uiProps();uiGlobal();}
+for(const [id,k] of [['gDur','dur'],['gBloom','bloom'],['gExpo','expo']]){const f=v=>{v=+v;if(!isFinite(v))return;S[k]=v;$(id).value=v;$(id+'N').value=v;if(k==='dur')S.time=Math.min(S.time,S.dur);};$(id).oninput=()=>f($(id).value);$(id+'N').onchange=()=>f($(id+'N').value);}
+$('gMan').onchange=()=>{S.man=$('gMan').checked;};
+function tab(t){document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg_'+t));if(t==='drw')drwShow();}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+$('addL').onclick=()=>{S.layers.push(layer({name:'เลเยอร์ '+(S.layers.length+1),start:S.time}));S.sel=S.layers.length-1;changed(true);uiProps();tab('set');};
+$('dupL').onclick=()=>{const L=S.layers[S.sel];if(!L)return;const c=layer(JSON.parse(JSON.stringify(L,(k,v)=>k[0]==='_'?undefined:v)));c.name=L.name+' (สำเนา)';S.layers.splice(S.sel+1,0,c);S.sel++;changed(true);uiProps();};
+$('delL').onclick=()=>{if(!S.layers.length)return;S.layers.splice(S.sel,1);S.sel=Math.max(0,S.sel-1);changed(true);uiProps();};
+$('upL').onclick=()=>{const i=S.sel;if(i>0){[S.layers[i-1],S.layers[i]]=[S.layers[i],S.layers[i-1]];S.sel--;uiLayers();}};
+$('dnL').onclick=()=>{const i=S.sel;if(i<S.layers.length-1){[S.layers[i+1],S.layers[i]]=[S.layers[i],S.layers[i+1]];S.sel++;uiLayers();}};
+function syncPlay(){$('playB').textContent=S.playing?'⏸ หยุด':'▶ เล่น';}
+$('playB').onclick=()=>{if(!S.playing&&S.time>=S.dur-1e-3){S.time=0;resetSim();}S.playing=!S.playing;syncPlay();};
+$('rstB').onclick=()=>{S.time=0;resetSim();S.playing=true;syncPlay();};
+$('loopC').onchange=()=>{S.loop=$('loopC').checked;};$('spdS').onchange=()=>{S.speed=+$('spdS').value;};
+{const sel=$('preset');for(const k in PRE){const o=document.createElement('option');o.value=k;o.textContent=PRE[k].n;sel.appendChild(o);}}
+$('loadPre').onclick=()=>loadPreset($('preset').value);
+$('newB').onclick=()=>{S.layers=[layer({name:'เลเยอร์ 1',start:0,dur:2})];S.tex={};S.sel=0;S.dur=4;S.time=0;resetSim();uiAll();tab('set');};
+
+/* ===================== camera control + path drawing ===================== */
+let camDrag=null,pathMode=false,pathPts=null;
+function startPath(){pathMode=true;$('pathHint').style.display='block';S.playing=false;syncPlay();}
+function rayPlane(e){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*2-1,y=1-(e.clientY-r.top)/r.height*2;const iv=minv(VP);const un=(v)=>{const w=iv[3]*v[0]+iv[7]*v[1]+iv[11]*v[2]+iv[15];return [(iv[0]*v[0]+iv[4]*v[1]+iv[8]*v[2]+iv[12])/w,(iv[1]*v[0]+iv[5]*v[1]+iv[9]*v[2]+iv[13])/w,(iv[2]*v[0]+iv[6]*v[1]+iv[10]*v[2]+iv[14])/w];};
+ const a=un([x,y,-1]),b=un([x,y,1]),d=V3.sub(b,a);const n=V3.norm([CF[0],0,CF[2]]);const L=S.layers[S.sel];const p0=L?L.pos:[0,0,0];const den=V3.dot(d,n);if(Math.abs(den)<1e-6)return null;const t=V3.dot(V3.sub(p0,a),n)/den;const p=V3.add(a,V3.mul(d,t));p[1]=Math.max(0,p[1]);return p.map(v=>Math.round(v*100)/100);}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);if(pathMode){const p=rayPlane(e);pathPts=p?[p]:[];return;}camDrag={x:e.clientX,y:e.clientY,yaw:S.cam.yaw,pitch:S.cam.pitch,btn:e.button,tx:S.cam.tx,ty:S.cam.ty};});
+cv.addEventListener('pointermove',e=>{if(pathMode&&pathPts){const p=rayPlane(e);if(p&&(!pathPts.length||V3.len(V3.sub(p,pathPts[pathPts.length-1]))>.25))pathPts.push(p);const L=S.layers[S.sel];if(L&&pathPts.length>1){L.path=pathPts.slice();}return;}
+ if(!camDrag)return;const dx=e.clientX-camDrag.x,dy=e.clientY-camDrag.y;if(camDrag.btn===2||e.shiftKey){S.cam.tx=camDrag.tx-dx*.02;S.cam.ty=camDrag.ty+dy*.02;}else{S.cam.yaw=camDrag.yaw-dx*.006;S.cam.pitch=clamp(camDrag.pitch+dy*.004,-.05,1.3);}});
+cv.addEventListener('pointerup',()=>{if(pathMode){pathMode=false;$('pathHint').style.display='none';const L=S.layers[S.sel];if(L&&pathPts&&pathPts.length>1){L.path=pathPts;msg('ได้เส้นทาง '+pathPts.length+' จุด');}pathPts=null;S.time=0;resetSim();S.playing=true;syncPlay();uiProps();return;}camDrag=null;});
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('wheel',e=>{e.preventDefault();S.cam.dist=clamp(S.cam.dist*Math.exp(e.deltaY*.001),4,60);},{passive:false});
+
+/* ===================== drawing tool ===================== */
+const DR={frames:[],cur:0,editing:null};const dc=$('draw'),dg=dc.getContext('2d');
+function blankFrame(){const c=cvs(256,256);return c;}
+function drwShow(){if(!DR.frames.length)DR.frames=[blankFrame()];drwPaint();drwThumbs();drwList();$('dFpsV').textContent=$('dFps').value+' เฟรม/วิ';}
+function drwPaint(){dg.globalCompositeOperation='source-over';dg.fillStyle='#000';dg.fillRect(0,0,256,256);dg.strokeStyle='rgba(255,255,255,.08)';for(let i=32;i<256;i+=32){dg.beginPath();dg.moveTo(i,0);dg.lineTo(i,256);dg.moveTo(0,i);dg.lineTo(256,i);dg.stroke();}
+ if($('dOnion').checked&&DR.cur>0){dg.globalAlpha=.25;dg.drawImage(DR.frames[DR.cur-1],0,0);dg.globalAlpha=1;}dg.drawImage(DR.frames[DR.cur],0,0);}
+function drwThumbs(){const b=$('frames');b.innerHTML='';DR.frames.forEach((f,i)=>{const c=cvs(64,64);const g=c.getContext('2d');g.fillStyle='#111';g.fillRect(0,0,64,64);g.drawImage(f,0,0,64,64);c.className=i===DR.cur?'on':'';c.title='เฟรม '+(i+1);c.onclick=()=>{DR.cur=i;drwPaint();drwThumbs();};b.appendChild(c);});}
+function drwList(){const b=$('dList');b.innerHTML='';const ks=Object.keys(S.tex);if(!ks.length){b.textContent='ยังไม่มี';return;}ks.forEach(k=>{const a=document.createElement('button');a.textContent=S.tex[k].name;a.style.margin='2px';a.onclick=()=>{drwLoad(k);};b.appendChild(a);});}
+function drwLoad(k){const T=S.tex[k];DR.editing=k;$('dName').value=T.name;DR.frames=[];let n=T.frames.length;T.frames.forEach((u,i)=>{const c=blankFrame();const im=new Image();im.onload=()=>{c.getContext('2d').drawImage(im,0,0,256,256);if(--n===0){drwPaint();drwThumbs();}};im.src=u;DR.frames.push(c);});DR.cur=0;$('dFps').value=T.fps;}
+let dLast=null;
+function dDot(g,x,y,from){const tool=$('dTool').value,sz=+$('dSize').value,col=$('dCol').value,sym=+$('dSym').value,mir=$('dMir').checked;const pts=[];for(let k=0;k<sym;k++){const a=k/sym*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a);const tr=(px,py)=>[128+(px-128)*ca-(py-128)*sa,128+(px-128)*sa+(py-128)*ca];pts.push([tr(x,y),from?tr(from[0],from[1]):null]);if(mir)pts.push([tr(256-x,y),from?tr(256-from[0],from[1]):null]);}
+ for(const [p,f] of pts){const steps=f?Math.max(1,Math.ceil(Math.hypot(p[0]-f[0],p[1]-f[1])/(sz*.25))):1;for(let s=1;s<=steps;s++){const xx=f?lerp(f[0],p[0],s/steps):p[0],yy=f?lerp(f[1],p[1],s/steps):p[1];
+  if(tool==='erase'){g.globalCompositeOperation='destination-out';radial(g,xx,yy,sz,[[0,'rgba(0,0,0,1)'],[.7,'rgba(0,0,0,.8)'],[1,'rgba(0,0,0,0)']]);}
+  else if(tool==='hard'){g.globalCompositeOperation='source-over';g.fillStyle=col;g.beginPath();g.arc(xx,yy,sz/2,0,7);g.fill();}
+  else if(tool==='soft'){g.globalCompositeOperation='source-over';const n=parseInt(col.slice(1),16),r=n>>16&255,gg=n>>8&255,b=n&255;radial(g,xx,yy,sz,[[0,'rgba('+r+','+gg+','+b+',.35)'],[1,'rgba('+r+','+gg+','+b+',0)']]);}
+  else{g.globalCompositeOperation='lighter';const n=parseInt(col.slice(1),16),r=n>>16&255,gg=n>>8&255,b=n&255;radial(g,xx,yy,sz,[[0,'rgba('+r+','+gg+','+b+',.22)'],[1,'rgba('+r+','+gg+','+b+',0)']]);radial(g,xx,yy,sz*.25,[[0,'rgba(255,255,255,.35)'],[1,'rgba(255,255,255,0)']]);}}}g.globalCompositeOperation='source-over';}
+dc.addEventListener('pointerdown',e=>{dc.setPointerCapture(e.pointerId);const r=dc.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*256,y=(e.clientY-r.top)/r.height*256;dDot(DR.frames[DR.cur].getContext('2d'),x,y,null);dLast=[x,y];drwPaint();});
+dc.addEventListener('pointermove',e=>{if(!dLast)return;const r=dc.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*256,y=(e.clientY-r.top)/r.height*256;dDot(DR.frames[DR.cur].getContext('2d'),x,y,dLast);dLast=[x,y];drwPaint();});
+dc.addEventListener('pointerup',()=>{dLast=null;drwThumbs();});
+$('fAdd').onclick=()=>{if(DR.frames.length>=8)return msg('ได้สูงสุด 8 เฟรม');DR.frames.splice(DR.cur+1,0,blankFrame());DR.cur++;drwPaint();drwThumbs();};
+$('fCopy').onclick=()=>{if(DR.frames.length>=8)return msg('ได้สูงสุด 8 เฟรม');const c=blankFrame();c.getContext('2d').drawImage(DR.frames[DR.cur],0,0);DR.frames.splice(DR.cur+1,0,c);DR.cur++;drwPaint();drwThumbs();};
+$('fDel').onclick=()=>{if(DR.frames.length<=1){DR.frames=[blankFrame()];}else{DR.frames.splice(DR.cur,1);DR.cur=Math.max(0,DR.cur-1);}drwPaint();drwThumbs();};
+$('fClr').onclick=()=>{DR.frames[DR.cur]=blankFrame();drwPaint();drwThumbs();};
+$('fImg').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{const g=DR.frames[DR.cur].getContext('2d');g.clearRect(0,0,256,256);const s=Math.min(256/im.width,256/im.height);g.drawImage(im,128-im.width*s/2,128-im.height*s/2,im.width*s,im.height*s);drwPaint();drwThumbs();URL.revokeObjectURL(im.src);};im.src=URL.createObjectURL(f);e.target.value='';};
+$('dFps').oninput=()=>{$('dFpsV').textContent=$('dFps').value+' เฟรม/วิ';};
+function texFromFrames(k){const T=S.tex[k];const n=T.frames.length,c=cvs(256*n,256),g=c.getContext('2d');let left=n;return new Promise(res=>{T.frames.forEach((u,i)=>{const im=new Image();im.onload=()=>{g.drawImage(im,i*256,0);if(--left===0){upTex(k,c,n);res();}};im.src=u;});});}
+$('dUse').onclick=()=>{const k=DR.editing||('d'+Date.now().toString(36));const name=($('dName').value||'ภาพของฉัน').slice(0,24);S.tex[k]={name,fps:+$('dFps').value,frames:DR.frames.map(f=>f.toDataURL('image/png'))};DR.editing=k;texFromFrames(k).then(()=>{const L=S.layers[S.sel];if(L){L.tex=k;L.fps=S.tex[k].fps;L.frameRand=S.tex[k].frames.length>1&&!S.tex[k].fps;}changed();uiProps();drwList();msg('ใช้ภาพ "'+name+'" กับเลเยอร์ '+(L?L.name:'')+' แล้ว');});};
+
+/* ===================== save / open / record ===================== */
+function msg(t){$('msg').textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>{$('msg').textContent='';},4000);}
+function toJSON(){return {format:'dfvfx',v:1,name:S.name,dur:S.dur,bloom:S.bloom,expo:S.expo,cam:S.cam,tex:S.tex,layers:S.layers.map(L=>JSON.parse(JSON.stringify(L,(k,v)=>k[0]==='_'||k==='id'?undefined:v)))};}
+$('saveB').onclick=()=>{const b=new Blob([JSON.stringify(toJSON())],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=((S.name||'skill').replace(/[^\w\-ก-๙]+/g,'_'))+'.dfvfx';a.click();msg('บันทึกแล้ว');};
+function fromJSON(o){if(!o||o.format!=='dfvfx'||!Array.isArray(o.layers))throw new Error('ไม่ใช่ไฟล์เอฟเฟกต์ของเกมนี้');const num=(v,d,a,b)=>{v=+v;return isFinite(v)?clamp(v,a,b):d;};
+ S.name=String(o.name||'').slice(0,40);S.dur=num(o.dur,6,1,30);S.bloom=num(o.bloom,1,0,2);S.expo=num(o.expo,1,.3,2.5);if(o.cam)for(const k of ['yaw','pitch','dist','tx','ty'])S.cam[k]=num(o.cam[k],S.cam[k],-100,100);
+ S.tex={};for(const k in (o.tex||{})){const T=o.tex[k];if(!T||!Array.isArray(T.frames)||!/^[a-z0-9]+$/i.test(k))continue;const fr=T.frames.filter(u=>typeof u==='string'&&/^data:image\/png;base64,/.test(u)).slice(0,8);if(fr.length)S.tex[k]={name:String(T.name||'ภาพ').slice(0,24),fps:num(T.fps,12,0,30),frames:fr};}
+ const D=layer({});S.layers=o.layers.slice(0,40).map(x=>{const L=layer({});for(const k in D){if(k==='id'||x[k]===undefined)continue;const d=D[k],v=x[k];if(typeof d==='number')L[k]=num(v,d,-1e3,1e3);else if(typeof d==='boolean')L[k]=!!v;else if(typeof d==='string')L[k]=String(v).slice(0,40);else if(Array.isArray(d)&&Array.isArray(v))L[k]=d.map((dv,i)=>typeof dv==='number'?num(v[i],dv,-1e3,1e3):(/^#[0-9a-f]{6}$/i.test(v[i])?v[i]:dv));}
+  for(const k of ['sizeC','rC','rateC','iC'])if(Array.isArray(x[k]))L[k]=x[k].slice(0,16).map(p=>[num(p[0],0,0,1),num(p[1],1,0,100)]);if(Array.isArray(x.path))L.path=x.path.slice(0,400).map(p=>[0,1,2].map(i=>num(p[i],0,-100,100)));L.max=Math.min(L.max,3000);return L;});
+ return Promise.all(Object.keys(S.tex).map(texFromFrames)).then(()=>{S.sel=0;S.time=0;resetSim();S.playing=true;syncPlay();uiAll();});}
+$('openF').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>fromJSON(JSON.parse(t))).then(()=>msg('เปิดไฟล์แล้ว')).catch(er=>msg('เปิดไม่ได้: '+er.message));e.target.value='';};
+let recChunks=null;
+function stopRec(){if(rec){rec.stop();}}
+$('recB').onclick=()=>{if(rec){stopRec();return;}if(!cv.captureStream||!window.MediaRecorder)return msg('เบราว์เซอร์นี้อัดวิดีโอไม่ได้');const st=cv.captureStream(30);const ty=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';rec=new MediaRecorder(st,ty?{mimeType:ty,videoBitsPerSecond:8e6}:{});recChunks=[];rec.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data);};
+ rec.onstop=()=>{const b=new Blob(recChunks,{type:rec.mimeType||'video/webm'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=((S.name||'skill').replace(/[^\w\-ก-๙]+/g,'_'))+(/mp4/.test(b.type)?'.mp4':'.webm');a.click();rec=null;$('recB').textContent='อัดเป็นวิดีโอ';msg('บันทึกวิดีโอแล้ว');};
+ S.time=0;resetSim();S.playing=true;syncPlay();rec.start();$('recB').textContent='■ กำลังอัด...';};
+
+/* ===================== start ===================== */
+loadPreset('wormhole');tab('lay');requestAnimationFrame(frame);
+window.__vfx={S,loadPreset,simTo,resetSim,toJSON,fromJSON,HDR};
+</script></body></html>
