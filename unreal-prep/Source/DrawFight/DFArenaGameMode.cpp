@@ -2,6 +2,9 @@
 #include "DFCombatComponent.h"
 #include "DFAutoPilotComponent.h"
 #include "DFProfileSubsystem.h"
+#include "DFHudWidget.h"
+#include "TimerManager.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -9,6 +12,23 @@
 ADFArenaGameMode::ADFArenaGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ADFArenaGameMode::StartPlay()
+{
+	Super::StartPlay();
+	if (!bAutoStart) return;
+	FTimerHandle T;
+	GetWorldTimerManager().SetTimer(T, [this]()
+	{
+		if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+		{
+			UClass* C = HudClass ? HudClass.Get() : UDFHudWidget::StaticClass();
+			Hud = CreateWidget<UDFHudWidget>(PC, C);
+			if (Hud) Hud->AddToViewport();
+		}
+		StartFight();
+	}, 1.f, false);
 }
 
 void ADFArenaGameMode::StartFight()
@@ -78,7 +98,7 @@ void ADFArenaGameMode::HandleEnemyDied(UDFCombatComponent* Who)
 	if (Wave >= 3)
 	{
 		bRunning = false;
-		if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->RecordFight(true);
+		if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) LastReward = Prof->RecordFight(true);
 		OnFightEnded.Broadcast(true);
 		return;
 	}
@@ -91,7 +111,7 @@ void ADFArenaGameMode::HandlePlayerDied(UDFCombatComponent* Who)
 {
 	if (!bRunning) return;
 	bRunning = false;
-	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->RecordFight(false);
+	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) LastReward = Prof->RecordFight(false);
 	OnFightEnded.Broadcast(false);
 }
 

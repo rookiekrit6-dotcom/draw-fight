@@ -26,10 +26,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") float SpawnMax = 1600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") float HealBetweenWaves = .3f;
 
+	// Starts the fight 1 s after the level loads and shows the HUD (DFHudWidget)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") bool bAutoStart = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") TSubclassOf<class UDFHudWidget> HudClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Arena") FName MenuLevel = TEXT("MainMenu");
+	UPROPERTY(BlueprintReadOnly, Category = "Arena") int32 LastReward = 0;   // gold from the last fight
+	UPROPERTY(BlueprintReadOnly, Category = "Arena") TObjectPtr<class UDFHudWidget> Hud;
+	UFUNCTION(BlueprintPure, Category = "Arena") bool IsRunning() const { return bRunning; }
+
 	UPROPERTY(BlueprintAssignable) FDFOnWave OnWaveStarted;
 	UPROPERTY(BlueprintAssignable) FDFOnFightEnd OnFightEnded;
 
 	UFUNCTION(BlueprintCallable, Category = "Arena") void StartFight();
+	virtual void StartPlay() override;
 	UFUNCTION(BlueprintPure, Category = "Arena") int32 GetWave() const { return Wave; }
 	UFUNCTION(BlueprintPure, Category = "Arena") int32 EnemiesLeft() const { return Alive; }
 
