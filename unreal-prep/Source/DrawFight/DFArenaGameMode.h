@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
+#include "DFVoiceSubsystem.h"
 #include "DFArenaGameMode.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDFOnWave, int32, Wave, bool, bBossWave);
@@ -51,7 +52,11 @@ private:
 	UFUNCTION() void HandleEnemyDied(class UDFCombatComponent* Who);
 	UFUNCTION() void HandlePlayerDied(class UDFCombatComponent* Who);
 	UFUNCTION() void HandlePlayerDamaged(class UDFCombatComponent* Victim, float Amount, AActor* Source);
+	UFUNCTION() void HandlePlayerDashed(class UDFCombatComponent* Self);
+	UFUNCTION() void HandlePlayerAttack(class UDFCombatComponent* Self);
 	bool bPlayerHit = false;
+	bool bLowHpSaid = false;
+	void Say(EDFVoiceEvent Event);
 
 	int32 Wave = 0;
 	int32 Alive = 0;

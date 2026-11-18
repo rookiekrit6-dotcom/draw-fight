@@ -2,6 +2,7 @@
 #include "DFArenaGameMode.h"
 #include "DFCombatComponent.h"
 #include "DFProfileSubsystem.h"
+#include "DFVoiceSubsystem.h"
 #include "Engine/Font.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
@@ -66,6 +67,8 @@ void UDFHudWidget::NativeConstruct()
 		GM->OnWaveStarted.AddUniqueDynamic(this, &UDFHudWidget::HandleWave);
 		GM->OnFightEnded.AddUniqueDynamic(this, &UDFHudWidget::HandleEnd);
 	}
+	if (UDFVoiceSubsystem* V = UDFVoiceSubsystem::Get(this))
+		V->OnSubtitle.AddUniqueDynamic(this, &UDFHudWidget::HandleSubtitle);
 }
 
 TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
@@ -97,6 +100,8 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 	auto BannerText = [Self]() { return Self.IsValid() ? FText::FromString(Self->Banner) : FText(); };
 	auto BannerVis = [Self]() { return (Self.IsValid() && Self->BannerLeft > 0.f) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
 	auto BannerColor = [Self]() { return FSlateColor(Self.IsValid() ? Self->BannerColor : FLinearColor::White); };
+	auto SubText = [Self]() { return Self.IsValid() ? FText::FromString(Self->Subtitle) : FText(); };
+	auto SubVis = [Self]() { return (Self.IsValid() && Self->SubtitleLeft > 0.f) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
 	auto DashText = [Self]()
 	{
 		const UDFCombatComponent* C = Self.IsValid() ? Self->PlayerCombat() : nullptr;
@@ -168,6 +173,13 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0.f, 0.f, 0.f, 30.f)
 		[
 			SNew(SVerticalBox).Visibility(EVisibility::HitTestInvisible)
+			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 0, 0, 14)
+			[
+				SNew(SBorder).Visibility(TAttribute<EVisibility>::CreateLambda(SubVis))
+				.BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(0, 0, 0, .55f))
+				.Padding(FMargin(16.f, 6.f))
+				[ Label(TAttribute<FText>::CreateLambda(SubText), 22, FLinearColor::White) ]
+			]
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Skills ]
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 8)[ Label(TAttribute<FText>::CreateLambda(DashText), 16, HudDim) ]
 		]
@@ -179,6 +191,12 @@ void UDFHudWidget::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 	EndBox.Reset();
+}
+
+void UDFHudWidget::HandleSubtitle(const FString& Text, float Seconds)
+{
+	Subtitle = Text;
+	SubtitleLeft = Seconds;
 }
 
 void UDFHudWidget::HandleWave(int32 Wave, bool bBossWave)
@@ -259,6 +277,7 @@ void UDFHudWidget::NativeTick(const FGeometry& Geo, float Dt)
 {
 	Super::NativeTick(Geo, Dt);
 	BannerLeft = FMath::Max(0.f, BannerLeft - Dt);
+	SubtitleLeft = FMath::Max(0.f, SubtitleLeft - Dt);
 
 	// floating numbers: watch every fighter's HP and pop the difference
 	for (UDFCombatComponent* C : UDFCombatComponent::Registry())

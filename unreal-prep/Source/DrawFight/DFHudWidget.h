@@ -22,6 +22,7 @@ public:
 
 	UFUNCTION() void HandleWave(int32 Wave, bool bBossWave);
 	UFUNCTION() void HandleEnd(bool bVictory);
+	UFUNCTION() void HandleSubtitle(const FString& Text, float Seconds);
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
@@ -39,6 +40,8 @@ private:
 	FString Banner;
 	FLinearColor BannerColor = FLinearColor::White;
 	float BannerLeft = 0.f;
+	FString Subtitle;
+	float SubtitleLeft = 0.f;
 	bool bEnded = false;
 
 	TSharedPtr<SBox> EndBox;

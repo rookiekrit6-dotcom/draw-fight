@@ -1,5 +1,6 @@
 #include "DFMenuWidget.h"
 #include "DFProfileSubsystem.h"
+#include "DFVoiceSubsystem.h"
 #include "Engine/Font.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -242,13 +243,36 @@ TSharedRef<SWidget> UDFMenuWidget::BuildHeroes()
 	TSharedRef<SWidget> Action = bSel
 		? Button(TEXT("กำลังใช้ตัวนี้"), []() {}, Panel, 24, false)
 		: bOwn
-		? Button(TEXT("ใช้ตัวนี้"), [this]() { Profile()->Select(Viewing); Refresh(); }, Green, 24)
+		? Button(TEXT("ใช้ตัวนี้"), [this]() {
+			Profile()->Select(Viewing);
+			if (UDFVoiceSubsystem* V = UDFVoiceSubsystem::Get(this)) V->Play(this, Viewing, EDFVoiceEvent::Select);
+			Refresh(); }, Green, 24)
 		: Button(FString::Printf(TEXT("ปลดล็อก %d ทอง"), H.UnlockCost), [this]()
 			{
 				if (!Profile()->Unlock(Viewing)) Toast = TEXT("ทองไม่พอ ลองไปสู้เก็บทองก่อน");
 				Refresh();
 			}, Gold * FLinearColor(.8f, .8f, .8f, 1.f), 24, P->GetGold() >= H.UnlockCost);
 	Info->AddSlot().AutoHeight().Padding(0, 16, 0, 0)[ Action ];
+
+	// player-made voice pack for this hero
+	if (UDFVoiceSubsystem* V = UDFVoiceSubsystem::Get(this))
+	{
+		const FName Hero = Viewing;
+		Info->AddSlot().AutoHeight().Padding(0, 18, 0, 4)[ Label(TEXT("เสียงพากย์ (อัดเสียงเองได้)"), 20, FLinearColor::White, true) ];
+		Info->AddSlot().AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 8, 0)
+			[ Button(V->PackLabel(V->GetAssignedPack(Hero)), [this, Hero]() {
+				UDFVoiceSubsystem* VV = UDFVoiceSubsystem::Get(this);
+				if (VV && !VV->CycleAssignedPack(Hero).IsEmpty()) VV->Play(this, Hero, EDFVoiceEvent::Select);
+				Refresh(); }, Blue * FLinearColor(.7f, .7f, .7f, 1.f), 17) ]
+			+ SHorizontalBox::Slot().AutoWidth().Padding(0, 0, 8, 0)
+			[ Button(TEXT("เปิดโฟลเดอร์เสียง"), [this]() { if (UDFVoiceSubsystem* VV = UDFVoiceSubsystem::Get(this)) VV->OpenPacksFolder(); }, Panel, 17) ]
+			+ SHorizontalBox::Slot().AutoWidth()
+			[ Button(TEXT("โหลดใหม่"), [this]() { if (UDFVoiceSubsystem* VV = UDFVoiceSubsystem::Get(this)) VV->ScanPacks(); Refresh(); }, Panel, 17) ]
+		];
+	}
 	if (!Toast.IsEmpty()) Info->AddSlot().AutoHeight().Padding(0, 6)[ Label(Toast, 18, Accent) ];
 
 	return SNew(SVerticalBox)
@@ -274,6 +298,15 @@ TSharedRef<SWidget> UDFMenuWidget::BuildAura()
 	auto DoRoll = [this](int32 N)
 	{
 		LastRolls = Profile()->RollAuras(N);
+		for (const FName& Id : LastRolls)
+		{
+			FDFAuraRow A;
+			if (Profile()->GetAura(Id, A) && A.Chance >= 1000)
+			{
+				if (UDFVoiceSubsystem* V = UDFVoiceSubsystem::Get(this)) V->Play(this, Profile()->GetSelected(), EDFVoiceEvent::RareAura);
+				break;
+			}
+		}
 		Toast = LastRolls.Num() ? FString() : FString(TEXT("ทองไม่พอ"));
 		Refresh();
 	};
