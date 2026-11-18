@@ -2,6 +2,7 @@
 #include "DFArenaGameMode.h"
 #include "DFCombatComponent.h"
 #include "DFProfileSubsystem.h"
+#include "DFFonts.h"
 #include "DFVoiceSubsystem.h"
 #include "Engine/Font.h"
 #include "Engine/World.h"
@@ -31,7 +32,7 @@ namespace
 FSlateFontInfo UDFHudWidget::Font(int32 Size) const
 {
 	if (ThaiFont) return FSlateFontInfo(ThaiFont, Size, TEXT("Default"));
-	return FCoreStyle::GetDefaultFontStyle("Bold", Size);
+	return FDFFonts::Get(Size, true);
 }
 
 TSharedRef<SWidget> UDFHudWidget::Label(TAttribute<FText> Text, int32 Size, FLinearColor Color) const

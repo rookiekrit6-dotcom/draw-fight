@@ -1,5 +1,6 @@
 #include "DFMenuWidget.h"
 #include "DFProfileSubsystem.h"
+#include "DFFonts.h"
 #include "DFVoiceSubsystem.h"
 #include "Engine/Font.h"
 #include "Kismet/GameplayStatics.h"
@@ -53,7 +54,7 @@ UDFProfileSubsystem* UDFMenuWidget::Profile() const { return UDFProfileSubsystem
 FSlateFontInfo UDFMenuWidget::Font(int32 Size, bool bBold) const
 {
 	if (ThaiFont) return FSlateFontInfo(ThaiFont, Size, bBold ? TEXT("Bold") : TEXT("Default"));
-	return FCoreStyle::GetDefaultFontStyle(bBold ? "Bold" : "Regular", Size);
+	return FDFFonts::Get(Size, bBold);
 }
 
 TSharedRef<SWidget> UDFMenuWidget::Label(const FString& Text, int32 Size, FLinearColor Color, bool bBold) const

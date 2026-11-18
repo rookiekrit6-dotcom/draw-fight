@@ -171,6 +171,9 @@ TArray<FName> UDFProfileSubsystem::GetUsableSkills(FName Hero) const
 		if (!R.Skill2.IsNone()) Out.AddUnique(R.Skill2);
 		const FName Sig = WeaponSignature(R.WeaponClass);
 		if (!Sig.IsNone()) Out.AddUnique(Sig);
+		// starter skills so every hero can fill 3 slots even before owning cards
+		static const FName Starters[] = { TEXT("haste"), TEXT("barrier"), TEXT("blast") };
+		for (const FName& S : Starters) if (Out.Num() < SlotCount) Out.AddUnique(S);
 	}
 	if (Save)
 		for (const TPair<FName, int32>& P : Save->Gacha.SkillLevels)
@@ -192,6 +195,10 @@ TArray<FName> UDFProfileSubsystem::GetLoadout(FName Hero) const
 				L->Skills.Insert(HeroRow.Skill1, 0);
 				L->Skills.SetNum(SlotCount);
 			}
+			for (FName& Slot : L->Skills) // fill empty slots
+				if (Slot.IsNone())
+					for (const FName& U : GetUsableSkills(Hero))
+						if (!L->Skills.Contains(U)) { Slot = U; break; }
 			return L->Skills;
 		}
 	// Default: own 2 skills + weapon signature

@@ -3,6 +3,7 @@
 #include "DFAutoPilotComponent.h"
 #include "DFProfileSubsystem.h"
 #include "DFVoiceSubsystem.h"
+#include "DFSkillFX.h"
 #include "AIController.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimSequence.h"
@@ -163,14 +164,17 @@ bool ADFPlayerCharacter::TryCastSlot(int32 Slot)
 
 	if (bPlaceholderSkills)
 	{
-		// stand-in until the real skill runner: damage everything nearby
-		const float Radius = Slot == 3 ? 900.f : 450.f;
-		const float Dmg = Combat->Damage * (Slot == 3 ? 5.f : 2.2f);
-		for (UDFCombatComponent* O : UDFCombatComponent::Registry())
-			if (O && O != Combat && O->Team != Combat->Team && !O->IsDead() && O->GetOwner()
-				&& FVector::Dist2D(O->GetOwner()->GetActorLocation(), GetActorLocation()) < Radius)
-				O->ApplyDamage(Dmg, this);
-		Combat->TryAttack(); // reuse the swing animation
+		// code-built visuals + hits until the Niagara versions exist
+		FLinearColor Col(1.f, .45f, .15f);
+		int32 Lv = 1;
+		if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this))
+		{
+			FDFCharacterRow H;
+			if (P->GetCharacter(P->GetSelected(), H) && H.Color.StartsWith(TEXT("#"))) Col = FLinearColor(FColor::FromHex(H.Color));
+			Lv = FMath::Max(1, P->GetSkillLevel(Skill));
+		}
+		ADFSkillFX::CastSkill(this, Skill, Lv, Col, Slot == 3 ? 2.5f : 1.f);
+		Combat->TryAttack(); // swing animation
 	}
 	return true;
 }

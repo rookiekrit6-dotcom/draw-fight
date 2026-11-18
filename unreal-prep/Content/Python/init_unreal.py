@@ -60,6 +60,46 @@ def set_game_mode(level_path, cls_path):
     return True
 
 
+def make_glow_material():
+    path = "/Game/DrawFight/FX/M_Glow"
+    if unreal.EditorAssetLibrary.does_asset_exist(path):
+        return
+    tools = unreal.AssetToolsHelpers.get_asset_tools()
+    mat = tools.create_asset("M_Glow", "/Game/DrawFight/FX", unreal.Material, unreal.MaterialFactoryNew())
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_ADDITIVE)
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    mat.set_editor_property("two_sided", True)
+    mel = unreal.MaterialEditingLibrary
+    color = mel.create_material_expression(mat, unreal.MaterialExpressionVectorParameter, -800, 0)
+    color.set_editor_property("parameter_name", "Color")
+    color.set_editor_property("default_value", unreal.LinearColor(1.0, 0.5, 0.1, 1.0))
+    opacity = mel.create_material_expression(mat, unreal.MaterialExpressionScalarParameter, -800, 200)
+    opacity.set_editor_property("parameter_name", "Opacity")
+    opacity.set_editor_property("default_value", 1.0)
+    glow = mel.create_material_expression(mat, unreal.MaterialExpressionScalarParameter, -800, 300)
+    glow.set_editor_property("parameter_name", "Glow")
+    glow.set_editor_property("default_value", 6.0)
+    fres = mel.create_material_expression(mat, unreal.MaterialExpressionFresnel, -800, 420)
+    base = mel.create_material_expression(mat, unreal.MaterialExpressionConstant, -800, 520)
+    base.set_editor_property("r", 0.45)
+    edge = mel.create_material_expression(mat, unreal.MaterialExpressionAdd, -600, 450)
+    mel.connect_material_expressions(fres, "", edge, "A")
+    mel.connect_material_expressions(base, "", edge, "B")
+    m1 = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -500, 0)
+    mel.connect_material_expressions(color, "", m1, "A")
+    mel.connect_material_expressions(opacity, "", m1, "B")
+    m2 = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -350, 100)
+    mel.connect_material_expressions(m1, "", m2, "A")
+    mel.connect_material_expressions(glow, "", m2, "B")
+    m3 = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -200, 200)
+    mel.connect_material_expressions(m2, "", m3, "A")
+    mel.connect_material_expressions(edge, "", m3, "B")
+    mel.connect_material_property(m3, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mel.recompile_material(mat)
+    unreal.EditorAssetLibrary.save_asset(path)
+    log("created " + path)
+
+
 def setup_levels():
     les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
     if not unreal.EditorAssetLibrary.does_asset_exist(MENU):
@@ -82,6 +122,7 @@ def _run(dt):
     unreal.unregister_slate_post_tick_callback(_handle)
     try:
         import_tables()
+        make_glow_material()
         setup_levels()
         log("done")
     except Exception as e:
