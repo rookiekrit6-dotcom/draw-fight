@@ -1,6 +1,7 @@
 #include "DFMenuGameMode.h"
 #include "DFMenuWidget.h"
 #include "DFMenuStage.h"
+#include "DFAudio.h"
 #include "Blueprint/UserWidget.h"
 
 void ADFMenuPlayerController::BeginPlay()
@@ -13,6 +14,7 @@ void ADFMenuPlayerController::BeginPlay()
 	Stage = GetWorld()->SpawnActor<ADFMenuStage>(ADFMenuStage::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SP);
 	bAutoManageActiveCameraTarget = false;
 	if (Stage) SetViewTarget(Stage);
+	DFAudio::Music(this, TEXT("M_Menu"));
 	UClass* C = MenuClass ? MenuClass.Get() : UDFMenuWidget::StaticClass();
 	Menu = CreateWidget<UDFMenuWidget>(this, C);
 	if (Menu) Menu->AddToViewport();

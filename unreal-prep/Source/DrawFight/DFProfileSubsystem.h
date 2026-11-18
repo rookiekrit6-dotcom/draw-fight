@@ -56,6 +56,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FLinearColor ElementColor(FName Id) const;
 	// colour of the player's skills: chosen element, else the hero colour
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FLinearColor GetPowerColor() const;
+	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FName GetPowerElement() const;
+	// ---- next fight + settings ----
+	UDFSaveGame* Data() const { return Save; }
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void RecordEndless(int32 Kills, float Seconds);
+	UFUNCTION(BlueprintCallable, Category = "DrawFight|Profile") void ApplySettings();
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString SkillNameTH(FName Id) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString ElementNameTH(FName Id) const;
 	UFUNCTION(BlueprintPure, Category = "DrawFight|Profile") FString WeaponNameTH(FName Id) const;

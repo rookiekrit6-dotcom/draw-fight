@@ -111,7 +111,8 @@ def make_glow_material():
 
 
 TEX_DIR = "/Game/DrawFight/FX/Tex"
-TEX_NAMES = ["T_SoftGlow", "T_Ring", "T_Spark", "T_Star", "T_Slash", "T_Smoke1", "T_Smoke2", "T_Smoke3", "T_Shock", "T_Crack"]
+TEX_NAMES = ["T_SoftGlow", "T_Ring", "T_Spark", "T_Star", "T_Slash", "T_Smoke1", "T_Smoke2", "T_Smoke3", "T_Shock", "T_Crack",
+             "T_Circle1", "T_Circle2", "T_Circle3", "T_Flame", "T_Shard", "T_Leaf", "T_Bolt", "T_Bubble", "T_Drop", "T_Spore", "T_Gear", "T_Swirl"]
 
 
 def import_fx_textures():
@@ -220,6 +221,70 @@ def import_ui_icons():
         log("imported icon " + n)
 
 
+def make_particle_material():
+    # instanced particles: colour = per-instance data 0..2, brightness = data 3, shape = Tex alpha
+    path = "/Game/DrawFight/FX/M_Particle"
+    if unreal.EditorAssetLibrary.does_asset_exist(path):
+        return
+    tools = unreal.AssetToolsHelpers.get_asset_tools()
+    mat = tools.create_asset("M_Particle", "/Game/DrawFight/FX", unreal.Material, unreal.MaterialFactoryNew())
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_ADDITIVE)
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    mat.set_editor_property("two_sided", True)
+    mat.set_editor_property("used_with_instanced_static_meshes", True)
+    mel = unreal.MaterialEditingLibrary
+    tex = mel.create_material_expression(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 0)
+    tex.set_editor_property("parameter_name", "Tex")
+    default = unreal.load_asset(TEX_DIR + "/T_SoftGlow")
+    if default:
+        tex.set_editor_property("texture", default)
+    col = mel.create_material_expression(mat, unreal.MaterialExpressionPerInstanceCustomData3Vector, -900, 300)
+    col.set_editor_property("data_index", 0)
+    inten = mel.create_material_expression(mat, unreal.MaterialExpressionPerInstanceCustomData, -900, 450)
+    inten.set_editor_property("data_index", 3)
+    a = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -600, 100)
+    mel.connect_material_expressions(tex, "A", a, "A")
+    mel.connect_material_expressions(inten, "", a, "B")
+    e = mel.create_material_expression(mat, unreal.MaterialExpressionMultiply, -350, 200)
+    mel.connect_material_expressions(a, "", e, "A")
+    mel.connect_material_expressions(col, "", e, "B")
+    mel.connect_material_property(e, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mel.recompile_material(mat)
+    unreal.EditorAssetLibrary.save_asset(path)
+    log("created " + path)
+
+
+AUDIO_DIR = "/Game/DrawFight/Audio"
+
+
+def import_audio():
+    src = os.path.join(unreal.Paths.project_dir(), "Data", "Audio")
+    if not os.path.isdir(src):
+        return
+    tools = unreal.AssetToolsHelpers.get_asset_tools()
+    for fn in sorted(os.listdir(src)):
+        if not fn.lower().endswith(".wav"):
+            continue
+        n = fn[:-4]
+        f = os.path.join(src, fn)
+        if unreal.EditorAssetLibrary.does_asset_exist(AUDIO_DIR + "/" + n):
+            asset_file = os.path.join(unreal.Paths.project_content_dir(), "DrawFight", "Audio", n + ".uasset")
+            if os.path.exists(asset_file) and os.path.getmtime(f) <= os.path.getmtime(asset_file):
+                continue
+        task = unreal.AssetImportTask()
+        task.set_editor_property("filename", f)
+        task.set_editor_property("destination_path", AUDIO_DIR)
+        task.set_editor_property("automated", True)
+        task.set_editor_property("save", False)
+        task.set_editor_property("replace_existing", True)
+        tools.import_asset_tasks([task])
+        snd = unreal.load_asset(AUDIO_DIR + "/" + n)
+        if snd and n.startswith("M_"):
+            snd.set_editor_property("looping", True)
+        unreal.EditorAssetLibrary.save_asset(AUDIO_DIR + "/" + n)
+        log("imported sound " + n)
+
+
 def setup_levels():
     les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
     if not unreal.EditorAssetLibrary.does_asset_exist(MENU):
@@ -246,6 +311,8 @@ def _run(dt):
         import_fx_textures()
         make_sprite_material("M_Sprite", True)
         make_sprite_material("M_Dust", False)
+        make_particle_material()
+        import_audio()
         import_ui_icons()
         setup_levels()
         log("done")

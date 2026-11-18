@@ -27,6 +27,19 @@ public:
 	UPROPERTY(SaveGame) bool bCreated = false;
 	UPROPERTY(SaveGame) FString PlayerName;
 	UPROPERTY(SaveGame) FName Element;              // chosen power colour (DT_Elements)
+	// what the next fight is
+	UPROPERTY(SaveGame) FName Arena = TEXT("lab");
+	UPROPERTY(SaveGame) FName Mode = TEXT("story");  // story | endless
+	UPROPERTY(SaveGame) int32 Chapter = 1;          // highest story chapter unlocked
+	UPROPERTY(SaveGame) int32 PlayChapter = 1;
+	UPROPERTY(SaveGame) int32 BestKills = 0;        // endless record
+	UPROPERTY(SaveGame) float BestTime = 0.f;
+	// settings
+	UPROPERTY(SaveGame) float MasterVolume = 1.f;
+	UPROPERTY(SaveGame) float MusicVolume = .6f;
+	UPROPERTY(SaveGame) float SfxVolume = 1.f;
+	UPROPERTY(SaveGame) float MouseSens = 1.f;
+	UPROPERTY(SaveGame) int32 Quality = 2;          // 0 low .. 3 epic
 	UPROPERTY(SaveGame) TMap<FName, FDFLoadout> Loadouts;
 	UPROPERTY(SaveGame) int32 Wins = 0;
 	UPROPERTY(SaveGame) int32 Losses = 0;

@@ -24,6 +24,10 @@
 #include "Misc/Paths.h"
 #include "DFMenuStage.h"
 #include "DFMenuGameMode.h"
+#include "DFAudio.h"
+#include "DFArenaDressing.h"
+#include "DFSaveGame.h"
+#include "Widgets/Input/SSlider.h"
 
 namespace
 {
@@ -68,7 +72,7 @@ FSlateFontInfo UDFMenuWidget::Font(int32 Size, bool bBold) const
 TSharedRef<SWidget> UDFMenuWidget::Label(const FString& Text, int32 Size, FLinearColor Color, bool bBold) const
 {
 	return SNew(STextBlock).Text(FText::FromString(Text)).Font(Font(Size, bBold))
-		.ColorAndOpacity(FSlateColor(Color)).AutoWrapText(true);
+		.ColorAndOpacity(FSlateColor(Color)).AutoWrapText(Text.Len() > 34);
 }
 
 namespace
@@ -152,7 +156,7 @@ TSharedRef<SWidget> UDFMenuWidget::Button(const FString& Text, TFunction<void()>
 		.ContentPadding(FMargin(20.f, 11.f))
 		.OnClicked_Lambda([Self, OnClick]()
 		{
-			if (Self.IsValid()) OnClick();
+			if (Self.IsValid()) { DFAudio::Sfx(Self.Get(), TEXT("S_Click"), FVector::ZeroVector, .5f); OnClick(); }
 			return FReply::Handled();
 		})
 		[
@@ -172,7 +176,7 @@ TSharedRef<SWidget> UDFMenuWidget::IconButton(const TCHAR* IconName, const FStri
 		.ButtonColorAndOpacity(Color)
 		.IsEnabled(bEnabled)
 		.ContentPadding(FMargin(bBig ? 24.f : 18.f, bBig ? 16.f : 11.f))
-		.OnClicked_Lambda([Self, OnClick]() { if (Self.IsValid()) OnClick(); return FReply::Handled(); })
+		.OnClicked_Lambda([Self, OnClick]() { if (Self.IsValid()) { DFAudio::Sfx(Self.Get(), TEXT("S_Click"), FVector::ZeroVector, .5f); OnClick(); } return FReply::Handled(); })
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0, 0, 16, 0)
@@ -242,6 +246,8 @@ void UDFMenuWidget::Refresh()
 	case EPage::Heroes:  Root->SetContent(Wrap(BuildHeroes())); break;
 	case EPage::Aura:    Root->SetContent(Wrap(BuildAura())); break;
 	case EPage::Classes: Root->SetContent(Wrap(BuildClasses())); break;
+	case EPage::Fight:   Root->SetContent(BuildFight()); break;
+	case EPage::Settings: Root->SetContent(BuildSettings()); break;
 	}
 	SyncStage();
 }
@@ -451,8 +457,7 @@ TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 
 	TSharedRef<SVerticalBox> Menu = SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 14)
-		[ IconButton(TEXT("I_Swords"), TEXT("เข้าสู้"), TEXT("ฝ่าคลื่นศัตรูและบอส"), [Self]() {
-			if (Self.IsValid()) UGameplayStatics::OpenLevel(Self.Get(), Self->ArenaLevel); }, Accent, true) ]
+		[ IconButton(TEXT("I_Swords"), TEXT("เข้าสู้"), TEXT("เนื้อเรื่อง · ฝ่าคลื่นไม่รู้จบ · เลือกด่าน"), [this]() { Page = EPage::Fight; Toast.Reset(); Refresh(); }, Accent, true) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
 		[ IconButton(TEXT("I_Bag"), TEXT("ตัวละครและสกิล"), TEXT("จัดสกิล · เปลี่ยนร่าง · เสียงพากย์"), [this]() { ShowHeroes(); }, Blue) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
@@ -461,6 +466,8 @@ TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 		[ IconButton(TEXT("I_Crown"), TEXT("อาชีพลับ"), TEXT("ปลดล็อกด้วยเงื่อนไขลับ"), [this]() { ShowClasses(); }, FLinearColor(0.75f, 0.55f, 0.12f)) ]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
 		[ IconButton(TEXT("I_User"), TEXT("แก้ไขตัวละคร"), TEXT("ชื่อ · ร่าง · ธาตุ"), [this]() { ShowCreate(); }, Panel) ]
+		+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 10)
+		[ IconButton(TEXT("I_Gear"), TEXT("ตั้งค่า"), TEXT("เสียง · กราฟิก · เมาส์"), [this]() { Page = EPage::Settings; Toast.Reset(); Refresh(); }, FLinearColor(0.2f, 0.22f, 0.28f)) ]
 		+ SVerticalBox::Slot().AutoHeight()
 		[ IconButton(TEXT("I_Exit"), TEXT("ออกจากเกม"), FString(), [Self]() {
 			if (Self.IsValid()) UKismetSystemLibrary::QuitGame(Self.Get(), Self->GetOwningPlayer(), EQuitPreference::Quit, false); }, FLinearColor(0.12f, 0.12f, 0.16f)) ];
@@ -491,6 +498,132 @@ TSharedRef<SWidget> UDFMenuWidget::BuildMain()
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top)[ Wallet ]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)[ SNew(SBox).MaxDesiredWidth(560.f)[ Plate ] ];
+}
+
+// ================= FIGHT SETUP =================
+TSharedRef<SWidget> UDFMenuWidget::BuildFight()
+{
+	UDFProfileSubsystem* P = Profile();
+	UDFSaveGame* S = P->Data();
+	TWeakObjectPtr<UDFMenuWidget> Self(this);
+	if (!S) return Card(Label(TEXT("ไม่มีเซฟ"), 24, Accent));
+	const bool bStory = S->Mode != FName(TEXT("endless"));
+	S->PlayChapter = FMath::Clamp(S->PlayChapter, 1, S->Chapter);
+
+	// mode cards
+	TSharedRef<SHorizontalBox> Modes = SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().FillWidth(1.f).Padding(0, 0, 10, 0)
+		[ IconButton(TEXT("I_Crown"), TEXT("เนื้อเรื่อง"), FString::Printf(TEXT("บทที่ %d จาก %d ที่ปลดล็อก · จบด้วยบอส"), S->PlayChapter, S->Chapter),
+			[this, S]() { S->Mode = TEXT("story"); Profile()->SaveNow(); Refresh(); }, bStory ? Accent : Panel) ]
+		+ SHorizontalBox::Slot().FillWidth(1.f)
+		[ IconButton(TEXT("I_Swords"), TEXT("ฝ่าคลื่นไม่รู้จบ"), FString::Printf(TEXT("สถิติ ล้ม %d ตัว · %d:%02d"), S->BestKills, (int32)S->BestTime / 60, (int32)S->BestTime % 60),
+			[this, S]() { S->Mode = TEXT("endless"); Profile()->SaveNow(); Refresh(); }, !bStory ? Accent : Panel) ];
+
+	TSharedRef<SHorizontalBox> ChapterRow = SNew(SHorizontalBox);
+	if (bStory)
+		ChapterRow->AddSlot().AutoWidth().VAlign(VAlign_Center)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth()[ Button(TEXT("<"), [this, S]() { S->PlayChapter = FMath::Max(1, S->PlayChapter - 1); Refresh(); }, Panel, 22, S->PlayChapter > 1) ]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(16, 0)[ Label(FString::Printf(TEXT("บทที่ %d"), S->PlayChapter), 30, FLinearColor::White, true) ]
+			+ SHorizontalBox::Slot().AutoWidth()[ Button(TEXT(">"), [this, S]() { S->PlayChapter = FMath::Min(S->Chapter, S->PlayChapter + 1); Refresh(); }, Panel, 22, S->PlayChapter < S->Chapter) ]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(16, 0)[ Label(FString::Printf(TEXT("ศัตรูแรงขึ้น %d%% · %d คลื่น"), 22 * (S->PlayChapter - 1), FMath::Min(3 + (S->PlayChapter - 1) / 3, 6)), 17, Dim) ]
+		];
+
+	// arenas
+	TSharedRef<SWrapBox> Arenas = SNew(SWrapBox).UseAllottedSize(true).InnerSlotPadding(FVector2D(10.f, 10.f));
+	for (const FName& T : ADFArenaDressing::Themes())
+	{
+		const bool bSel = S->Arena == T;
+		const FLinearColor C = ADFArenaDressing::ThemeColor(T);
+		Arenas->AddSlot()
+		[
+			SNew(SBox).WidthOverride(200.f).HeightOverride(86.f)
+			[
+				SNew(SButton).ButtonStyle(&FlatStyle())
+				.ButtonColorAndOpacity(bSel ? C : C * FLinearColor(.3f, .3f, .3f, .9f))
+				.HAlign(HAlign_Center).VAlign(VAlign_Center)
+				.OnClicked_Lambda([this, S, T]() { S->Arena = T; Profile()->SaveNow(); Refresh(); return FReply::Handled(); })
+				[ Label(ADFArenaDressing::ThemeNameTH(T), 22, FLinearColor::White, true) ]
+			]
+		];
+	}
+
+	return SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center)
+		[
+			SNew(SBox).WidthOverride(880.f)
+			[
+				Card(SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 18)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot().AutoWidth()[ SNew(SBox).WidthOverride(150.f)[ IconButton(TEXT("I_Back"), TEXT("กลับ"), FString(), [this]() { ShowMain(); }, Panel) ] ]
+						+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(20, 0)[ Label(TEXT("เตรียมสู้"), 40, FLinearColor::White, true) ]
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)[ Label(TEXT("โหมด"), 20, Dim, true) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 12)[ Modes ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 18)[ ChapterRow ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 8)[ Label(TEXT("ด่าน"), 20, Dim, true) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 24)[ Arenas ]
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right)
+					[ SNew(SBox).WidthOverride(320.f)[ IconButton(TEXT("I_Play"), TEXT("เริ่มสู้!"), ADFArenaDressing::ThemeNameTH(S->Arena), [Self]() {
+						if (!Self.IsValid()) return;
+						Self->Profile()->SaveNow();
+						UGameplayStatics::OpenLevel(Self.Get(), Self->ArenaLevel); }, Accent, true) ] ],
+				FLinearColor(0.f, 0.f, 0.f, .62f), 34.f)
+			]
+		];
+}
+
+// ================= SETTINGS =================
+TSharedRef<SWidget> UDFMenuWidget::Slider(const FString& Name, float* Value, float Min, float Max)
+{
+	TWeakObjectPtr<UDFMenuWidget> Self(this);
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[ SNew(SBox).WidthOverride(220.f)[ Label(Name, 22, FLinearColor::White, true) ] ]
+		+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
+		[
+			SNew(SSlider).MinValue(Min).MaxValue(Max).Value(*Value)
+			.SliderBarColor(FLinearColor(1, 1, 1, .25f)).SliderHandleColor(Accent)
+			.OnValueChanged_Lambda([Value](float V) { *Value = V; })
+			.OnMouseCaptureEnd_Lambda([Self]() { if (Self.IsValid() && Self->Profile()) Self->Profile()->SaveNow(); })
+		];
+}
+
+TSharedRef<SWidget> UDFMenuWidget::BuildSettings()
+{
+	UDFProfileSubsystem* P = Profile();
+	UDFSaveGame* S = P->Data();
+	if (!S) return Card(Label(TEXT("ไม่มีเซฟ"), 24, Accent));
+	static const TCHAR* Q[4] = { TEXT("ต่ำ"), TEXT("กลาง"), TEXT("สูง"), TEXT("สุด") };
+	TSharedRef<SHorizontalBox> Quality = SNew(SHorizontalBox);
+	for (int32 I = 0; I < 4; ++I)
+		Quality->AddSlot().AutoWidth().Padding(0, 0, 8, 0)
+		[ Button(Q[I], [this, S, I]() { S->Quality = I; Profile()->ApplySettings(); Profile()->SaveNow(); Refresh(); }, S->Quality == I ? Accent : Panel, 20) ];
+
+	return SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Center)
+		[
+			SNew(SBox).WidthOverride(760.f)
+			[
+				Card(SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 0, 0, 22)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot().AutoWidth()[ SNew(SBox).WidthOverride(150.f)[ IconButton(TEXT("I_Back"), TEXT("กลับ"), FString(), [this]() { Profile()->SaveNow(); ShowMain(); }, Panel) ] ]
+						+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(20, 0)[ Label(TEXT("ตั้งค่า"), 40, FLinearColor::White, true) ]
+					]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8)[ Slider(TEXT("เสียงรวม"), &S->MasterVolume, 0.f, 1.f) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8)[ Slider(TEXT("เพลง"), &S->MusicVolume, 0.f, 1.f) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8)[ Slider(TEXT("เสียงเอฟเฟกต์"), &S->SfxVolume, 0.f, 1.f) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8)[ Slider(TEXT("ความไวเมาส์"), &S->MouseSens, .3f, 2.5f) ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 18, 0, 8)[ Label(TEXT("คุณภาพกราฟิก"), 22, FLinearColor::White, true) ]
+					+ SVerticalBox::Slot().AutoHeight()[ Quality ]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 22, 0, 0)[ Label(TEXT("ปุ่ม: WASD เดิน · คลิกซ้าย/J ตี · 1 2 3 สกิล · R ท่าไม้ตาย · Shift หลบ · Space กระโดด · T ออโต้ · ล้อเมาส์ ซูม"), 17, Dim) ],
+				FLinearColor(0.f, 0.f, 0.f, .62f), 34.f)
+			]
+		];
 }
 
 // ================= HEROES =================

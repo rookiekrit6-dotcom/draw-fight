@@ -36,7 +36,7 @@ protected:
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
 private:
-	enum class EPage : uint8 { Title, Create, Main, Heroes, Aura, Classes };
+	enum class EPage : uint8 { Title, Create, Main, Heroes, Aura, Classes, Fight, Settings };
 	EPage Page = EPage::Title;
 	// creation wizard
 	int32 Step = 0;
@@ -59,6 +59,9 @@ private:
 	TSharedRef<SWidget> BuildTitle();
 	TSharedRef<SWidget> BuildCreate();
 	TSharedRef<SWidget> BuildMain();
+	TSharedRef<SWidget> BuildFight();
+	TSharedRef<SWidget> BuildSettings();
+	TSharedRef<SWidget> Slider(const FString& Name, float* Value, float Min, float Max);
 	TSharedRef<SWidget> Card(TSharedRef<SWidget> Inner, FLinearColor Tint = FLinearColor(0.f, 0.f, 0.f, .62f), float Pad = 28.f) const;
 	TSharedRef<SWidget> IconButton(const TCHAR* IconName, const FString& Text, const FString& Sub, TFunction<void()> OnClick, FLinearColor Color, bool bBig = false, bool bEnabled = true);
 	TSharedRef<SWidget> Wrap(TSharedRef<SWidget> Page) const; // dark panel for the old full pages

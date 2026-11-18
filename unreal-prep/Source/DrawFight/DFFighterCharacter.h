@@ -37,6 +37,8 @@ protected:
 	UFUNCTION() void HandleAttack(UDFCombatComponent* Self);
 	UFUNCTION() void HandleDash(UDFCombatComponent* Self);
 	UFUNCTION() void HandleDied(UDFCombatComponent* Self);
+	// hit reaction: little shove + white flash on the glow overlay
+	UFUNCTION() void HandleHurt(UDFCombatComponent* Victim, float Amount, AActor* Source);
 	void PlayClip(UAnimSequence* Clip, float Rate);
 	int32 ComboIndex = 0;
 };
@@ -50,6 +52,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DrawFight") TObjectPtr<USpringArmComponent> CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DrawFight") TObjectPtr<UCameraComponent> FollowCamera;
+	// soft key light that follows the player so characters read in dark arenas
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DrawFight") TObjectPtr<class UPointLightComponent> FillLight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DrawFight|Controls") float MouseSensitivity = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DrawFight|Controls") float MinZoom = 350.f;

@@ -1,4 +1,5 @@
 #include "DFCombatComponent.h"
+#include "DFAudio.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -86,7 +87,7 @@ void UDFCombatComponent::ResolveHit()
 		if (Dist - O->Radius < Reach + Radius * .4f && bInFront)
 		{
 			const float Dmg = Damage * FMath::FRandRange(.9f, 1.15f) * GetBuff(EDFBuff::Damage);
-			if (O->ApplyDamage(Dmg, GetOwner()) > 0.f) OnAttackHit.Broadcast(this, O);
+			if (O->ApplyDamage(Dmg, GetOwner()) > 0.f) { OnAttackHit.Broadcast(this, O); DFAudio::Sfx(this, TEXT("S_Hit"), O->GetOwner()->GetActorLocation(), .45f, FMath::FRandRange(.85f, 1.15f)); }
 		}
 	}
 }

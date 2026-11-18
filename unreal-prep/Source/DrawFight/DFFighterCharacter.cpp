@@ -1,5 +1,8 @@
 #include "DFFighterCharacter.h"
 #include "Misc/App.h"
+#include "TimerManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "DFSaveGame.h"
 #include "DFCombatComponent.h"
 #include "DFAutoPilotComponent.h"
 #include "DFProfileSubsystem.h"
@@ -10,6 +13,7 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimSequence.h"
 #include "Camera/CameraComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
@@ -73,6 +77,36 @@ void ADFFighterCharacter::BeginPlay()
 	Combat->OnAttackStarted.AddUniqueDynamic(this, &ADFFighterCharacter::HandleAttack);
 	Combat->OnDashed.AddUniqueDynamic(this, &ADFFighterCharacter::HandleDash);
 	Combat->OnDied.AddUniqueDynamic(this, &ADFFighterCharacter::HandleDied);
+	Combat->OnDamaged.AddUniqueDynamic(this, &ADFFighterCharacter::HandleHurt);
+}
+
+void ADFFighterCharacter::HandleHurt(UDFCombatComponent* Victim, float Amount, AActor* Source)
+{
+	if (Amount <= 0.f || !Combat || Combat->IsDead()) return;
+	if (Source)
+	{
+		FVector Away = GetActorLocation() - Source->GetActorLocation(); Away.Z = 0;
+		LaunchCharacter(Away.GetSafeNormal() * FMath::Clamp(Amount * 18.f, 120.f, 600.f) + FVector(0, 0, 60.f), true, false);
+	}
+	// flash: brighten the overlay (enemies have a tinted glow shell) for a moment
+	UMaterialInstanceDynamic* MI = GetMesh() ? Cast<UMaterialInstanceDynamic>(GetMesh()->GetOverlayMaterial()) : nullptr;
+	if (!MI && GetMesh())
+		if (UMaterialInterface* G = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/DrawFight/FX/M_Glow.M_Glow")))
+		{
+			MI = UMaterialInstanceDynamic::Create(G, this);
+			MI->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, .2f, .2f));
+			MI->SetScalarParameterValue(TEXT("Glow"), 0.f);
+			MI->SetScalarParameterValue(TEXT("Opacity"), .6f);
+			GetMesh()->SetOverlayMaterial(MI);
+		}
+	if (!MI) return;
+	float Old = 0.f;
+	MI->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("Glow")), Old);
+	if (Old > 3.f) return; // already flashing
+	MI->SetScalarParameterValue(TEXT("Glow"), 6.f);
+	TWeakObjectPtr<UMaterialInstanceDynamic> W(MI);
+	FTimerHandle TH;
+	GetWorldTimerManager().SetTimer(TH, [W, Old]() { if (W.IsValid()) W->SetScalarParameterValue(TEXT("Glow"), Old); }, .1f, false);
 }
 
 void ADFFighterCharacter::PlayClip(UAnimSequence* Clip, float Rate)
@@ -91,6 +125,10 @@ void ADFFighterCharacter::HandleAttack(UDFCombatComponent* Self)
 void ADFFighterCharacter::HandleDash(UDFCombatComponent* Self)
 {
 	PlayClip(DashAnim, 1.4f);
+	FLinearColor C(.6f, .8f, 1.f); FName E;
+	if (IsPlayerControlled())
+		if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this)) { C = P->GetPowerColor(); E = P->GetPowerElement(); }
+	ADFSkillFX::Puff(this, GetActorLocation(), C, E, 1.f, true);
 }
 
 void ADFFighterCharacter::HandleDied(UDFCombatComponent* Self)
@@ -120,12 +158,24 @@ ADFPlayerCharacter::ADFPlayerCharacter()
 	// strong bloom so glowing skills bleed light like anime VFX
 	{
 		FPostProcessSettings& PP = FollowCamera->PostProcessSettings;
-		PP.bOverride_BloomIntensity = true; PP.BloomIntensity = 2.2f;
-		PP.bOverride_BloomThreshold = true; PP.BloomThreshold = 0.8f;
+		PP.bOverride_BloomIntensity = true; PP.BloomIntensity = 1.3f;
+		PP.bOverride_BloomThreshold = true; PP.BloomThreshold = 1.4f;
+		// moodier, more saturated arena so coloured skills read like the old 2D version
+		PP.bOverride_AutoExposureBias = true; PP.AutoExposureBias = -1.f;
+		PP.bOverride_ColorSaturation = true; PP.ColorSaturation = FVector4(1.25f, 1.25f, 1.25f, 1.f);
+		PP.bOverride_ColorContrast = true; PP.ColorContrast = FVector4(1.12f, 1.12f, 1.12f, 1.f);
 		PP.bOverride_LensFlareIntensity = true; PP.LensFlareIntensity = 0.6f;
 		PP.bOverride_VignetteIntensity = true; PP.VignetteIntensity = 0.45f;
 		FollowCamera->PostProcessBlendWeight = 1.f;
 	}
+
+	FillLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("FillLight"));
+	FillLight->SetupAttachment(RootComponent);
+	FillLight->SetRelativeLocation(FVector(-160.f, 60.f, 220.f));
+	FillLight->SetIntensity(5000.f);
+	FillLight->SetAttenuationRadius(1400.f);
+	FillLight->SetCastShadows(false);
+	FillLight->SetLightColor(FLinearColor(1.f, .95f, .9f));
 
 	AutoPilot->bEnabled = false;   // player starts manual; T toggles
 	AutoPilot->bDodge = true;
@@ -138,12 +188,15 @@ void ADFPlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	AutoPilot->OnWantsSkill.AddUniqueDynamic(this, &ADFPlayerCharacter::HandleAutoSkill);
 	AutoPilot->SkillReady.Init(false, 3);
+	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this))
+		if (UDFSaveGame* SG = Prof->Data()) MouseSensitivity = SG->MouseSens;
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		FInputModeGameOnly Mode;
 		PC->SetInputMode(Mode);
 		PC->bShowMouseCursor = false;
 		if (PC->PlayerCameraManager) { PC->PlayerCameraManager->ViewPitchMin = -65.f; PC->PlayerCameraManager->ViewPitchMax = 20.f; }
+		PC->SetControlRotation(FRotator(-20.f, GetActorRotation().Yaw, 0.f));
 	}
 }
 
@@ -277,12 +330,14 @@ bool ADFPlayerCharacter::TryCastSlot(int32 Slot)
 		// code-built visuals + hits until the Niagara versions exist
 		FLinearColor Col(1.f, .45f, .15f);
 		int32 Lv = 1;
+		FName Elem;
 		if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this))
 		{
 			Col = P->GetPowerColor();
+			Elem = P->GetPowerElement();
 			Lv = FMath::Max(1, P->GetSkillLevel(Skill));
 		}
-		ADFSkillFX::CastSkill(this, Skill, Lv, Col, (Slot == 3 || Skill.ToString().StartsWith(TEXT("ult_"))) ? 2.5f : 1.f);
+		ADFSkillFX::CastSkill(this, Skill, Lv, Col, (Slot == 3 || Skill.ToString().StartsWith(TEXT("ult_"))) ? 2.5f : 1.f, Elem);
 		Combat->TryAttack(); // swing animation
 	}
 	return true;

@@ -1,4 +1,6 @@
 #include "DFProfileSubsystem.h"
+#include "GameFramework/GameUserSettings.h"
+#include "Engine/Engine.h"
 #include "DFSaveGame.h"
 #include "DFCombatComponent.h"
 #include "Engine/GameInstance.h"
@@ -121,6 +123,31 @@ FLinearColor UDFProfileSubsystem::ElementColor(FName Id) const
 {
 	const FDFElementRow* R = Elements ? Elements->FindRow<FDFElementRow>(Id, TEXT("DF"), false) : nullptr;
 	return R && R->Color.StartsWith(TEXT("#")) ? FLinearColor(FColor::FromHex(R->Color)) : FLinearColor(1.f, .45f, .15f);
+}
+
+void UDFProfileSubsystem::RecordEndless(int32 Kills, float Seconds)
+{
+	if (!Save) return;
+	Save->BestKills = FMath::Max(Save->BestKills, Kills);
+	Save->BestTime = FMath::Max(Save->BestTime, Seconds);
+	SaveNow();
+}
+
+void UDFProfileSubsystem::ApplySettings()
+{
+	if (!Save) return;
+	if (UGameUserSettings* S = GEngine ? GEngine->GetGameUserSettings() : nullptr)
+	{
+		S->SetOverallScalabilityLevel(FMath::Clamp(Save->Quality, 0, 3));
+		S->ApplySettings(false);
+	}
+}
+
+FName UDFProfileSubsystem::GetPowerElement() const
+{
+	if (Save && !Save->Element.IsNone()) return Save->Element;
+	FDFCharacterRow H;
+	return GetCharacter(GetSelected(), H) ? H.Element : NAME_None;
 }
 
 FLinearColor UDFProfileSubsystem::GetPowerColor() const

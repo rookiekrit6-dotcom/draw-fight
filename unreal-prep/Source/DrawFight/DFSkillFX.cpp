@@ -1,6 +1,7 @@
 #include "DFSkillFX.h"
 #include "DFCombatComponent.h"
 #include "DFFighterCharacter.h"
+#include "DFAudio.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -15,6 +16,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Engine/Texture.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
 namespace
 {
@@ -39,11 +41,18 @@ namespace
 	}
 	UTexture* SpriteTex(int32 I)
 	{
-		static UTexture* T[16] = {};
-		static const TCHAR* N[] = { TEXT("T_SoftGlow"), TEXT("T_Ring"), TEXT("T_Spark"), TEXT("T_Star"), TEXT("T_Slash"), TEXT("T_Smoke1"), TEXT("T_Smoke2"), TEXT("T_Smoke3"), TEXT("T_Shock"), TEXT("T_Crack") };
+		static UTexture* T[32] = {};
+		static const TCHAR* N[] = { TEXT("T_SoftGlow"), TEXT("T_Ring"), TEXT("T_Spark"), TEXT("T_Star"), TEXT("T_Slash"), TEXT("T_Smoke1"), TEXT("T_Smoke2"), TEXT("T_Smoke3"), TEXT("T_Shock"), TEXT("T_Crack"),
+			TEXT("T_Circle1"), TEXT("T_Circle2"), TEXT("T_Circle3"), TEXT("T_Flame"), TEXT("T_Shard"), TEXT("T_Leaf"), TEXT("T_Bolt"), TEXT("T_Bubble"), TEXT("T_Drop"), TEXT("T_Spore"), TEXT("T_Gear"), TEXT("T_Swirl") };
 		if (I < 0 || I >= UE_ARRAY_COUNT(N)) return nullptr;
 		if (!T[I]) T[I] = LoadObject<UTexture>(nullptr, *FString::Printf(TEXT("/Game/DrawFight/FX/Tex/%s.%s"), N[I], N[I]));
 		return T[I];
+	}
+	UMaterialInterface* ParticleMat()
+	{
+		static UMaterialInterface* M = nullptr;
+		if (!M) M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/DrawFight/FX/M_Particle.M_Particle"));
+		return M;
 	}
 	FLinearColor Mix(FLinearColor A, FLinearColor B, float T) { return A * (1.f - T) + B * T; }
 	const FLinearColor White(1.f, 1.f, 1.f);
@@ -96,7 +105,7 @@ ADFSkillFX::ADFSkillFX()
 	Light->SetCastShadows(false);
 }
 
-ADFSkillFX* ADFSkillFX::CastSkill(AActor* InCaster, FName Skill, int32 Level, FLinearColor Color, float Power)
+ADFSkillFX* ADFSkillFX::CastSkill(AActor* InCaster, FName Skill, int32 Level, FLinearColor Color, float Power, FName InElement)
 {
 	if (!InCaster || !InCaster->GetWorld()) return nullptr;
 	FActorSpawnParameters SP;
@@ -106,10 +115,57 @@ ADFSkillFX* ADFSkillFX::CastSkill(AActor* InCaster, FName Skill, int32 Level, FL
 	FX->Caster = InCaster;
 	FX->Combat = InCaster->FindComponentByClass<UDFCombatComponent>();
 	FX->Tint = Color;
+	FX->Element = InElement;
+	{
+		const bool bUltCast = Skill.ToString().StartsWith(TEXT("ult_"));
+		FX->CastCircle(FX->Ground(InCaster->GetActorLocation()) + FVector(0, 0, 4), bUltCast ? 7.f : 4.2f, bUltCast ? 1.6f : .9f, Color, bUltCast);
+	}
 	const float Base = FX->Combat.IsValid() ? FX->Combat->Damage : 12.f;
 	FX->Build(Skill, Base * Power * (1.f + .25f * FMath::Max(0, Level - 1)));
+	{
+		const FVector L = InCaster->GetActorLocation();
+		DFAudio::Sfx(FX, TEXT("S_Cast"), L, .55f, FMath::FRandRange(.9f, 1.1f));
+		switch (ArchOf(Skill))
+		{
+		case EArch::Meteor: case EArch::Sun: case EArch::Breath: case EArch::Transform: case EArch::Laser: case EArch::Charge: DFAudio::Sfx(FX, TEXT("S_Fire"), L, .8f); break;
+		case EArch::Bolt: case EArch::Ricochet: case EArch::Turret: DFAudio::Sfx(FX, TEXT("S_Zap"), L, .7f); break;
+		case EArch::Freeze: case EArch::Chill: case EArch::SpikeLine: case EArch::Pause: DFAudio::Sfx(FX, TEXT("S_Ice"), L, .8f); break;
+		case EArch::Column: case EArch::Shield: case EArch::Haste: case EArch::Drain: case EArch::Warcry: DFAudio::Sfx(FX, TEXT("S_Heal"), L, .7f); break;
+		case EArch::Wave: case EArch::Slash: case EArch::Combo: case EArch::Boomerang: case EArch::Blink: case EArch::Dash: case EArch::Juggle: DFAudio::Sfx(FX, TEXT("S_Slash"), L, .9f, FMath::FRandRange(.9f, 1.15f)); break;
+		default: break;
+		}
+	}
 	UE_LOG(LogTemp, Display, TEXT("DrawFight FX %s: %d pieces, %d hits, glow material %s"), *Skill.ToString(), FX->Pieces.Num(), FX->Hits.Num(), GlowMat() ? TEXT("ok") : TEXT("MISSING"));
 	return FX;
+}
+
+void ADFSkillFX::Puff(AActor* Around, FVector Loc, FLinearColor Color, FName InElement, float Scale, bool bTrail)
+{
+	if (!Around || !Around->GetWorld()) return;
+	FActorSpawnParameters SP;
+	SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ADFSkillFX* FX = Around->GetWorld()->SpawnActor<ADFSkillFX>(ADFSkillFX::StaticClass(), Loc, FRotator::ZeroRotator, SP);
+	if (!FX) return;
+	FX->Caster = Around; FX->Tint = Color; FX->Element = InElement; FX->Life = .4f;
+	if (bTrail)
+	{
+		// afterimage streak behind a dash + element motes
+		const FVector Back = -Around->GetActorForwardVector();
+		for (int32 I = 0; I < 18; ++I)
+		{
+			FMote& M = FX->Mote(I % 3 ? FX->ElemTex() : ETex::Spark, Loc + FVector(FMath::FRandRange(-30.f, 30.f), FMath::FRandRange(-30.f, 30.f), FMath::FRandRange(-60.f, 80.f)),
+				Back * FMath::FRandRange(200.f, 700.f) + FVector(0, 0, FMath::FRandRange(0.f, 120.f)), FMath::FRandRange(0.f, .12f), FMath::FRandRange(.25f, .5f), .25f, .02f, Color, 4.f);
+			M.Drag = 3.f; M.bStreak = I % 3 == 0;
+		}
+		FX->Sprite(ETex::SoftGlow, EFace::Camera, Loc, Loc + Back * 200.f, 3.f, 1.f, 0.f, .25f, Color, 2.f);
+	}
+	else
+	{
+		FX->ElementBurst(Loc, FMath::RoundToInt(22 * Scale), 700.f * Scale, 0.f, .8f, Color, .3f);
+		FX->Streaks(Loc, FMath::RoundToInt(8 * Scale), 900.f * Scale, 0.f, .5f, Mix(Color, White, .3f), .05f);
+		FX->Sprite(ETex::Star, EFace::Camera, Loc, Loc, .5f * Scale, 4.f * Scale, 0.f, .2f, Mix(Color, White, .3f), 8.f);
+		FX->Smoke(Loc, FMath::RoundToInt(3 * Scale), .8f * Scale, 0.f, .9f, Color);
+	}
 }
 
 // ---------- building blocks ----------
@@ -172,7 +228,7 @@ void ADFSkillFX::ToSprite(FPiece& P, ETex Tex, EFace Face, bool bDust, FLinearCo
 	P.Mat = UMaterialInstanceDynamic::Create(SpriteMat(bDust), this);
 	if (UTexture* T = SpriteTex((int32)Tex)) P.Mat->SetTextureParameterValue(TEXT("Tex"), T);
 	P.Mat->SetVectorParameterValue(TEXT("Color"), C);
-	P.Mat->SetScalarParameterValue(TEXT("Glow"), Glow);
+	P.Mat->SetScalarParameterValue(TEXT("Glow"), bDust ? Glow * .5f : Glow * .55f);
 	P.Mat->SetScalarParameterValue(TEXT("Opacity"), 0.f);
 	P.Mesh->SetMaterial(0, P.Mat);
 }
@@ -226,30 +282,143 @@ void ADFSkillFX::Sparks(FVector Center, int32 Count, float Dist, float T0, float
 
 void ADFSkillFX::Streaks(FVector Center, int32 Count, float Speed, float T0, float Dur, FLinearColor C, float Width, float Grav, bool bUp)
 {
-	for (int32 I = 0; I < Count; ++I)
+	for (int32 I = 0; I < Count * 2; ++I)
 	{
 		FVector Dir = FMath::VRand();
 		if (bUp) Dir.Z = FMath::Abs(Dir.Z) * 1.1f + .15f;
-		const float T = T0 + FMath::FRandRange(0.f, .05f);
-		Sprite(ETex::Spark, EFace::Axial, Center, Center, Width * 10.f, Width * 2.f, T, T + Dur * FMath::FRandRange(.6f, 1.3f), I % 3 ? C : White, 10.f);
-		FPiece& P = Pieces.Last();
-		P.bPhys = P.bStreak = true;
-		P.Vel = Dir.GetSafeNormal() * Speed * FMath::FRandRange(.4f, 1.f);
-		P.Grav = Grav; P.Drag = 2.2f;
+		FMote& M = Mote(ETex::Spark, Center, Dir.GetSafeNormal() * Speed * FMath::FRandRange(.35f, 1.f), T0 + FMath::FRandRange(0.f, .06f), Dur * FMath::FRandRange(.6f, 1.3f), Width * 2.f, Width * .4f, I % 3 ? C : Mix(C, White, .45f), 6.f);
+		M.bStreak = true; M.Grav = Grav; M.Drag = 2.2f;
 	}
 }
 
 void ADFSkillFX::Embers(FVector Center, int32 Count, float Spread, float T0, float Dur, FLinearColor C)
 {
-	for (int32 I = 0; I < Count; ++I)
+	for (int32 I = 0; I < Count * 2; ++I)
 	{
 		const FVector P0 = Center + FVector(FMath::FRandRange(-Spread, Spread), FMath::FRandRange(-Spread, Spread), FMath::FRandRange(0.f, 120.f));
-		const float T = T0 + FMath::FRandRange(0.f, .4f);
-		Piece(EShape::Sphere, P0, P0, FVector(.07f), FVector(.02f), T, T + Dur * FMath::FRandRange(.6f, 1.2f), Mix(C, White, .3f), 12.f);
-		FPiece& P = Pieces.Last();
-		P.bPhys = true;
-		P.Vel = FVector(FMath::FRandRange(-60.f, 60.f), FMath::FRandRange(-60.f, 60.f), FMath::FRandRange(120.f, 320.f));
-		P.Grav = 40.f; P.Drag = .6f;
+		FMote& M = Mote(I % 3 ? ElemTex() : ETex::SoftGlow, P0, FVector(FMath::FRandRange(-60.f, 60.f), FMath::FRandRange(-60.f, 60.f), FMath::FRandRange(120.f, 320.f)),
+			T0 + FMath::FRandRange(0.f, .4f), Dur * FMath::FRandRange(.6f, 1.2f), FMath::FRandRange(.12f, .3f), .03f, Mix(C, White, .25f), 5.f);
+		M.Grav = 40.f; M.Drag = .6f; M.Roll = FMath::FRandRange(0.f, 360.f); M.RollSpin = FMath::FRandRange(-120.f, 120.f);
+	}
+}
+
+ADFSkillFX::FMote& ADFSkillFX::Mote(ETex Tex, FVector P, FVector V, float T0, float Dur, float S0, float S1, FLinearColor C, float Glow)
+{
+	const uint8 K = (uint8)Tex;
+	UInstancedStaticMeshComponent* ISM = nullptr;
+	if (TObjectPtr<UInstancedStaticMeshComponent>* Found = MoteISM.Find(K)) ISM = Found->Get();
+	if (!ISM && ParticleMat())
+	{
+		ISM = NewObject<UInstancedStaticMeshComponent>(this);
+		ISM->SetStaticMesh(ShapeMesh(3));
+		ISM->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ISM->SetCastShadow(false);
+		ISM->NumCustomDataFloats = 4;
+		ISM->SetupAttachment(RootComponent);
+		ISM->SetUsingAbsoluteLocation(true); ISM->SetUsingAbsoluteRotation(true); ISM->SetUsingAbsoluteScale(true);
+		ISM->SetWorldTransform(FTransform::Identity);
+		ISM->RegisterComponent();
+		UMaterialInstanceDynamic* MI = UMaterialInstanceDynamic::Create(ParticleMat(), this);
+		if (UTexture* T = SpriteTex(K)) MI->SetTextureParameterValue(TEXT("Tex"), T);
+		ISM->SetMaterial(0, MI);
+		ISM->SetCullDistances(0, 0);
+		MoteISM.Add(K, ISM);
+	}
+	FMote M;
+	M.Tex = K; M.P = P; M.V = V; M.T0 = T0; M.T1 = T0 + Dur; M.S0 = S0; M.S1 = S1; M.C = C; M.Glow = Glow;
+	M.Index = ISM ? ISM->AddInstance(FTransform(FRotator::ZeroRotator, P, FVector(.001f)), true) : -1;
+	Life = FMath::Max(Life, M.T1 + .1f);
+	return Motes.Add_GetRef(M);
+}
+
+void ADFSkillFX::TickMotes(float Dt)
+{
+	if (!Motes.Num()) return;
+	TMap<uint8, TArray<FTransform>> Xf;
+	for (TPair<uint8, TObjectPtr<UInstancedStaticMeshComponent>>& KV : MoteISM)
+		if (KV.Value) Xf.Add(KV.Key).SetNum(KV.Value->GetInstanceCount());
+	for (FMote& M : Motes)
+	{
+		TArray<FTransform>* Arr = Xf.Find(M.Tex);
+		if (!Arr || !Arr->IsValidIndex(M.Index)) continue;
+		const bool bOn = Age >= M.T0 && Age <= M.T1;
+		if (!bOn) { (*Arr)[M.Index] = FTransform(FRotator::ZeroRotator, M.P, FVector(.001f)); continue; }
+		const float A = FMath::Clamp((Age - M.T0) / FMath::Max(.01f, M.T1 - M.T0), 0.f, 1.f);
+		M.V *= FMath::Max(0.f, 1.f - M.Drag * Dt);
+		M.V.Z += M.Grav * Dt;
+		M.P += M.V * Dt;
+		if (M.Follow.IsValid()) M.LastFollow = M.Follow->GetActorLocation();
+		const FVector Pos = M.P + M.LastFollow;
+		FVector ToCam = (CamLoc - Pos).GetSafeNormal();
+		if (ToCam.IsNearlyZero()) ToCam = FVector::UpVector;
+		const float Sz = FMath::Lerp(M.S0, M.S1, A);
+		FQuat Q; FVector S(Sz, Sz, 1.f);
+		const float Speed = M.V.Size();
+		if (M.bStreak && Speed > 1.f)
+		{
+			Q = FRotationMatrix::MakeFromXZ(M.V / Speed, ToCam).ToQuat();
+			S.X = FMath::Clamp(Speed * .0016f, .12f, 2.4f);
+		}
+		else Q = FQuat(ToCam, FMath::DegreesToRadians(M.Roll + M.RollSpin * (Age - M.T0))) * FRotationMatrix::MakeFromZ(ToCam).ToQuat();
+		(*Arr)[M.Index] = FTransform(Q, Pos, S);
+		const float Op = FMath::Min(1.f, A / .08f) * (A > .55f ? (1.f - A) / .45f : 1.f);
+		if (TObjectPtr<UInstancedStaticMeshComponent>* I = MoteISM.Find(M.Tex))
+		{
+			const float D[4] = { M.C.R, M.C.G, M.C.B, M.Glow * Op };
+			(*I)->SetCustomData(M.Index, TArrayView<const float>(D, 4), false);
+		}
+	}
+	for (TPair<uint8, TArray<FTransform>>& KV : Xf)
+		if (TObjectPtr<UInstancedStaticMeshComponent>* I = MoteISM.Find(KV.Key))
+			if (KV.Value.Num()) (*I)->BatchUpdateInstancesTransforms(0, KV.Value, true, true, true);
+}
+
+ADFSkillFX::ETex ADFSkillFX::ElemTex() const
+{
+	static const TMap<FName, ETex> Map = {
+		{ "fire", ETex::Flame }, { "water", ETex::Drop }, { "earth", ETex::Shard }, { "wind", ETex::Leaf }, { "poison", ETex::Bubble },
+		{ "spore", ETex::Spore }, { "light", ETex::Star }, { "dark", ETex::Flame }, { "fight", ETex::Spark }, { "psy", ETex::Swirl },
+		{ "mech", ETex::Gear }, { "zombie", ETex::Bubble }, { "inf", ETex::Star } };
+	const ETex* T = Map.Find(Element);
+	return T ? *T : ETex::Star;
+}
+
+// a cloud of element-shaped particles (flames, shards, leaves, bubbles...)
+void ADFSkillFX::ElementBurst(FVector Center, int32 Count, float Speed, float T0, float Dur, FLinearColor C, float Size, bool bUp)
+{
+	const ETex Tx = ElemTex();
+	for (int32 I = 0; I < Count; ++I)
+	{
+		FVector Dir = FMath::VRand();
+		if (bUp) Dir.Z = FMath::Abs(Dir.Z) * .9f + .2f;
+		FMote& M = Mote(I % 4 ? Tx : ETex::SoftGlow, Center, Dir.GetSafeNormal() * Speed * FMath::FRandRange(.25f, 1.f), T0 + FMath::FRandRange(0.f, .08f),
+			Dur * FMath::FRandRange(.6f, 1.25f), Size * FMath::FRandRange(.6f, 1.3f), Size * .15f, I % 5 ? C : Mix(C, White, .4f), 5.f);
+		M.Grav = Tx == ETex::Flame || Tx == ETex::Bubble || Tx == ETex::Spore ? 150.f : -500.f;
+		M.Drag = 2.f; M.Roll = FMath::FRandRange(0.f, 360.f); M.RollSpin = FMath::FRandRange(-260.f, 260.f);
+	}
+}
+
+// spinning magic circles under the caster + element motes spiralling up
+void ADFSkillFX::CastCircle(FVector Feet, float Size, float Dur, FLinearColor C, bool bUlt)
+{
+	const ETex Circ = (ETex)((int32)ETex::Circle1 + FMath::RandRange(0, 2));
+	Sprite(Circ, EFace::Flat, Feet, Feet, Size * .3f, Size, 0.f, Dur, C, 7.f, FMath::FRandRange(0.f, 360.f), 110.f);
+	Sprite(ETex::Ring, EFace::Flat, Feet + FVector(0, 0, 1), Feet + FVector(0, 0, 1), Size * .2f, Size * 1.25f, 0.f, Dur * .7f, Mix(C, White, .3f), 6.f);
+	Sprite(ETex::SoftGlow, EFace::Flat, Feet, Feet, Size * .8f, Size * 1.8f, 0.f, Dur, C, 1.6f);
+	if (bUlt)
+	{
+		Sprite((ETex)((int32)ETex::Circle1 + ((int32)Circ - (int32)ETex::Circle1 + 1) % 3), EFace::Flat, Feet + FVector(0, 0, 2), Feet + FVector(0, 0, 2), Size * .2f, Size * .6f, .1f, Dur, Mix(C, White, .4f), 8.f, 0.f, -160.f);
+		Sprite(Circ, EFace::Camera, Feet + FVector(0, 0, 130), Feet + FVector(0, 0, 130), 1.f, 4.5f, .05f, Dur * .8f, C, 5.f, 0.f, 90.f);
+	}
+	const int32 N = bUlt ? 70 : 34;
+	for (int32 I = 0; I < N; ++I)
+	{
+		const float A = 2.f * PI * I / N;
+		const float R = Size * 45.f * FMath::FRandRange(.5f, 1.f);
+		const FVector P0 = Feet + FVector(FMath::Cos(A) * R, FMath::Sin(A) * R, 5.f);
+		FMote& M = Mote(I % 3 ? ElemTex() : ETex::SoftGlow, P0, FVector(-FMath::Sin(A) * 120.f, FMath::Cos(A) * 120.f, FMath::FRandRange(180.f, 420.f)),
+			FMath::FRandRange(0.f, Dur * .5f), FMath::FRandRange(.5f, .9f), FMath::FRandRange(.15f, .32f), .02f, I % 4 ? C : Mix(C, White, .4f), 5.f);
+		M.Drag = .8f; M.Roll = FMath::FRandRange(0.f, 360.f); M.RollSpin = 200.f;
 	}
 }
 
@@ -260,7 +429,7 @@ void ADFSkillFX::Smoke(FVector Center, int32 Count, float Size, float T0, float 
 		const FVector D = FVector(FMath::FRandRange(-1.f, 1.f), FMath::FRandRange(-1.f, 1.f), FMath::FRandRange(.2f, .8f)) * Size * 60.f;
 		const float T = T0 + FMath::FRandRange(0.f, .15f);
 		const ETex Tx = (ETex)((int32)ETex::Smoke1 + I % 3);
-		Sprite(Tx, EFace::Camera, Center + D * .3f, Center + D + FVector(0, 0, Size * 40.f), Size * 1.6f, Size * 4.f, T, T + Dur * FMath::FRandRange(.8f, 1.3f), Mix(C, FLinearColor(.55f, .5f, .45f), .7f), .9f, FMath::FRandRange(0.f, 360.f), FMath::FRandRange(-40.f, 40.f), true);
+		Sprite(Tx, EFace::Camera, Center + D * .3f, Center + D + FVector(0, 0, Size * 40.f), Size * 1.6f, Size * 4.f, T, T + Dur * FMath::FRandRange(.8f, 1.3f), Mix(C, FLinearColor(.16f, .14f, .13f), .8f), .9f, FMath::FRandRange(0.f, 360.f), FMath::FRandRange(-40.f, 40.f), true);
 	}
 }
 
@@ -268,14 +437,25 @@ void ADFSkillFX::Smoke(FVector Center, int32 Count, float Size, float T0, float 
 void ADFSkillFX::Impact(FVector Center, float Scale, float T0, FLinearColor C, FLinearColor Hot)
 {
 	const FVector G = Ground(Center) + FVector(0, 0, 3);
-	Sprite(ETex::Star, EFace::Camera, Center, Center, 1.f * Scale, 9.f * Scale, T0, T0 + .18f, White, 12.f, FMath::FRandRange(0.f, 45.f));
-	Sprite(ETex::SoftGlow, EFace::Camera, Center, Center, 2.f * Scale, 10.f * Scale, T0, T0 + .35f, Hot, 6.f);
+	if (SfxPlayed < 8)
+	{
+		++SfxPlayed;
+		FTimerHandle TH;
+		TWeakObjectPtr<ADFSkillFX> W(this);
+		const bool bBig = Scale >= .75f;
+		const float Delay = FMath::Max(.01f, T0 - Age);
+		GetWorldTimerManager().SetTimer(TH, [W, Center, bBig]() { if (W.IsValid()) DFAudio::Sfx(W.Get(), bBig ? TEXT("S_Boom") : TEXT("S_Hit"), Center, bBig ? .8f : .5f, FMath::FRandRange(.85f, 1.15f)); }, Delay, false);
+	}
+	Sprite(ETex::Star, EFace::Camera, Center, Center, 1.f * Scale, 7.f * Scale, T0, T0 + .16f, Mix(C, White, .35f), 12.f, FMath::FRandRange(0.f, 45.f));
+	Sprite(ETex::SoftGlow, EFace::Camera, Center, Center, 1.5f * Scale, 6.5f * Scale, T0, T0 + .3f, C, 6.f);
 	Sprite(ETex::Shock, EFace::Flat, G, G, 1.f * Scale, 13.f * Scale, T0, T0 + .45f, Mix(C, White, .5f), 5.f, FMath::FRandRange(0.f, 360.f));
 	Sprite(ETex::Ring, EFace::Flat, G, G, 1.f * Scale, 9.f * Scale, T0 + .03f, T0 + .4f, C, 6.f);
 	Sprite(ETex::Crack, EFace::Flat, G, G, 6.f * Scale, 6.5f * Scale, T0, T0 + 1.8f, Mix(C, Hot, .5f), 3.f, FMath::FRandRange(0.f, 360.f));
 	Streaks(Center, FMath::RoundToInt(26 * Scale), 1500.f * Scale, T0, .7f, Hot);
+	ElementBurst(Center, FMath::RoundToInt(36 * Scale), 900.f * Scale, T0, .9f, C, .3f + .1f * Scale);
+	if (Scale >= .7f) Sprite((ETex)((int32)ETex::Circle1 + FMath::RandRange(0, 2)), EFace::Flat, G + FVector(0, 0, 2), G + FVector(0, 0, 2), 2.f * Scale, 6.f * Scale, T0, T0 + .7f, C, 5.f, FMath::FRandRange(0.f, 360.f), 140.f);
 	Embers(G, FMath::RoundToInt(14 * Scale), 220.f * Scale, T0 + .1f, 1.4f, C);
-	Smoke(G + FVector(0, 0, 40), FMath::RoundToInt(7 * Scale), 1.2f * Scale, T0 + .05f, 1.2f, C);
+	Smoke(G + FVector(0, 0, 40), FMath::RoundToInt(5 * Scale), .9f * Scale, T0 + .05f, 1.f, C);
 }
 
 ADFSkillFX::FHit& ADFSkillFX::Hit(float At, FVector Center, float Radius, float Damage, float Stun, float Pull, float HealFrac)
@@ -428,7 +608,7 @@ void ADFSkillFX::Build(FName Skill, float Dmg)
 	const FVector Feet = Ground(Me);
 	FVector Fwd = TargetPoint(2500.f) - Me; Fwd.Z = 0; Fwd = Fwd.GetSafeNormal();
 	if (Fwd.IsNearlyZero()) Fwd = C->GetActorForwardVector();
-	const FLinearColor T = Tint, Hot = Mix(Tint, White, .5f);
+	const FLinearColor T = Tint, Hot = Mix(Tint, White, .22f);
 	const bool bUlt = Skill.ToString().StartsWith(TEXT("ult_"));
 	const float Big = bUlt ? 1.8f : 1.f;
 	ShakeOnHit = bUlt ? 28.f : 10.f;
@@ -1217,6 +1397,8 @@ void ADFSkillFX::Tick(float Dt)
 		if (P.Mat) P.Mat->SetScalarParameterValue(TEXT("Opacity"), Op);
 	}
 
+	TickMotes(Dt);
+
 	if (LightPeak > 0.f)
 	{
 		const float A = FMath::Clamp((Age - LightT0) / FMath::Max(.01f, LightT1 - LightT0), 0.f, 1.f);
@@ -1225,7 +1407,7 @@ void ADFSkillFX::Tick(float Dt)
 	}
 
 	const int32 Team = Combat.IsValid() ? Combat->Team : 0;
-	const FLinearColor Hot = Mix(Tint, White, .5f);
+	const FLinearColor Hot = Mix(Tint, White, .22f);
 	for (int32 HI = 0; HI < Hits.Num(); ++HI)
 	{
 		FHit& H = Hits[HI];

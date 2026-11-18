@@ -22,14 +22,18 @@ public:
 	ADFSkillFX();
 
 	// Spawns the effect for Skill (DT_Skills row name). Power scales damage (1 = normal, ultimates ~2.5).
-	static ADFSkillFX* CastSkill(AActor* Caster, FName Skill, int32 Level, FLinearColor Color, float Power);
+	static ADFSkillFX* CastSkill(AActor* Caster, FName Skill, int32 Level, FLinearColor Color, float Power, FName Element = NAME_None);
+
+	// visual-only burst (dash trails, deaths): no damage
+	static void Puff(AActor* Around, FVector Loc, FLinearColor Color, FName Element, float Scale, bool bTrail = false);
 
 	virtual void Tick(float Dt) override;
 
 private:
 	enum class EShape : uint8 { Sphere, Cylinder, Cube, Plane, Cone };
 	// textured sprites (painted with code, imported by init_unreal.py)
-	enum class ETex : uint8 { SoftGlow, Ring, Spark, Star, Slash, Smoke1, Smoke2, Smoke3, Shock, Crack, Count };
+	enum class ETex : uint8 { SoftGlow, Ring, Spark, Star, Slash, Smoke1, Smoke2, Smoke3, Shock, Crack,
+		Circle1, Circle2, Circle3, Flame, Shard, Leaf, Bolt, Bubble, Drop, Spore, Gear, Swirl, Count };
 	enum class EFace : uint8 { None, Camera, Flat, Axial };
 	struct FPiece
 	{
@@ -71,6 +75,25 @@ private:
 	};
 
 	TArray<FPiece> Pieces;
+	// ---- dense instanced particles (one draw call per texture) ----
+	struct FMote
+	{
+		uint8 Tex = 0; int32 Index = 0;
+		FVector P = FVector::ZeroVector, V = FVector::ZeroVector;
+		float Grav = 0, Drag = 0, T0 = 0, T1 = 1, S0 = .2f, S1 = 0, Roll = 0, RollSpin = 0, Glow = 4;
+		FLinearColor C = FLinearColor::White;
+		bool bStreak = false;
+		TWeakObjectPtr<AActor> Follow; FVector LastFollow = FVector::ZeroVector;
+	};
+	TArray<FMote> Motes;
+	UPROPERTY() TMap<uint8, TObjectPtr<class UInstancedStaticMeshComponent>> MoteISM;
+	FMote& Mote(ETex Tex, FVector P, FVector V, float T0, float Dur, float S0, float S1, FLinearColor C, float Glow = 4.f);
+	void TickMotes(float Dt);
+	// element look
+	FName Element;
+	ETex ElemTex() const;
+	void ElementBurst(FVector Center, int32 Count, float Speed, float T0, float Dur, FLinearColor C, float Size = .35f, bool bUp = true);
+	void CastCircle(FVector Feet, float Size, float Dur, FLinearColor C, bool bUlt);
 	TArray<FHit> Hits;
 	UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Keep;
 	UPROPERTY() TObjectPtr<UPointLightComponent> Light;
@@ -105,6 +128,7 @@ private:
 	void Impact(FVector Center, float Scale, float T0, FLinearColor C, FLinearColor Hot);
 	float ShakeOnHit = 8.f, StopOnHit = 0.f;
 	bool bImpactFelt = false;
+	int32 SfxPlayed = 0;
 	void Feel();
 	void Flash(FVector At, float Peak, float T0, float T1, FVector To = FVector::ZeroVector);
 

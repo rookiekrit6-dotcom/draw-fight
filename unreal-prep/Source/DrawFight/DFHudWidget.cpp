@@ -19,6 +19,8 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Notifications/SProgressBar.h"
+#include "Brushes/SlateRoundedBoxBrush.h"
+#include "DFFighterCharacter.h"
 
 namespace
 {
@@ -27,6 +29,25 @@ namespace
 	const FLinearColor HudGold(1.f, 0.78f, 0.2f);
 	const FLinearColor HudPanel(0.04f, 0.05f, 0.08f, 0.8f);
 	const FLinearColor HudDim(0.65f, 0.68f, 0.75f);
+	const FSlateBrush* Round(float R = 14.f)
+	{
+		static FSlateRoundedBoxBrush B14(FLinearColor::White, 14.f, FLinearColor(1, 1, 1, .12f), 1.f);
+		static FSlateRoundedBoxBrush B8(FLinearColor::White, 8.f);
+		return R > 10.f ? &B14 : &B8;
+	}
+	const FButtonStyle& HudBtn()
+	{
+		static FButtonStyle S = []()
+		{
+			FButtonStyle B = FCoreStyle::Get().GetWidgetStyle<FButtonStyle>("Button");
+			B.SetNormal(FSlateRoundedBoxBrush(FLinearColor(1, 1, 1, .85f), 14.f));
+			B.SetHovered(FSlateRoundedBoxBrush(FLinearColor::White, 14.f, FLinearColor::White, 2.f));
+			B.SetPressed(FSlateRoundedBoxBrush(FLinearColor(.7f, .7f, .7f, 1.f), 14.f));
+			B.SetNormalPadding(FMargin(0)); B.SetPressedPadding(FMargin(0));
+			return B;
+		}();
+		return S;
+	}
 }
 
 FSlateFontInfo UDFHudWidget::Font(int32 Size) const
@@ -94,7 +115,13 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 	auto WaveText = [Self]()
 	{
 		const ADFArenaGameMode* GM = Self.IsValid() ? Cast<ADFArenaGameMode>(UGameplayStatics::GetGameMode(Self.Get())) : nullptr;
-		return GM ? FText::FromString(FString::Printf(TEXT("ด่าน %d/3   ·   ศัตรูเหลือ %d"), FMath::Max(1, GM->GetWave()), GM->EnemiesLeft())) : FText();
+		if (!GM) return FText();
+		if (GM->IsEndless())
+		{
+			const int32 S = (int32)GM->GetElapsed();
+			return FText::FromString(FString::Printf(TEXT("ฝ่าคลื่นไม่รู้จบ   ·   %d:%02d   ·   ล้ม %d   ·   พลังระดับ %d"), S / 60, S % 60, GM->GetKills(), GM->GetPowerLevel() + 1));
+		}
+		return FText::FromString(FString::Printf(TEXT("บทที่ %d   ·   คลื่น %d/%d   ·   ศัตรูเหลือ %d"), GM->GetChapter(), FMath::Max(1, GM->GetWave()), GM->GetTotalWaves(), GM->EnemiesLeft()));
 	};
 	auto BossVis = [Self]() { return (Self.IsValid() && Self->Boss()) ? EVisibility::HitTestInvisible : EVisibility::Collapsed; };
 	auto BossPct = [Self]() -> TOptional<float> { const UDFCombatComponent* B = Self.IsValid() ? Self->Boss() : nullptr; return B ? B->HPFraction() : 0.f; };
@@ -114,27 +141,47 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 	if (UDFProfileSubsystem* P = UDFProfileSubsystem::Get(this))
 	{
 		const TArray<FName> L = P->GetLoadout(P->GetSelected());
+		const FLinearColor PC = P->GetPowerColor();
+		auto CdText = [Self](int32 SlotIdx)
+		{
+			return TAttribute<FText>::CreateLambda([Self, SlotIdx]() {
+				const ADFPlayerCharacter* Pl = Self.IsValid() ? Cast<ADFPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(Self.Get(), 0)) : nullptr;
+				const float Cd = Pl ? Pl->SlotCooldownLeft(SlotIdx) : 0.f;
+				return FText::FromString(Cd > .05f ? FString::Printf(TEXT("%.1f"), Cd) : FString(TEXT("พร้อม"))); });
+		};
+		auto CdCol = [Self](int32 SlotIdx, FLinearColor Ready)
+		{
+			return TAttribute<FSlateColor>::CreateLambda([Self, SlotIdx, Ready]() {
+				const ADFPlayerCharacter* Pl = Self.IsValid() ? Cast<ADFPlayerCharacter>(UGameplayStatics::GetPlayerCharacter(Self.Get(), 0)) : nullptr;
+				const bool bReady = !Pl || Pl->SlotCooldownLeft(SlotIdx) <= .05f;
+				return FSlateColor(bReady ? Ready : FLinearColor(.04f, .04f, .06f, .85f)); });
+		};
 		for (int32 I = 0; I < L.Num(); ++I)
 			Skills->AddSlot().AutoWidth().Padding(6.f, 0.f)
 			[
-				SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(HudPanel)
-				.Padding(FMargin(16.f, 10.f))
+				SNew(SBorder).BorderImage(Round()).BorderBackgroundColor(CdCol(I, PC * FLinearColor(.45f, .45f, .45f, .92f)))
+				.Padding(FMargin(18.f, 10.f))
 				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::AsNumber(I + 1), 16, HudGold) ]
-					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(P->SkillNameTH(L[I])), 18, FLinearColor::White) ]
+					SNew(SBox).MinDesiredWidth(110.f)
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::AsNumber(I + 1), 16, HudGold) ]
+						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(P->SkillNameTH(L[I])), 18, FLinearColor::White) ]
+						+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(CdText(I), 14, HudDim) ]
+					]
 				]
 			];
 		const FName Ult = P->GetUltimate();
 		if (!Ult.IsNone())
 			Skills->AddSlot().AutoWidth().Padding(14.f, 0.f, 6.f, 0.f)
 			[
-				SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("WhiteBrush")).BorderBackgroundColor(FLinearColor(.35f, .05f, .1f, .9f))
-				.Padding(FMargin(20.f, 10.f))
+				SNew(SBorder).BorderImage(Round()).BorderBackgroundColor(CdCol(3, FLinearColor(.55f, .08f, .14f, .95f)))
+				.Padding(FMargin(22.f, 10.f))
 				[
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(TEXT("R")), 16, HudGold) ]
 					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(P->SkillNameTH(Ult)), 18, FLinearColor::White) ]
+					+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(CdText(3), 14, HudDim) ]
 				]
 			];
 	}
@@ -158,7 +205,9 @@ TSharedRef<SWidget> UDFHudWidget::RebuildWidget()
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0, 8)
 			[
 				SNew(SVerticalBox).Visibility(TAttribute<EVisibility>::CreateLambda(BossVis))
-				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(FText::FromString(TEXT("บอส")), 20, HudRed) ]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[ Label(TAttribute<FText>::CreateLambda([Self]() {
+					const ADFArenaGameMode* GM = Self.IsValid() ? Cast<ADFArenaGameMode>(UGameplayStatics::GetGameMode(Self.Get())) : nullptr;
+					return FText::FromString(GM && !GM->BossName.IsEmpty() ? GM->BossName : FString(TEXT("บอส"))); }), 22, HudRed) ]
 				+ SVerticalBox::Slot().AutoHeight()[ Bar(TAttribute<TOptional<float>>::CreateLambda(BossPct), HudRed, 640.f, 18.f) ]
 			]
 		]
@@ -202,7 +251,9 @@ void UDFHudWidget::HandleSubtitle(const FString& Text, float Seconds)
 
 void UDFHudWidget::HandleWave(int32 Wave, bool bBossWave)
 {
-	Banner = bBossWave ? TEXT("บอสมาแล้ว!") : FString::Printf(TEXT("ด่านที่ %d"), Wave);
+	const ADFArenaGameMode* GM = Cast<ADFArenaGameMode>(UGameplayStatics::GetGameMode(this));
+	Banner = bBossWave ? FString::Printf(TEXT("บอส: %s"), GM && !GM->BossName.IsEmpty() ? *GM->BossName : TEXT("มาแล้ว!"))
+		: GM ? FString::Printf(TEXT("คลื่นที่ %d / %d"), Wave, GM->GetTotalWaves()) : FString::Printf(TEXT("คลื่นที่ %d"), Wave);
 	BannerColor = bBossWave ? HudRed : FLinearColor::White;
 	BannerLeft = 2.f;
 }
@@ -226,7 +277,7 @@ void UDFHudWidget::HandleEnd(bool bVictory)
 	TWeakObjectPtr<UDFHudWidget> Self(this);
 	auto MakeBtn = [this, Self](const FString& Text, FLinearColor Color, TFunction<void()> Fn)
 	{
-		return SNew(SButton).ButtonColorAndOpacity(Color).HAlign(HAlign_Center).ContentPadding(FMargin(28.f, 12.f))
+		return SNew(SButton).ButtonStyle(&HudBtn()).ButtonColorAndOpacity(Color).HAlign(HAlign_Center).ContentPadding(FMargin(30.f, 14.f))
 			.OnClicked_Lambda([Self, Fn]() { if (Self.IsValid()) Fn(); return FReply::Handled(); })
 			[ Label(FText::FromString(Text), 24, FLinearColor::White) ];
 	};

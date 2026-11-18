@@ -18,6 +18,7 @@ class ADFArenaGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
+	void DarkenArena();
 	ADFArenaGameMode();
 
 	// Enemy pawn: any Character with DFCombatComponent + DFAutoPilotComponent
@@ -42,6 +43,14 @@ public:
 	virtual void StartPlay() override;
 	UFUNCTION(BlueprintPure, Category = "Arena") int32 GetWave() const { return Wave; }
 	UFUNCTION(BlueprintPure, Category = "Arena") int32 EnemiesLeft() const { return Alive; }
+	// modes: story chapters (waves + named boss) or endless survival
+	bool IsEndless() const { return bEndless; }
+	int32 GetChapter() const { return Chapter; }
+	int32 GetTotalWaves() const { return TotalWaves; }
+	int32 GetKills() const { return Kills; }
+	float GetElapsed() const { return Elapsed; }
+	int32 GetPowerLevel() const { return PowerLevel; }
+	FString BossName;
 
 protected:
 	virtual void Tick(float DeltaSeconds) override;
@@ -49,6 +58,12 @@ protected:
 private:
 	void SpawnWave();
 	ACharacter* SpawnEnemy(float Scale, float HP, float Speed, float Damage, bool bBoss);
+	ACharacter* SpawnKind(FName Kind, float HPBase, float DmgBase, bool bBoss = false, float BossScale = 1.f);
+	void TickEndless(float Dt);
+	void EndFight(bool bVictory);
+	bool bEndless = false;
+	int32 Chapter = 1, TotalWaves = 3, Kills = 0, PowerLevel = 0;
+	float Elapsed = 0.f, SpawnTimer = 0.f, NextBossAt = 60.f;
 	UFUNCTION() void HandleEnemyDied(class UDFCombatComponent* Who);
 	UFUNCTION() void HandlePlayerDied(class UDFCombatComponent* Who);
 	UFUNCTION() void HandlePlayerDamaged(class UDFCombatComponent* Victim, float Amount, AActor* Source);
