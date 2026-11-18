@@ -21,7 +21,7 @@ Sketch a sword and it slashes. Draw a hammer and it shakes the ground. Every wea
 - **Auto mode** — let your hero fight on its own and watch your build work
 
 ## แท็กที่แนะนำ (เลือก 5–20)
-Action, Arena Shooter → (ไม่ใช่) ใช้: Action, Character Customization, Level Editor, Indie, Hack and Slash, Gacha (ระวัง: ระบุว่าไม่มีเงินจริง), Colorful, Stylized, 3D, Singleplayer, Arena, Sandbox, Moddable, Fantasy, Casual
+Action, Character Customization, Level Editor, Indie, Hack and Slash, Gacha (ระวัง: ระบุว่าไม่มีเงินจริง), Colorful, Stylized, 3D, Singleplayer, Arena, Sandbox, Moddable, Fantasy, Casual
 
 ## ภาพที่ต้องเตรียม (ขนาดตาม Steam)
 | ไฟล์ | ขนาด | ไอเดีย |
