@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><title>snap</title></head><body style="margin:0"><canvas id="c" width="600" height="600"></canvas>
+<script type="importmap">{"imports":{"three":"./lib/three.module.min.js","three/addons/":"./lib/"}}</script>
+<script type="module">
+import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const c=document.getElementById('c'),r=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:true,alpha:true});r.outputColorSpace=THREE.SRGBColorSpace;
+const blob=(cv,t,q)=>new Promise(res=>cv.toBlob(res,t,q));
+async function shot(buf,anim,extra){const g=await new GLTFLoader().parseAsync(buf,'');const o=g.scene;
+ for(const x of extra||[]){try{const e=await new GLTFLoader().parseAsync(x,'');g.animations.push(...e.animations);}catch(er){}}
+ if(g.animations.length){const m=new THREE.AnimationMixer(o);const cl=g.animations.find(a=>a.name===anim)||g.animations.find(a=>/idle|stand|breath/i.test(a.name))||g.animations[0];m.clipAction(cl).play();m.update(Math.min(.3,cl.duration*.25));}
+ o.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(o,true),sz=box.getSize(new THREE.Vector3()),ct=box.getCenter(new THREE.Vector3());o.position.sub(ct);
+ const s=new THREE.Scene();s.add(o);s.add(new THREE.AmbientLight(0xffffff,1.6));const d=new THREE.DirectionalLight(0xffffff,2.2);d.position.set(2,3,4);s.add(d);
+ const R=Math.max(sz.x,sz.y,sz.z)||1,cam=new THREE.PerspectiveCamera(30,1,R*.01,R*20);cam.position.set(.35*R*2.2,.12*R*2.2,R*2.2);cam.lookAt(0,0,0);
+ r.setSize(600,600,false);r.setClearColor(0,0);r.render(s,cam);const sp=document.createElement('canvas');sp.width=sp.height=300;sp.getContext('2d').drawImage(c,0,0,300,300);const sprite=await blob(sp,'image/png');
+ r.setSize(600,400,false);cam.aspect=1.5;cam.updateProjectionMatrix();r.setClearColor(0xe9eef5,1);r.render(s,cam);const thumb=await blob(c,'image/jpeg',.85);
+ return {sprite,thumb,clips:g.animations.map(a=>a.name)};}
+addEventListener('message',async e=>{if(e.origin!==location.origin||!e.data||e.data.cmd!=='snap')return;try{const res=await shot(e.data.buf,e.data.anim,e.data.extra);parent.postMessage(Object.assign({id:e.data.id,ok:1},res),location.origin);}catch(er){parent.postMessage({id:e.data.id,ok:0,err:String(er&&er.message||er)},location.origin);}});
+parent.postMessage({snapReady:1},location.origin);
+</script></body></html>
