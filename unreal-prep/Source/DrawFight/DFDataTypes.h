@@ -150,3 +150,32 @@ struct FDFSignatureKeywordRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString SkillNameTH;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString SkillNameEN;
 };
+
+// DT_Characters.csv  (ready-made heroes the player can pick)
+USTRUCT(BlueprintType)
+struct FDFCharacterRow : public FTableRowBase
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString NameTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString NameEN;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString TitleTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString TitleEN;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName Element;      // DT_Elements row
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName WeaponClass;  // DT_WeaponClasses row
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName Skill1;       // DT_Skills row
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName Skill2;       // DT_Skills row
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FName Passive;      // DT_Passives row
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float HpMult = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float DamageMult = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float SpeedMult = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float SizeMult = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) int32 UnlockCost = 0; // gold, 0 = free from the start
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString Color;        // "#rrggbb"
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString LookTH;       // brief for the 3D artist
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString LookEN;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString QuoteTH;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) FString QuoteEN;
+	// Filled in by hand once the model exists (empty = use the template mannequin)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) TSoftObjectPtr<class USkeletalMesh> Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) TSoftClassPtr<class UAnimInstance> AnimClass;
+};

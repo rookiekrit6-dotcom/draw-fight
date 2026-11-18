@@ -1,6 +1,7 @@
 #include "DFArenaGameMode.h"
 #include "DFCombatComponent.h"
 #include "DFAutoPilotComponent.h"
+#include "DFProfileSubsystem.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -20,6 +21,7 @@ void ADFArenaGameMode::StartFight()
 		if (UDFCombatComponent* C = P->FindComponentByClass<UDFCombatComponent>())
 		{
 			C->Team = 0;
+			if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->ApplySelectedTo(C, P);
 			C->OnDied.AddUniqueDynamic(this, &ADFArenaGameMode::HandlePlayerDied);
 		}
 	SpawnWave();
@@ -76,6 +78,7 @@ void ADFArenaGameMode::HandleEnemyDied(UDFCombatComponent* Who)
 	if (Wave >= 3)
 	{
 		bRunning = false;
+		if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->RecordFight(true);
 		OnFightEnded.Broadcast(true);
 		return;
 	}
@@ -88,6 +91,7 @@ void ADFArenaGameMode::HandlePlayerDied(UDFCombatComponent* Who)
 {
 	if (!bRunning) return;
 	bRunning = false;
+	if (UDFProfileSubsystem* Prof = UDFProfileSubsystem::Get(this)) Prof->RecordFight(false);
 	OnFightEnded.Broadcast(false);
 }
 
