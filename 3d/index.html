@@ -1217,21 +1217,20 @@ function sndNorm(b){try{let s=0,n=0,pk=0;for(let c=0;c<b.numberOfChannels;c++){c
 var AURA_K={guard:['#7fd8ff','#3a8cff'],rage:['#ff5a3a','#ffb020'],haste:['#b8ffd8','#4dff9a'],regen:['#8dffb0','#35c98a'],shield:['#ffe08a','#ffb020']};
 function auraFx(kind,D,col){const c=AURA_K[kind]||AURA_K.guard,a=/^#[0-9a-f]{6}$/i.test(col||'')?col:c[0],b=c[1],L=[];D=Math.max(.5,Math.min(30,D||3));
  const base=o=>Object.assign({name:'aura',on:true,start:0,dur:D,burst:0,max:400,plane:'xz',path:null,spread:.2,swirl:0,gravity:0,drag:0,attract:0,velY:0,render:'sprite',blend:'add',orient:'bill',sizeVar:.25,aspect:1,stretch:0,rot:0,spin:[0,0],fadeIn:.15,fadeOut:.5,fps:12,frameRand:true,fbLife:false,shake:0,flash:0,ground:false,front:false,soft:false,light:0,lightR:4,lightY:0,distort:0,hitDmg:0,snd:''},o);
+ // kept light on purpose: small sparks on a shell around the body and a ring on the ground, nothing big in front of the character
  if(kind==='guard'||kind==='shield'){
-  L.push(base({shape:'sphere',r:1.05,pos:[0,1.05,0],rate:70,life:[.5,.8],speed:[0,.05],dir:'out',tex:'glow',size:[.32,.08],col:[a,b,'#ffffff'],inten:2.2}));
-  L.push(base({shape:'point',r:0,pos:[0,1.05,0],rate:5,life:[.8,.8],speed:[0,0],dir:'out',tex:'glow',size:[2.6,2.8],col:[a,b,b],inten:.4,fadeIn:.3,fadeOut:.4}));
-  L.push(base({shape:'point',r:0,pos:[0,.05,0],rate:3,life:[1,1],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[2,2.2],col:[a,b,b],inten:.7}));}
+  L.push(base({shape:'sphere',r:1.25,pos:[0,1.05,0],rate:16,life:[.5,.8],speed:[0,.03],dir:'out',tex:'glow',size:[.12,.03],col:['#ffffff',a,b],inten:1.4}));
+  L.push(base({shape:'point',r:0,pos:[0,.04,0],rate:2,life:[1.2,1.2],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[2.3,2.4],col:[a,b,b],inten:.45,fadeIn:.4,fadeOut:.4}));}
  else if(kind==='rage'){
-  L.push(base({shape:'ring',r:.55,pos:[0,.1,0],rate:55,life:[.45,.8],speed:[1.2,2.4],dir:'up',tex:'fire',size:[.9,.25],col:['#fff0c0',a,'#801000'],inten:1.6,swirl:1.2,fbLife:true}));
-  L.push(base({shape:'disc',r:.5,pos:[0,1.1,0],rate:14,life:[.8,1.2],speed:[.4,.9],dir:'up',tex:'smokeL',blend:'alpha',size:[.8,1.6],col:['#4a1a10','#2a0e08','#100404'],inten:.7,soft:true,fbLife:true}));
-  L.push(base({shape:'point',r:0,pos:[0,1,0],rate:4,life:[.6,.6],speed:[0,0],dir:'out',tex:'glow',size:[2.6,2.8],col:[a,b,b],inten:.6,light:1.2,lightR:4}));}
+  L.push(base({shape:'ring',r:.62,pos:[0,.05,0],rate:16,life:[.3,.5],speed:[.8,1.4],dir:'up',tex:'fire',size:[.35,.1],col:['#fff0c0',a,'#801000'],inten:1.1,fbLife:true}));
+  L.push(base({shape:'ring',r:.75,pos:[0,1,0],rate:8,life:[.5,.8],speed:[.6,1],dir:'up',tex:'glow',size:[.1,.02],col:['#ffe0a0',a,b],inten:1.2}));
+  L.push(base({shape:'point',r:0,pos:[0,.04,0],rate:2,life:[1,1],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.8,2],col:[a,b,b],inten:.4,light:.5,lightR:3}));}
  else if(kind==='haste'){
-  L.push(base({shape:'ring',r:.65,pos:[0,.3,0],rate:34,life:[.3,.5],speed:[.7,1.2],dir:'tangent',swirl:2.5,velY:1.8,tex:'glow',size:[.18,.05],stretch:.6,col:['#ffffff',a,b],inten:1.8}));
-  L.push(base({shape:'ring',r:.5,pos:[0,.05,0],rate:10,life:[.5,.7],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[.6,1.8],col:[a,b,b],inten:.6}));}
+  L.push(base({shape:'ring',r:.8,pos:[0,.2,0],rate:12,life:[.25,.4],speed:[.6,1],dir:'tangent',swirl:2,velY:1.2,tex:'glow',size:[.1,.02],col:['#ffffff',a,b],inten:1.3}));
+  L.push(base({shape:'point',r:0,pos:[0,.04,0],rate:2,life:[.8,.8],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.2,1.9],col:[a,b,b],inten:.4}));}
  else{ // regen
-  L.push(base({shape:'disc',r:.75,pos:[0,.1,0],rate:26,life:[.9,1.4],speed:[.8,1.5],dir:'up',tex:'glow',size:[.22,.06],col:['#ffffff',a,b],inten:2}));
-  L.push(base({shape:'point',r:0,pos:[0,.05,0],rate:3,life:[1,1],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.4,1.9],col:[a,b,b],inten:.6}));
-  L.push(base({shape:'point',r:0,pos:[0,1,0],rate:4,life:[.7,.7],speed:[0,0],dir:'out',tex:'glow',size:[1.6,2],col:[a,b,b],inten:.35}));}
+  L.push(base({shape:'ring',r:.8,pos:[0,.15,0],rate:9,life:[.9,1.3],speed:[.5,.9],dir:'up',tex:'glow',size:[.12,.03],col:['#ffffff',a,b],inten:1.3}));
+  L.push(base({shape:'point',r:0,pos:[0,.04,0],rate:2,life:[1.2,1.2],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.6,1.9],col:[a,b,b],inten:.4}));}
  return {format:'dfvfx',v:1,name:'aura_'+kind,dur:D,bloom:1,expo:1,layers:L};}
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
