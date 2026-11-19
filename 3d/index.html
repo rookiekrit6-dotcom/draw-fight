@@ -908,7 +908,7 @@ function skFire(c,q){const p=c.p,xz=skAt(c,q),x=xz[0],z=xz[1],col=colOf(q.color,
  case 'ring':G.rings.push({x,z,r:num(q.r,3,.3,20),col,t:0,d:num(q.dur,.5,.1,4)});break;
  case 'shot':{const n=num(q.n,1,1,24)|0,sp=num(q.spread,n>1?40:0,0,360)*PI/180,v=num(q.speed,16,2,40),o=p.itemPos&&live?p.itemPos:[p.x,1.2,p.z];for(let i=0;i<n;i++){const a=p.yaw+(n>1?(i/(sp>6.2?n:n-1)-.5)*sp:0);G.sshots.push({x:o[0],y:o[1],z:o[2],vx:Math.sin(a)*v,vz:Math.cos(a)*v,t:num(q.life,1.2,.2,4),dmg:num(q.dmg,8,0,999),sz:num(q.size,.4,.1,3),col,pierce:!!q.pierce,home:num(q.homing,0,0,10),hit:new Set(),shape:shOf(q.shape,0),p,live});}beep(900,.18,1500);break;}
  case 'area':{const r=num(q.r,3,.3,14);skHit(p,x,z,r,num(q.dmg,10,0,999),live);G.rings.push({x,z,r,col,t:0,d:.35});G.flashes.push({x,z,col,t:0,d:.4,r:r*3});break;}
- case 'buff':if(live||p===edEnt){const k=q.kind==='speed'?'bs':q.kind==='guard'?'bg':'bd';p[k]=num(q.dur,3,0,12);p[k+'m']=num(q.amt,k==='bg'?.5:1.3,0,3);G.rings.push({x:p.x,z:p.z,r:1.6,col,t:0,d:.5});}break;
+ case 'buff':if(live||p===edEnt){if(q.kind==='regen'||q.kind==='heal'){p.rg=num(q.dur,4,0,20);p.rgA=num(q.amt,6,0,60);G.rings.push({x:p.x,z:p.z,r:1.6,col,t:0,d:.5});break;}const k=q.kind==='speed'?'bs':q.kind==='guard'?'bg':'bd';p[k]=num(q.dur,3,0,12);p[k+'m']=num(q.amt,k==='bg'?.5:1.3,0,3);G.rings.push({x:p.x,z:p.z,r:1.6,col,t:0,d:.5});}break;
  case 'stun':{const r=num(q.r,2,.3,14),d=num(q.dur,.8,0,3);if(live)for(const e of G.ents)if(e.team&&!e.dead&&Math.hypot(e.x-x,e.z-z)<r+e.rad)e.stun=Math.max(e.stun||0,e.boss?d*.5:d);break;}
  case 'pull':{const r=num(q.r,5,.3,14),a=num(q.amt,3,0,10);if(live)for(const e of G.ents)if(e.team&&!e.dead){const dx=x-e.x,dz=z-e.z,d=Math.hypot(dx,dz);if(d<r+e.rad&&d>.4){const k=Math.min(d-.4,a*(e.boss?.3:1));e.x+=dx/d*k;e.z+=dz/d*k;}}skBurst(x,1,z,{n:30,speed:-5,up:0,size:.16,life:.5,grav:0,rad:r*.8},col);break;}
  case 'blink':{const tg=live&&c.tg&&!c.tg.dead?c.tg:null;if(!tg){const d=num(q.dist,5,-10,14);p.x+=fx*d;p.z+=fz*d;}else if(q.swap){const ox=p.x,oz=p.z;p.x=tg.x;p.z=tg.z;tg.x=ox;tg.z=oz;p.yaw=Math.atan2(tg.x-p.x,tg.z-p.z);}else{const d=num(q.dist,1.5,-6,6),bx=tg.x-p.x,bz=tg.z-p.z,bl=Math.hypot(bx,bz)||1;p.x=tg.x+bx/bl*d;p.z=tg.z+bz/bl*d;p.yaw=Math.atan2(tg.x-p.x,tg.z-p.z);}p.inv=Math.max(p.inv||0,.3);const l=Math.hypot(p.x,p.z);if(l>R-.6){p.x*=(R-.6)/l;p.z*=(R-.6)/l;}break;}
@@ -919,7 +919,7 @@ function skFire(c,q){const p=c.p,xz=skAt(c,q),x=xz[0],z=xz[1],col=colOf(q.color,
  case 'fall':{const n=num(q.n,6,1,30)|0,R2=num(q.r,5,0,14),gap=num(q.gap,.12,.02,1);for(let i=0;i<n;i++){const a=Math.random()*2*PI,d=Math.sqrt(Math.random())*R2;G.falls.push({x:x+Math.cos(a)*d,z:z+Math.sin(a)*d,w:i*gap,t:0,d:num(q.time,.55,.2,2),hr:num(q.hit,1.6,.4,6),dmg:num(q.dmg,10,0,999),sz:num(q.size,.9,.2,4),col,shape:shOf(q.shape,0),p,live});}break;}
  case 'beam':{const len=num(q.len,10,1,24),w=num(q.w,.8,.2,5);G.beams.push({x:p.x,z:p.z,yaw:p.yaw,len,w,col,t:0,d:num(q.dur,.3,.1,2)});if(live)for(const e of G.ents)if(e.team&&!e.dead){const dx=e.x-p.x,dz=e.z-p.z,al=dx*fx+dz*fz,pr=Math.abs(dx*fz-dz*fx);if(al>0&&al<len+e.rad&&pr<w*.5+e.rad)hurt(e,num(q.dmg,12,0,999)*(.9+Math.random()*.25),p);}G.shake=Math.max(G.shake,.15);beep(1200,.25,300);break;}
  case 'dash':if(live){const d=num(q.dist,5,-10,14);p.x+=fx*d;p.z+=fz*d;p.inv=Math.max(p.inv,.3);const l=Math.hypot(p.x,p.z);if(l>R-.6){p.x*=(R-.6)/l;p.z*=(R-.6)/l;}}break;
- case 'heal':if(live&&!p.dead){const a=num(q.amt,15,0,999);p.hp=Math.min(p.maxhp,p.hp+a);tag(p,'+'+Math.round(a),'#7dffa0');}break;
+ case 'heal':if(live&&!p.dead&&q.over>0){p.rg=num(q.over,3,.5,20);p.rgA=num(q.amt,15,0,999)/p.rg;break;}if(live&&!p.dead){const a=num(q.amt,15,0,999);p.hp=Math.min(p.maxhp,p.hp+a);tag(p,'+'+Math.round(a),'#7dffa0');}break;
  case 'shake':G.shake=Math.max(G.shake,num(q.amt,.15,0,.5));break;
  case 'sound':au();beep(num(q.f,600,60,4000),num(q.dur,.2,.03,1.5),num(q.f2,0,0,4000)||undefined);break;
  case 'sprite':{const u=c.s.images[q.img];if(u)G.sprs.push({tx:skTex(u),x,y:num(q.y,1.5,0,14),z,sz:num(q.size,4,.3,16),cols:num(q.cols,1,1,16)|0,rows:num(q.rows,1,1,16)|0,fps:num(q.fps,16,1,60),t:0,d:num(q.dur,0,0,6),add:q.add!==false,col,follow:q.follow?p:null});break;}
@@ -1038,7 +1038,7 @@ function fxEnsure(){if(FX.api)return Promise.resolve(FX.api);if(FX.loading)retur
 function fxNear(x,z,mx){let b=null,bd=mx||1e9;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-x,e.z-z);if(d<bd){bd=d;b=e;}}return b;}
 function fxFollow(o,spd,dt){const e=fxNear(o.x,o.z,30);if(!e)return;const dx=e.x-o.x,dz=e.z-o.z,d=Math.hypot(dx,dz);if(d<.35)return;const k=Math.min(d-.3,spd*dt)/d;o.x+=dx*k;o.z+=dz*k;}
 function fxOcc(){const L=[];for(const e of G.ents){if(e.dead)continue;const sc=e.sc||1;L.push({x:e.x,y:(e.y||0)+.95*sc,z:e.z,r:Math.min((e.rad||.8)*.5,.42*sc+.06),h:.95*sc});}return L;}
-function fxFrame(){const rn=performance.now()/1000;fxStyleTick(Math.min(.1,rn-(FX.rt||rn)));FX.rt=rn;if(!FX.api)return;const dt=Math.max(0,Math.min(.1,G.t-FX.lt));FX.lt=G.t;
+function fxFrame(){const rn=performance.now()/1000;fxStyleTick(Math.min(.1,rn-(FX.rt||rn)));FX.rt=rn;try{fxBuffTick(Math.min(.1,G.t-(FX.bt==null?G.t:FX.bt)));}catch(e){}FX.bt=G.t;if(!FX.api)return;const dt=Math.max(0,Math.min(.1,G.t-FX.lt));FX.lt=G.t;
  for(let i=FX.casts.length-1;i>=0;i--){const c=FX.casts[i];if(!c.id)continue;if(G.over||c.p.dead||!FX.api.alive(c.id)){FX.casts.splice(i,1);continue;}fxFollow(c,c.spd,dt);FX.api.move(c.id,c.x,c.z);}
  try{const r=FX.api.frame({VP:Array.from(VP),EYE:EYE.slice(),T:CAMT.slice(),ts:FX.ts,occ:mode==='fight'?fxOcc():[],ground:true,groundY:-.03});if(r){FX.lights=r.lights||[];if(r.shake)G.shake=Math.max(G.shake||0,Math.min(.5,r.shake*.12));if(r.snd)for(const e of r.snd)vsynPlay(e.snd,e.vol,e.data);}}catch(e){}
  if(G.cmbT!=null&&G.t-G.cmbT>2.5){const el=$('cmbEl');if(el&&el.textContent)el.textContent='';}}
@@ -1142,6 +1142,15 @@ function fxAI(e,dt){if(e.rushT>0)e.rushT-=dt;const f=e.flee;if(!f)return false;i
 function fxChannel(a,slot,id){if(slot<0)return;if(slot===9){G.pl.armorU=G.t+Math.max(1.5,Math.min(a.det||2,4));return;}if(!(a.det>1.2))return;FX.chan={a,slot,id,u:G.t+Math.min(a.det,3)};for(const e of G.ents)if(e.team&&!e.dead&&Math.hypot(e.x-G.pl.x,e.z-G.pl.z)<9&&Math.random()<.6){e.rushT=Math.min(a.det,3);e.flee=null;}}
 function fxHurtPl(t,from){if(t!==G.pl||!from||!from.team)return from;if(t.armorU>G.t){if(!t.armorTag||G.t-t.armorTag>1){tag(t,'เกราะท่าไม้ตาย','#ffd84a');t.armorTag=G.t;}return {x:t.x,z:t.z,arm:true};}
  const c=FX.chan;if(c&&G.t<c.u&&FX.api&&c.a.id&&FX.api.stop(c.a.id)){tag(t,'ถูกขัดจังหวะ!','#ff6060');G.skcd[c.slot]=(G.skcd[c.slot]||0)*.5;delete FX.act[c.slot];FX.chan=null;}return from;}
+/* buff auras in the 3D game: bd = stronger hits (rage), bg = guard, bs = speed, rg = healing over time */
+var AURA3={bd:'rage',bg:'guard',bs:'haste',rg:'regen'};
+function fxBuffTick(dt){if(mode!=='fight'||!FX.api&&!G.ents.some(e=>e.bd>0||e.bg>0||e.bs>0||e.rg>0))return;
+ for(const e of G.ents){if(e.dead){if(e._au)for(const k in e._au){if(FX.api&&e._au[k].id)FX.api.stop(e._au[k].id);}e._au=null;continue;}
+  if(e.rg>0){e.rg-=dt;const a=Math.min(e.maxhp-e.hp,(e.rgA||4)*dt);if(a>0){e.hp+=a;e._rgAcc=(e._rgAcc||0)+a;if(e._rgAcc>=4){tag(e,'+'+Math.round(e._rgAcc),'#7dffa0');e._rgAcc=0;}}}
+  for(const k in AURA3){const v=e[k]||0;e._au=e._au||{};const A=e._au[k];
+   if(v>0){if(!A||(A.id&&!FX.api.alive(A.id))&&v>.4||v>A.rem+.6){if(A&&A.id&&FX.api)FX.api.stop(A.id);const N={id:0,rem:v};e._au[k]=N;const fx=auraFx(AURA3[k],v);fxEnsure().then(api=>{N.id=api.play(fx,{x:e.x,y:e.y||0,z:e.z,yaw:0,scale:(e.sc||1)},null,null);}).catch(()=>{});}
+    else{A.rem=v;if(A.id&&FX.api)FX.api.move(A.id,e.x,e.z,e.y||0);}}
+   else if(A){if(A.id&&FX.api)FX.api.stop(A.id);delete e._au[k];}}}}
 /* ---- skill file checker: explains in Thai what the game understood, what was adjusted and what was ignored ---- */
 var SKR_FX={hitDmg:[0,200,'ดาเมจตอนเลเยอร์เริ่ม'],hitR:[0,15,'รัศมีที่โดน'],ccStun:[0,3,'สตัน (วินาที)'],ccRoot:[0,4,'ตรึงกับที่ (วินาที)'],ccLift:[0,12,'กระแทกลอย'],ccSlow:[0,.9,'ทำให้ช้า (0.5 = ช้าลงครึ่งหนึ่ง)'],ccPull:[-8,8,'ดูดเข้า (+) / ผลักออก (−)'],tickDmg:[0,30,'ดาเมจต่อเนื่องต่อครั้ง'],tickEvery:[.1,3,'ดาเมจต่อเนื่องทุกกี่วินาที'],sndVol:[0,1.5,'ความดังเสียง'],start:[0,30,'เริ่มที่วินาที'],dur:[.05,30,'ปล่อยนานกี่วินาที'],light:[0,30,'ส่องแสงรอบตัว'],inten:[0,20,'ความสว่าง']};
 var SKR_KEYS='meshY name on start dur rate burst max shape r plane pos path life speed dir spread swirl gravity drag attract velY render tex blend orient size sizeVar aspect stretch rot spin col inten fadeIn fadeOut fps frameRand fbLife shake flash ground front soft light lightR lightY distort trail boltLen jag branch boltHz emis emisCol hitDmg hitR snd sndVol ccStun ccRoot ccLift ccSlow ccPull tickDmg tickEvery sizeC rC rateC iC thick fill el _help'.split(' ');
@@ -1187,7 +1196,7 @@ function fxHsl(h){const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)
 function fxHex(H,S,l){const c=(1-Math.abs(2*l-1))*S,x=c*(1-Math.abs((H/60)%2-1)),m=l-c/2;let r=0,g=0,b=0;if(H<60)[r,g,b]=[c,x,0];else if(H<120)[r,g,b]=[x,c,0];else if(H<180)[r,g,b]=[0,c,x];else if(H<240)[r,g,b]=[0,x,c];else if(H<300)[r,g,b]=[x,0,c];else[r,g,b]=[c,0,x];return '#'+[r,g,b].map(v=>Math.round(Math.max(0,Math.min(1,v+m))*255).toString(16).padStart(2,'0')).join('');}
 var FXA_C={};
 /* template, its own impact time, base radius */
-var FXA_MAP={area:['nova',0,3],pillar:['smite',.3,3],stun:['trap',.35,2.5],portal:['tornado',0,3],dash:['slash',0,2],beam:['bolt',.3,10],fall:['smite',.3,3],circle:['circle',0,3],buff:['trap',0,2],heal:['nova',0,2.5],ring:['nova',0,3],shot:['slash',0,2.4]};
+var FXA_MAP={area:['nova',0,3],pillar:['smite',.3,3],stun:['trap',.35,2.5],portal:['tornado',0,3],dash:['slash',0,2],beam:['bolt',.3,10],fall:['smite',.3,3],circle:['circle',0,3],heal:['nova',0,2.5],ring:['nova',0,3],shot:['slash',0,2.4]};
 function fxAutoFx(name,hex,impact,keep){const key=name+hex+impact+(keep||'');if(FXA_C[key])return FXA_C[key];const T=FXLIB[name];if(!T)return null;const o=JSON.parse(JSON.stringify(T));
  let th=null;const [H,S]=fxHsl(/^#[0-9a-f]{6}$/i.test(hex)?hex:'#ffb020');
  for(const L of o.layers)for(const c of L.col||[]){const q=fxHsl(c);if(q[1]>.3){th=q[0];break;}}
@@ -1204,6 +1213,26 @@ function fxAuto(c,q,x,z){if(!c||!c.s||c.s.fx||!fxAutoOn()||G.over&&mode==='fight
  return q.do==='ring'||q.do==='circle'||q.do==='buff'&&false;}
 /* even out synthesized sound levels: aim every sound at the same loudness, never above 0.9 peak */
 function sndNorm(b){try{let s=0,n=0,pk=0;for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);for(let i=0;i<d.length;i++){const v=d[i];s+=v*v;n++;const a=v<0?-v:v;if(a>pk)pk=a;}}if(!pk||!n)return b;const rms=Math.sqrt(s/n),db=20*Math.log10(rms+1e-9);let k=Math.pow(10,(-21-db)/20);k=Math.max(.3,Math.min(4,k));if(pk*k>.9)k=.9/pk;for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);for(let i=0;i<d.length;i++)d[i]*=k;}}catch(e){}return b;}
+/* ---------- buff auras: an effect that stays on the character for as long as the buff lasts ---------- */
+var AURA_K={guard:['#7fd8ff','#3a8cff'],rage:['#ff5a3a','#ffb020'],haste:['#b8ffd8','#4dff9a'],regen:['#8dffb0','#35c98a'],shield:['#ffe08a','#ffb020']};
+function auraFx(kind,D,col){const c=AURA_K[kind]||AURA_K.guard,a=/^#[0-9a-f]{6}$/i.test(col||'')?col:c[0],b=c[1],L=[];D=Math.max(.5,Math.min(30,D||3));
+ const base=o=>Object.assign({name:'aura',on:true,start:0,dur:D,burst:0,max:400,plane:'xz',path:null,spread:.2,swirl:0,gravity:0,drag:0,attract:0,velY:0,render:'sprite',blend:'add',orient:'bill',sizeVar:.25,aspect:1,stretch:0,rot:0,spin:[0,0],fadeIn:.15,fadeOut:.5,fps:12,frameRand:true,fbLife:false,shake:0,flash:0,ground:false,front:false,soft:false,light:0,lightR:4,lightY:0,distort:0,hitDmg:0,snd:''},o);
+ if(kind==='guard'||kind==='shield'){
+  L.push(base({shape:'sphere',r:1.05,pos:[0,1.05,0],rate:70,life:[.5,.8],speed:[0,.05],dir:'out',tex:'glow',size:[.32,.08],col:[a,b,'#ffffff'],inten:2.2}));
+  L.push(base({shape:'point',r:0,pos:[0,1.05,0],rate:5,life:[.8,.8],speed:[0,0],dir:'out',tex:'glow',size:[2.6,2.8],col:[a,b,b],inten:.4,fadeIn:.3,fadeOut:.4}));
+  L.push(base({shape:'point',r:0,pos:[0,.05,0],rate:3,life:[1,1],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[2,2.2],col:[a,b,b],inten:.7}));}
+ else if(kind==='rage'){
+  L.push(base({shape:'ring',r:.55,pos:[0,.1,0],rate:55,life:[.45,.8],speed:[1.2,2.4],dir:'up',tex:'fire',size:[.9,.25],col:['#fff0c0',a,'#801000'],inten:1.6,swirl:1.2,fbLife:true}));
+  L.push(base({shape:'disc',r:.5,pos:[0,1.1,0],rate:14,life:[.8,1.2],speed:[.4,.9],dir:'up',tex:'smokeL',blend:'alpha',size:[.8,1.6],col:['#4a1a10','#2a0e08','#100404'],inten:.7,soft:true,fbLife:true}));
+  L.push(base({shape:'point',r:0,pos:[0,1,0],rate:4,life:[.6,.6],speed:[0,0],dir:'out',tex:'glow',size:[2.6,2.8],col:[a,b,b],inten:.6,light:1.2,lightR:4}));}
+ else if(kind==='haste'){
+  L.push(base({shape:'ring',r:.65,pos:[0,.3,0],rate:34,life:[.3,.5],speed:[.7,1.2],dir:'tangent',swirl:2.5,velY:1.8,tex:'glow',size:[.18,.05],stretch:.6,col:['#ffffff',a,b],inten:1.8}));
+  L.push(base({shape:'ring',r:.5,pos:[0,.05,0],rate:10,life:[.5,.7],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[.6,1.8],col:[a,b,b],inten:.6}));}
+ else{ // regen
+  L.push(base({shape:'disc',r:.75,pos:[0,.1,0],rate:26,life:[.9,1.4],speed:[.8,1.5],dir:'up',tex:'glow',size:[.22,.06],col:['#ffffff',a,b],inten:2}));
+  L.push(base({shape:'point',r:0,pos:[0,.05,0],rate:3,life:[1,1],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.4,1.9],col:[a,b,b],inten:.6}));
+  L.push(base({shape:'point',r:0,pos:[0,1,0],rate:4,life:[.7,.7],speed:[0,0],dir:'out',tex:'glow',size:[1.6,2],col:[a,b,b],inten:.35}));}
+ return {format:'dfvfx',v:1,name:'aura_'+kind,dur:D,bloom:1,expo:1,layers:L};}
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);

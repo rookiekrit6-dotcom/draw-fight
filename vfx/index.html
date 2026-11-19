@@ -414,7 +414,7 @@ const EMB={
   ensureFB(w,h);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.s.f);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);let fl=0,bestL=null;const lo=[];drawOcc(cam);
   for(const I of FXI){const X=instXf(I,cam);withInst(I,()=>{gatherLights();for(const l of LT){const w=X.toW(l.p),m=Math.max(l.c[0],l.c[1],l.c[2],1e-4);lo.push({p:w,c:l.c.map(x=>x/m),i:m,r:l.r*I.xf.scale});}drawEffects(q);fl=Math.max(fl,S.flash);});}lo.sort((a,b)=>b.i-a.i);
   VP=cam.VP;EYE=cam.EYE;S.flash=fl*.5;S.bloom=1;S.expo=1;S.rays=0;postFX(performance.now(),w,h,null,0);EMB._drawn=true;return {shake,n:FXI.length,snd:sndOut,lights:lo.slice(0,4)};},
- move(id,x,z){const I=FXI.find(v=>v.id===id);if(!I)return false;I.xf.x=x;I.xf.z=z;return true;},
+ move(id,x,z,y){const I=FXI.find(v=>v.id===id);if(!I)return false;I.xf.x=x;I.xf.z=z;if(y!=null)I.xf.y=y;return true;},
  alive(id){return FXI.some(v=>v.id===id);},
  stop(id){const i=FXI.findIndex(v=>v.id===id);if(i<0)return false;FXI.splice(i,1);return true;}};
 
