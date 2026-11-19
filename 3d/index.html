@@ -1940,6 +1940,10 @@ function chrBossShow(card){const b=CHR.boss;card.classList.toggle('hide',!b);if(
  const go=document.createElement('button');go.className='primary';go.textContent='ท้าสู้บอส (เลือดหนา 4 เท่า)';go.onclick=()=>{sfx.ui();chr3Fight(Object.assign({},b.o,{name:b.n||b.o.name}),true);};card.append(h,p,go);}
 setTimeout(()=>{try{chr3UI();}catch(e){}},0);
 setInterval(()=>{try{if(mode==='edit')chrBossUi();}catch(e){}},60000);
+/* back to the 2D game; also cancels a remembered choice of 3D */
+function dfTo2dUi(){if($('to2d'))return;const go=$('go');if(!go)return;const panel=go.parentNode,b=document.createElement('button');b.id='to2d';b.textContent='← สลับไปเกม 2D';b.style.cssText='margin:0 0 8px;font-size:14px';
+ b.onclick=()=>{try{localStorage.setItem('df_mode','2d');}catch(e){}location.href='../?m=2d';};panel.insertBefore(b,panel.firstChild);}
+setTimeout(()=>{try{dfTo2dUi();}catch(e){}},0);
 
 /* ---------- effects made in the VFX studio, drawn by the studio engine in a see-through frame over the game ---------- */
 var FX={ifr:null,api:null,loading:null,act:{},ts:1,lights:[],casts:[],lt:0};
