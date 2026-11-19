@@ -1257,13 +1257,14 @@ function rpRecBegin(){const mime=rpMime();if(!mime){toast('เบราว์เ
   x.fillStyle='#000';x.fillRect(0,0,o.width,o.height);x.drawImage(gc,ox,oy,dw,dh);
   try{if(FX.ifr){const d=FX.ifr.contentDocument,v=d&&d.getElementById('gl');if(v&&v.width)x.drawImage(v,ox,oy,dw,dh);}}catch(e){}
   try{const ov=$('db3Ov');if(ov&&ov.width)x.drawImage(ov,ox,oy,dw,dh);}catch(e){}
-  if(RP.recWm){const fs=Math.round(Math.min(o.width,o.height)*.034);x.font='700 '+fs+'px Kanit,Sarabun,sans-serif';x.textAlign='right';x.globalAlpha=.78;x.lineWidth=fs*.2;x.strokeStyle='#1c2740';x.fillStyle='#fff';const tx='วาดแล้วสู้ · draw.thaimapgame.com';x.strokeText(tx,o.width-fs*.6,fs*1.5);x.fillText(tx,o.width-fs*.6,fs*1.5);x.globalAlpha=1;}};
+  if(RP.recWm){const fs=Math.round(Math.min(o.width,o.height)*.034);x.font='700 '+fs+'px Kanit,Sarabun,sans-serif';x.textAlign='right';x.globalAlpha=.78;x.lineWidth=fs*.2;x.strokeStyle='#1c2740';x.fillStyle='#fff';const tx='วาดแล้วสู้ · draw.thaimapgame.com';x.strokeText(tx,o.width-fs*.6,fs*1.5);x.fillText(tx,o.width-fs*.6,fs*1.5);x.globalAlpha=1;}
+  if(RP.recCode){const fs=Math.round(Math.min(o.width,o.height)*.034);x.font='700 '+fs+'px Kanit,Sarabun,sans-serif';x.textAlign='left';x.lineWidth=fs*.22;x.strokeStyle='#1c2740';x.fillStyle='#ffd84a';const s2='รหัสตัวละคร '+RP.recCode;x.strokeText(s2,fs*.6,o.height-fs*.9);x.fillText(s2,fs*.6,o.height-fs*.9);}};
  toast('กำลังอัดคลิปจากรีเพลย์ รอจนจบ');}
 function rpRecDone(){const M=RP.mr;RP.recDraw=null;if(!M){rpStop();return;}RP.mr=null;M.R.onstop=()=>{try{if(RP.adst&&SD3M)SD3M.disconnect(RP.adst);}catch(e){}for(const t of M.st.getTracks())t.stop();const ext=M.mime.indexOf('mp4')>=0?'mp4':'webm',b=new Blob(M.chunks,{type:M.mime.split(';')[0]});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='drawfight3d-clip.'+ext;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),15000);RP.lastClip=b;toast('บันทึกคลิปแล้ว ขนาด '+(b.size/1048576).toFixed(1)+' MB');};
  setTimeout(()=>{try{M.R.stop();}catch(e){}rpStop();},600);}
 function rpUi(){const el=document.createElement('div');el.id='rpBar';el.style.cssText='position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:30;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(20,26,44,.86);color:#fff;border-radius:14px;padding:8px 10px;max-width:96%;font-size:14px';
- el.innerHTML='<b style="color:#ffd84a">รีเพลย์</b><button id="rpPl" style="min-width:44px">⏸</button><button id="rpRe">เริ่มใหม่</button><input id="rpPos" type="range" min="0" max="1000" value="0" style="width:min(260px,40vw)" aria-label="ตำแหน่งรีเพลย์"><select id="rpSp" aria-label="ความเร็ว"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="rpAuto" checked>กล้องแบบหนัง</label><select id="rpLen" aria-label="ความยาวคลิป"><option value="10">10 วิสุดท้าย</option><option value="20" selected>20 วิสุดท้าย</option><option value="40">40 วิสุดท้าย</option><option value="60">ทั้งหมด</option></select><select id="rpAsp" aria-label="รูปแบบคลิป"><option value="169">16:9 ยูทูป</option><option value="916">9:16 Shorts/TikTok</option><option value="11">1:1</option></select><label style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="rpWm" checked>ลายน้ำ</label><button id="rpRec" class="primary">อัดคลิป</button><button id="rpX">ปิด</button>';
+ el.innerHTML='<b style="color:#ffd84a">รีเพลย์</b><button id="rpPl" style="min-width:44px">⏸</button><button id="rpRe">เริ่มใหม่</button><input id="rpPos" type="range" min="0" max="1000" value="0" style="width:min(260px,40vw)" aria-label="ตำแหน่งรีเพลย์"><select id="rpSp" aria-label="ความเร็ว"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="rpAuto" checked>กล้องแบบหนัง</label><select id="rpLen" aria-label="ความยาวคลิป"><option value="10">10 วิสุดท้าย</option><option value="20" selected>20 วิสุดท้าย</option><option value="40">40 วิสุดท้าย</option><option value="60">ทั้งหมด</option></select><select id="rpAsp" aria-label="รูปแบบคลิป"><option value="169">16:9 ยูทูป</option><option value="916">9:16 Shorts/TikTok</option><option value="11">1:1</option></select><label style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="rpWm" checked>ลายน้ำ</label><label style="display:flex;gap:4px;align-items:center"><input type="checkbox" id="rpCd">รหัสตัวละคร</label><button id="rpRec" class="primary">อัดคลิป</button><button id="rpX">ปิด</button>';
  document.body.appendChild(el);el.style.position='fixed';const q=id=>el.querySelector('#'+id);
  RP.ui={el,len:q('rpLen'),asp:q('rpAsp'),wm:q('rpWm'),upd(){const p=q('rpPos');if(!p._drag)p.value=Math.round((RP.i-RP.from)/Math.max(1,RP.to-RP.from)*1000);q('rpPl').textContent=RP.paused?'▶':'⏸';}};
  q('rpAuto').checked=RP.auto;q('rpSp').value=String(RP.speed);
@@ -1271,7 +1272,7 @@ function rpUi(){const el=document.createElement('div');el.id='rpBar';el.style.cs
  q('rpSp').onchange=e=>{RP.speed=+e.target.value||1;};q('rpAuto').onchange=e=>{RP.auto=e.target.checked;};
  const pos=q('rpPos');pos.onpointerdown=()=>{pos._drag=1;};pos.onpointerup=()=>{pos._drag=0;};
  pos.oninput=()=>{const j=RP.from+Math.round(+pos.value/1000*(RP.to-RP.from));try{if(FX.api&&FX.api.clear)FX.api.clear();}catch(e){}RP.fxMap={};const fi=RP.base+j;RP.opI=RP.ops.findIndex(o=>o.fi>=fi);if(RP.opI<0)RP.opI=RP.ops.length;RP.sndI=RP.snd.findIndex(o=>o.fi>=fi);if(RP.sndI<0)RP.sndI=RP.snd.length;rpSeek(j);RP.hold=0;};
- q('rpRec').onclick=()=>{sfx.ui();rpRecord();};q('rpX').onclick=()=>{sfx.ui();rpStop();};}
+ q('rpRec').onclick=async()=>{sfx.ui();RP.recCode='';const cb=q('rpCd');if(cb&&cb.checked&&typeof chr3Short==='function'){const b=q('rpRec');b.disabled=true;try{RP.recCode=(await chr3Short()).code;}catch(e){toast('สร้างรหัสตัวละครไม่สำเร็จ อัดคลิปโดยไม่มีรหัส');}b.disabled=false;}rpRecord();};q('rpX').onclick=()=>{sfx.ui();rpStop();};}
 /* sounds of the fight, replayed with it */
 RP._snd=function(n,v,r2){if(n&&n[0]==='#'){const a=n.slice(1).split(',').map(Number);RP._beep(a[0],a[1],a[2]);return true;}return RP._sd3(n,v,r2);};
 RP._sd3=sd3Play;sd3Play=function(n,v,r,g){if(!RP.on&&mode==='fight'&&!G.over)RP.snd.push({fi:RP.fi,n,v,r});return RP._sd3(n,v,r,g);};
@@ -1815,6 +1816,104 @@ function dbChar(e,t,sel){const st=e.st||{};if(st.invis>0&&!e.dead&&!(e===G.pl||(
  e.tintF=e.dead?0:st.stone>0?-3:fz?-2:e.burnT>0?-1:st.shock>0&&Math.sin(G.t*40)>.3?-7:st.curse>0?-4:e.poisT>0&&Math.sin(G.t*5)>0?-.25:st.immo>0?-6:st.wet>0?-5:st.invis>0?-8:0;
  stPose(e,G.t,G.t-(e._pT==null?G.t:e._pT));e._pT=G.t;
  try{return withMdl(e.ch,()=>drawChar0(e,t,sel));}finally{if(fz){e.ph=ph;e.moving=mv;}}}
+/* ===================== 3D: short character codes (DF-XXXXXX), fight a shared character, boss of the week ===================== */
+var CHR_URL='https://df-chars.rookiekrit6.workers.dev';const CHR={cache:{},boss:null,bossT:0,last:''};
+function chrUrl(){let u='';try{u=localStorage.getItem('df4_chars')||'';}catch(e){}return (u||CHR_URL).replace(/\/+$/,'');}
+function chrIsShort(t){return /^DF-[A-Z2-9]{6}$/.test(String(t||'').trim().toUpperCase());}
+function chrFetch(path,opt,ms){const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>{try{ac&&ac.abort();}catch(e){}},ms||8000);
+ return fetch(chrUrl()+path,Object.assign({cache:'no-store',signal:ac?ac.signal:undefined},opt||{})).then(r=>r.json().then(j=>{j._s=r.status;return j;})).finally(()=>clearTimeout(tm));}
+function chrReport(code,why){return chrFetch('/r/'+encodeURIComponent(code),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({why:why||''})}).then(j=>!!(j&&j.ok)).catch(()=>false);}
+/* the stored text keeps the DF1. prefix the server expects; a 3D character is marked with k:'3d' and its data is deflated */
+function chr3B64(u){let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s);}
+function chr3Un64(b){const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
+async function chr3Z(str){if(!window.CompressionStream)return null;const b=await new Response(new Blob([new TextEncoder().encode(str)]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();return chr3B64(new Uint8Array(b));}
+async function chr3UnZ(b){return await new Response(new Blob([chr3Un64(b)]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();}
+function chr3Wrap(o){return 'DF1.'+btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
+function chr3Peek(d){try{return JSON.parse(decodeURIComponent(escape(atob(String(d).slice(4)))));}catch(e){return null;}}
+function chr3Kit(id){return typeof id==='string'&&KITB[id]&&KITB[id].file&&!KITB[id].pack?id:'';}
+/* the built-in model every player already has is sent as a flag, not as a file */
+const CHR3BASE='โมเดลจาก Meshy ที่ส่งมา';
+function chr3IsBase(){return !!(CH.model&&!chr3Kit(CH.kit)&&MODEL&&MODEL.name===CHR3BASE);}
+function chr3BaseBuf(){const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer;}
+function chr3BaseMdl(){return MDLS['base:0']||mdlLoadBuf('base:0',chr3BaseBuf(),CHR3BASE,'');}
+/* skills that come with the game are sent by reference; a player's own skill is sent whole */
+function chr3SkEnc(s,noImg){if(!s)return null;let g='';try{g=pv3Sig(skCheck(clone(s)));}catch(e){}
+ if(g){for(let i=0;i<SKPRE.length;i++)try{if(pv3Sig(skCheck(clone(SKPRE[i])))===g)return {pre:i};}catch(e){}
+  for(const k of KITS)for(let i=0;i<(k.sk||[]).length;i++)try{if(pv3Sig(skCheck(clone(k.sk[i])))===g)return {kt:k.id,i};}catch(e){}}
+ if(noImg){const c=clone(s);delete c.images;return c;}return s;}
+function chr3SkDec(o){if(!o)return null;if(typeof o.pre==='number')return SKPRE[o.pre]?clone(SKPRE[o.pre]):null;
+ if(typeof o.kt==='string'){const k=KITB[o.kt];return k&&k.sk&&k.sk[o.i]?clone(k.sk[o.i]):null;}return o;}
+function chr3Data(lvl){const ch=pv3Char();if(!ch)return null;const kit=CH.model?chr3Kit(CH.kit):'',base=chr3IsBase();
+ return {v:1,ch,raw:{msc:CH.msc,myaw:CH.myaw,itMode:CH.itMode,weap:CH.weap},kit,base:base?1:0,sks:lvl>1?[]:SKS.slice(0,10).map(s=>chr3SkEnc(s,lvl===1)),name:pv3Name(),own:!!(CH.model&&!kit&&!base)};}
+async function chr3Enc(o){const js=JSON.stringify(o);let z=null;try{z=await chr3Z(js);}catch(e){}return chr3Wrap(z?{k:'3d',z}:{k:'3d',j:o});}
+async function chr3Short(){let o=chr3Data(0);if(!o)throw new Error('none');let d=await chr3Enc(o),cut=0;
+ for(let l=1;l<3&&d.length>14000;l++){o=chr3Data(l);d=await chr3Enc(o);cut=l;}if(d.length>14000)throw new Error('big');
+ if(CHR.cache[d])return {code:CHR.cache[d],cut,own:o.own};
+ const j=await chrFetch('/c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d,n:o.name})});
+ if(j&&j.code){CHR.cache[d]=j.code;CHR.last=j.code;return {code:j.code,cut,own:o.own};}throw new Error(j&&j.error||'fail');}
+async function chr3Parse(d){const p=chr3Peek(d);if(!p||p.k!=='3d')throw new Error('รหัสนี้เป็นตัวละครเกม 2 มิติ เปิดได้ที่หน้าเกมหลัก');
+ let o=p.j;if(p.z)o=JSON.parse(await chr3UnZ(p.z));const ch=pv3CleanCh(o&&o.ch);if(!ch)throw new Error('ข้อมูลตัวละครเสีย');
+ const sks=[];for(const s of (Array.isArray(o.sks)?o.sks:[]).slice(0,10)){let q=null;if(s)try{const z=chr3SkDec(s);q=z?skCheck(JSON.parse(JSON.stringify(z))):null;}catch(e){q=null;}sks.push(q);}while(sks.length<10)sks.push(null);
+ const r=o.raw||{},n=(v,a,b,dd)=>{v=+v;return isFinite(v)?Math.max(a,Math.min(b,v)):dd;};
+ const kit=chr3Kit(o.kit);return {ch,kit,base:!kit&&o.base?1:0,raw:{msc:n(r.msc,.2,5,1),myaw:n(r.myaw,-7,7,0),itMode:r.itMode==='melee'||r.itMode==='shot'?r.itMode:undefined,weap:r.weap==='item'?'item':undefined},sks,name:String(o.name||'ผู้เล่น').slice(0,20)};}
+async function chr3Get(code){code=String(code||'').trim().toUpperCase();if(!chrIsShort(code))throw new Error('ใส่รหัสแบบ DF-XXXXXX');
+ const j=await chrFetch('/c/'+encodeURIComponent(code)).catch(()=>null);if(!j)throw new Error('โหลดรหัสไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วลองใหม่');
+ if(!j.d)throw new Error(j._s===404?'ไม่พบรหัสนี้ หรือถูกลบไปแล้ว':'โหลดรหัสไม่สำเร็จ');const o=await chr3Parse(j.d);o.code=code;return o;}
+async function chr3FoeCh(o){const ch=clone(o.ch);if(o.kit){const mm=await mdlKit(o.kit);if(mm)mdlDress(ch,mm,'kit:'+o.kit,Object.assign({},o.raw,{kit:o.kit}));}
+ else if(o.base){const mm=chr3BaseMdl();if(mm)mdlDress(ch,mm,'base:0',Object.assign({},o.raw));}return ch;}
+/* one opponent made from a shared code: mul 1 for a shadow fight, boss of the week is tougher */
+async function chr3Fight(o,boss){if(PV&&PV.room){toast('ออกจากห้องออนไลน์ก่อน แล้วค่อยสู้กับตัวนี้');return;}const ch=await chr3FoeCh(o);
+ G.wkFoe={ch,boss:!!boss,title:(boss?'👑 บอสประจำสัปดาห์: ':'สู้กับ ')+o.name+' · '+o.code};start();}
+{const _sw=spawnWave;spawnWave=function(){const f=G.wkFoe;if(!f)return _sw();G.wave=3;const b=mkEnt(f.ch,0,12,1,f.boss?1.25:1);
+ b.hp=b.maxhp=Math.round(b.maxhp*(f.boss?4:2));b.dmg=Math.round(b.dmg*(f.boss?1.3:1));if(f.boss)b.boss=true;G.ents.push(b);$('wave').textContent=f.title;};}
+/* the play, quit and back buttons were bound to the original functions, so clear the opponent on their clicks */
+for(const id of ['go','quit','ovB'])try{$(id).addEventListener('click',()=>{G.wkFoe=null;},true);}catch(e){}
+/* make the shared character your own; the one before is kept so it can be put back */
+async function chr3Apply(o){CH.parts=clone(o.ch.parts);CH.move=o.ch.move;CH.hold=o.ch.hold;CH.eyes=o.ch.eyes;
+ if(o.kit){const k=KITB[o.kit];await kitUse(k,null,true);CH.msc=o.raw.msc||k.msc||1;CH.myaw=o.raw.myaw||0;CH.move=o.ch.move;if(o.raw.itMode)CH.itMode=o.raw.itMode;}
+ else if(o.base){if(!MODEL||MODEL.name!==CHR3BASE){RIGNEXT='';MODEL=loadGLB(chr3BaseBuf(),CHR3BASE);}CH.model=true;delete CH.kit;CH.msc=o.raw.msc||1;CH.myaw=o.raw.myaw||0;CH.weap=o.raw.weap==='item'&&MODEL.item?'item':o.ch.weap;CH.itSet=1;if(o.raw.itMode)CH.itMode=o.raw.itMode;else delete CH.itMode;G.jsel=-1;}
+ else{CH.model=false;delete CH.kit;delete CH.itMode;CH.weap=o.ch.weap;}
+ if(o.sks&&o.sks.some(Boolean)){SKS=o.sks.map(s=>s?clone(s):null);while(SKS.length<10)SKS.push(null);skSave();}try{skUI();}catch(e){}save();ui();}
+function chr3Keep(){try{localStorage.setItem('df3d_char_prev',JSON.stringify({ch:CH,sks:SKS,kit:CH.model?chr3Kit(CH.kit):'',base:chr3IsBase()?1:0}));}catch(e){}}
+async function chr3Undo(){let p=null;try{p=JSON.parse(localStorage.getItem('df3d_char_prev')||'null');}catch(e){}if(!p||!p.ch)return false;
+ const ch=pv3CleanCh(p.ch);if(!ch)return false;await chr3Apply({ch,kit:chr3Kit(p.kit),base:p.base?1:0,raw:{msc:p.ch.msc,myaw:p.ch.myaw,itMode:p.ch.itMode,weap:p.ch.weap},sks:Array.isArray(p.sks)?p.sks:null});
+ try{localStorage.removeItem('df3d_char_prev');}catch(e){}return true;}
+/* side panel card */
+function chr3UI(){if($('chr3Det'))return;const go=$('go');if(!go)return;const st=document.createElement('style');
+ st.textContent='#chr3Det,#bossCard3{border:2px solid var(--ink,#1c2740);border-radius:12px;padding:8px 10px;margin:8px 0}#chr3Det summary{cursor:pointer;font-weight:700}#chr3Det input{font:inherit;padding:4px 8px;border:2px solid var(--ink,#1c2740);border-radius:8px;text-transform:uppercase;letter-spacing:2px;min-width:0;flex:1}#chr3Det .r{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}#bossCard3{border-color:#e5484d}';document.head.appendChild(st);
+ const bc=document.createElement('div');bc.id='bossCard3';bc.className='hide';
+ const d=document.createElement('details');d.id='chr3Det';
+ d.innerHTML='<summary>รหัสตัวละคร (แชร์ให้เพื่อน ใส่ในคลิป)</summary><div class="r"><button id="chr3Mk">คัดลอกรหัสสั้นของตัวนี้</button></div>'
+  +'<div class="r"><input id="chr3In" maxlength="9" placeholder="DF-XXXXXX" aria-label="รหัสตัวละคร"></div>'
+  +'<div class="r"><button id="chr3Fi">สู้กับตัวนี้</button><button id="chr3Use">ใช้เป็นตัวของฉัน</button></div>'
+  +'<div class="r"><button id="chr3Rep" class="hide" style="font-size:13px">รายงานตัวละครไม่เหมาะสม</button><button id="chr3Back" class="hide" style="font-size:13px">คืนตัวละครก่อนหน้า</button></div>'
+  +'<p class="mute" id="chr3Msg" style="font-size:13px;margin:6px 0 0">กดคัดลอกแล้วเอารหัสไปใส่ในคำอธิบายคลิป เพื่อนใส่รหัสนี้แล้วสู้กับตัวของคุณได้</p>';
+ const anchor=$('pv3Det')||go;anchor.parentNode.insertBefore(bc,anchor);anchor.parentNode.insertBefore(d,anchor);
+ const q=id=>$(id),msg=t=>{q('chr3Msg').textContent=t;},inp=q('chr3In'),busy=(b,on)=>{b.disabled=on;};
+ const back=()=>{let h=false;try{h=!!localStorage.getItem('df3d_char_prev');}catch(e){}q('chr3Back').classList.toggle('hide',!h);};back();
+ const upd=()=>{q('chr3Rep').classList.toggle('hide',!chrIsShort(inp.value));const r=q('chr3Rep');r._arm=0;r.textContent='รายงานตัวละครไม่เหมาะสม';q('chr3Use')._arm=0;q('chr3Use').textContent='ใช้เป็นตัวของฉัน';};inp.addEventListener('input',upd);
+ q('chr3Mk').onclick=async()=>{const b=q('chr3Mk');sfx.ui();busy(b,true);msg('กำลังสร้างรหัส...');let r=null,err='';try{r=await chr3Short();}catch(e){err=String(e&&e.message||e);}busy(b,false);
+  if(!r){msg(err==='big'?'ตัวละครนี้ใหญ่เกินจะทำรหัสสั้นได้':err==='removed'?'ตัวละครนี้ถูกผู้ดูแลลบออกแล้ว':'สร้างรหัสไม่สำเร็จ ตรวจอินเทอร์เน็ตแล้วลองใหม่');return;}
+  inp.value=r.code;upd();try{inp.select();}catch(e){}const note=(r.own?' · โมเดลที่นำเข้าเองไม่ติดไปกับรหัส จะเห็นเป็นตัวปั้นแทน':'')+(r.cut===1?' · ภาพในสกิลที่ทำเองใหญ่เกิน จึงไม่ได้ใส่ในรหัส':r.cut===2?' · สกิลใหญ่เกินจึงไม่ได้ใส่ในรหัส':'');
+  const ok=()=>{msg('คัดลอก '+r.code+' แล้ว ใส่ในคำอธิบายคลิปหรือส่งให้เพื่อนได้เลย'+note);toast('คัดลอกรหัส '+r.code+' แล้ว');},no=()=>msg('รหัสคือ '+r.code+' กดค้างที่ช่องเพื่อคัดลอก'+note);
+  try{navigator.clipboard.writeText(r.code).then(ok,no);}catch(e){no();}};
+ const load=async b=>{busy(b,true);msg('กำลังโหลดตัวละคร...');try{const o=await chr3Get(inp.value);busy(b,false);return o;}catch(e){busy(b,false);msg(String(e&&e.message||e));return null;}};
+ q('chr3Fi').onclick=async()=>{sfx.ui();const o=await load(q('chr3Fi'));if(!o)return;msg('สู้กับ '+o.name+' (เลือดหนา 2 เท่า)');await chr3Fight(o,false);};
+ q('chr3Use').onclick=async()=>{const b=q('chr3Use');sfx.ui();if(!chrIsShort(inp.value)){msg('ใส่รหัสแบบ DF-XXXXXX');return;}
+  if(!b._arm){b._arm=1;b.textContent='กดอีกครั้งเพื่อแทนตัวละครตอนนี้';msg('ตัวละครตอนนี้จะถูกเก็บไว้ กดคืนตัวละครก่อนหน้าได้');return;}b._arm=0;b.textContent='ใช้เป็นตัวของฉัน';
+  const o=await load(b);if(!o)return;chr3Keep();try{await chr3Apply(o);msg('ใช้ '+o.name+' แล้ว');toast('ได้ตัวละคร '+o.code+' แล้ว');}catch(e){msg('ใช้ตัวละครนี้ไม่สำเร็จ');}back();};
+ q('chr3Back').onclick=async()=>{sfx.ui();const ok=await chr3Undo().catch(()=>false);msg(ok?'คืนตัวละครก่อนหน้าแล้ว':'ไม่มีตัวละครก่อนหน้าให้คืน');back();};
+ q('chr3Rep').onclick=async()=>{const rp=q('chr3Rep'),c=String(inp.value).trim().toUpperCase();if(!chrIsShort(c))return;if(!rp._arm){rp._arm=1;rp.textContent='กดอีกครั้งเพื่อยืนยันการรายงาน '+c;return;}
+  rp._arm=0;rp.disabled=true;const ok=await chrReport(c,'ไม่เหมาะสม');rp.disabled=false;rp.textContent='รายงานตัวละครไม่เหมาะสม';msg(ok?'ส่งรายงานแล้ว ขอบคุณครับ ผู้ดูแลจะตรวจสอบ':'ส่งรายงานไม่สำเร็จ ลองใหม่อีกครั้ง');};
+ chrBossUi();}
+/* boss of the week: shown here only when the boss is a 3D character */
+function chrBossUi(){const card=$('bossCard3');if(!card)return;const now=Date.now();if(CHR.bossT&&now-CHR.bossT<10*60e3){chrBossShow(card);return;}CHR.bossT=now;
+ chrFetch('/boss',null,6000).then(async j=>{let b=j&&j.boss||null;if(b){const p=chr3Peek(b.d);if(!p||p.k!=='3d')b=null;else try{b.o=await chr3Parse(b.d);b.o.code=b.code;}catch(e){b=null;}}CHR.boss=b;chrBossShow(card);}).catch(()=>{CHR.boss=null;chrBossShow(card);});}
+function chrBossShow(card){const b=CHR.boss;card.classList.toggle('hide',!b);if(!b)return;card.innerHTML='';const h=document.createElement('b');h.textContent='👑 บอสประจำสัปดาห์: '+(b.n||b.o.name||'ไม่มีชื่อ');
+ const p=document.createElement('p');p.className='mute';p.style.cssText='margin:4px 0;font-size:13px';p.textContent=(b.by?'ผู้สร้าง '+b.by+' · ':'')+(b.note||'ตัวละครจากผู้ชนะประกวดคลิป #วาดแล้วสู้')+' · รหัส '+b.code;
+ const go=document.createElement('button');go.className='primary';go.textContent='ท้าสู้บอส (เลือดหนา 4 เท่า)';go.onclick=()=>{sfx.ui();chr3Fight(Object.assign({},b.o,{name:b.n||b.o.name}),true);};card.append(h,p,go);}
+setTimeout(()=>{try{chr3UI();}catch(e){}},0);
+setInterval(()=>{try{if(mode==='edit')chrBossUi();}catch(e){}},60000);
 
 /* ---------- effects made in the VFX studio, drawn by the studio engine in a see-through frame over the game ---------- */
 var FX={ifr:null,api:null,loading:null,act:{},ts:1,lights:[],casts:[],lt:0};
@@ -2049,7 +2148,7 @@ function auraFx(kind,D,col,el,opt){if(typeof ST_DEF!=='undefined'&&ST_DEF[kind]&
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);
-window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
+window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
 })();
 </script>
 </body>
