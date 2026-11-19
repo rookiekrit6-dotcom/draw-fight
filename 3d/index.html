@@ -1051,16 +1051,16 @@ function dbDraw(g,e,ex,bx,by){const t=DBT,H=e.f.H||60,top=e.y-H,mx=e._dbMax||(e.
   g.fillStyle=c;g.beginPath();g.moveTo(ix,by+15);g.arc(ix,by+15,6.5,-1.5708,-1.5708+fr*6.2832);g.closePath();g.fill();
   dbGlyph(g,k,ix,by+15);if(k==='pois'&&e.poisN>1){g.font='700 8px sans-serif';g.textAlign='left';g.fillStyle='#fff';g.fillText('x'+e.poisN,ix+5,by+12);g.textAlign='center';}ix+=15;}
  if(e.shield>0){g.fillStyle='#c08a3e';g.beginPath();g.arc(ix,by+15,3,0,7);g.fill();}
- g.save();
+ g.save();const SF=DB_FXON();
  if(dbVal(e,'stun')>0){g.fillStyle='#ffd84a';g.strokeStyle='#7a5a00';for(let i=0;i<3;i++){const a=t*5+i*2.094,x=ex+Math.cos(a)*17,y=top-12+Math.sin(a)*5;g.globalAlpha=Math.sin(a)>-.2?1:.55;g.lineWidth=1.2;dbStar(g,x,y,6.2);g.stroke();}g.globalAlpha=1;}
- if(dbVal(e,'frz')>0){const w=Math.max(30,H*.55),h=H+8,x0=ex-w/2,y0=e.y-h;g.globalAlpha=.34;g.fillStyle='#bfefff';g.beginPath();g.moveTo(x0+5,y0);g.lineTo(x0+w-3,y0+4);g.lineTo(x0+w,y0+h);g.lineTo(x0,y0+h);g.lineTo(x0-2,y0+8);g.closePath();g.fill();
+ if(!SF&&dbVal(e,'frz')>0){const w=Math.max(30,H*.55),h=H+8,x0=ex-w/2,y0=e.y-h;g.globalAlpha=.34;g.fillStyle='#bfefff';g.beginPath();g.moveTo(x0+5,y0);g.lineTo(x0+w-3,y0+4);g.lineTo(x0+w,y0+h);g.lineTo(x0,y0+h);g.lineTo(x0-2,y0+8);g.closePath();g.fill();
   g.globalAlpha=.85;g.strokeStyle='#e8fbff';g.lineWidth=1.5;g.stroke();g.globalAlpha=.7;g.beginPath();g.moveTo(x0+6,y0+8);g.lineTo(x0+12,y0+h*.4);g.moveTo(x0+w-8,y0+12);g.lineTo(x0+w-14,y0+h*.3);g.stroke();
   g.fillStyle='#e8fbff';for(let i=0;i<4;i++){const sx=x0+((i*37+Math.floor(t*3)*13)%w),sy=y0+((i*53)%h);g.globalAlpha=.5+.5*Math.sin(t*6+i);g.fillRect(sx,sy,2,2);}g.globalAlpha=1;}
  if(e.root>0){g.strokeStyle='#6b4a1f';g.lineWidth=4;g.lineCap='round';for(let i=0;i<4;i++){const b=ex-13+i*8.6,sw=Math.sin(t*3+i)*3;g.beginPath();g.moveTo(b,e.y+2);g.quadraticCurveTo(b+sw-5,e.y-10,b+sw,e.y-18-i%2*5);g.stroke();}
   g.strokeStyle='#8fbf4a';g.lineWidth=1.5;for(let i=0;i<4;i++){const b=ex-13+i*8.6,sw=Math.sin(t*3+i)*3;g.beginPath();g.ellipse(b+sw-2,e.y-12,2.5,1.4,.6,0,7);g.stroke();}}
- if(e.burn>0){for(let i=0;i<7;i++){const ph=(t*2.2+i*.37)%1,x=ex+Math.sin(i*2.7+t*3)*H*.17,y=e.y-H*(.15+.7*((i*.29)%1))-ph*14,s=(1-ph)*9+4;
+ if(!SF&&e.burn>0){for(let i=0;i<7;i++){const ph=(t*2.2+i*.37)%1,x=ex+Math.sin(i*2.7+t*3)*H*.17,y=e.y-H*(.15+.7*((i*.29)%1))-ph*14,s=(1-ph)*9+4;
    g.globalAlpha=.92*(1-ph*.7);g.fillStyle=ph<.4?'#ffe27a':'#ff7a2e';g.beginPath();g.moveTo(x,y-s*1.6);g.quadraticCurveTo(x+s,y,x,y+s*.6);g.quadraticCurveTo(x-s,y,x,y-s*1.6);g.fill();if(ph<.5){g.fillStyle='#fff3b0';g.beginPath();g.arc(x,y-s*.2,s*.32,0,7);g.fill();}}g.globalAlpha=1;}
- if(e.pois>0){for(let i=0;i<5;i++){const ph=(t*.9+i/5)%1,x=ex+Math.sin(i*3.1+t*2)*H*.18,y=e.y-H*.1-ph*H*.95,r=3+ph*3.2;g.globalAlpha=.95*(1-ph*.6);g.fillStyle='#7be08d';g.strokeStyle='#2d7a3c';g.lineWidth=1;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();}g.globalAlpha=1;}
+ if(!SF&&e.pois>0){for(let i=0;i<5;i++){const ph=(t*.9+i/5)%1,x=ex+Math.sin(i*3.1+t*2)*H*.18,y=e.y-H*.1-ph*H*.95,r=3+ph*3.2;g.globalAlpha=.95*(1-ph*.6);g.fillStyle='#7be08d';g.strokeStyle='#2d7a3c';g.lineWidth=1;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();}g.globalAlpha=1;}
  if(e.slow>0&&!(dbVal(e,'frz')>0)){g.strokeStyle='#3d6fe0';g.lineWidth=3;for(let i=0;i<3;i++){const a=t*-3+i*2.094;g.globalAlpha=.85;g.beginPath();g.ellipse(ex,e.y+1,22,6,0,a,a+1.4);g.stroke();}g.globalAlpha=1;}
  if(e.spore>0){g.fillStyle='#c9dc52';for(let i=0;i<7;i++){const a=t*1.3+i*.9,x=ex+Math.cos(a)*(12+i%3*4),y=e.y-H*.55+Math.sin(a*1.7)*H*.3;g.globalAlpha=.6;g.beginPath();g.arc(x,y,1.8,0,7);g.fill();}g.globalAlpha=1;}
  if(e.ccImm>0){g.globalAlpha=Math.min(.55,e.ccImm*.3);g.strokeStyle='#ffffff';g.lineWidth=2;g.setLineDash([4,4]);g.beginPath();g.ellipse(ex,e.y-H*.5,H*.42,H*.62,0,0,7);g.stroke();g.setLineDash([]);g.globalAlpha=1;}
@@ -1080,7 +1080,7 @@ function pvBuffSnd(kind,on){try{if(kind==='guard'||kind==='shield'){if(on){tone(
  else if(kind==='regen'){if(on){tone(660,.12,'sine',.045);tone(880,.16,'sine',.04,null,.1);}}}catch(e){}}
 
 /* ===================== 3D: debuffs on the body (overlay), DOT, PvP rooms 1v1 to 5v5 ===================== */
-let DBT=0;
+let DBT=0;function DB_FXON(){return !!FX.api;}
 function tone(f,d,type,v,f2,dl){if(!AC)return;try{const t=AC.currentTime+(dl||0),o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v||.1,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
 let DBNB=null;function noise(d,v,fq,type,dl){if(!AC)return;try{if(!DBNB){DBNB=AC.createBuffer(1,Math.floor(AC.sampleRate*.5),AC.sampleRate);const a=DBNB.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;}const t=AC.currentTime+(dl||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=DBNB;s.loop=true;f.type=type||'lowpass';f.frequency.value=fq||1000;g.gain.setValueAtTime(v||.1,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);s.stop(t+d+.02);}catch(e){}}
 function db3Px(e){return {y:0,f:{H:60},stun:e.stun>0?e.stun:0,frz:e.frz>0?e.frz:0,root:e.rootT>0?e.rootT:0,burn:e.burnT>0?e.burnT:0,pois:e.poisT>0?e.poisT:0,poisN:e.poisN||0,slow:e.slowT>0?e.slowT:0,spore:0,shield:0,ccImm:e.ccImm>0?e.ccImm:0,_pop:e._pop,_dbMax:e._dbMax||(e._dbMax={})};}
@@ -1637,13 +1637,14 @@ function fxHurtPl(t,from){if(t!==G.pl||!from||!from.team)return from;if(t.armorU
  const c=FX.chan;if(c&&G.t<c.u&&FX.api&&c.a.id&&FX.api.stop(c.a.id)){tag(t,'ถูกขัดจังหวะ!','#ff6060');G.skcd[c.slot]=(G.skcd[c.slot]||0)*.5;delete FX.act[c.slot];FX.chan=null;}return from;}
 /* buff auras in the 3D game: bd = stronger hits (rage), bg = guard, bs = speed, rg = healing over time */
 var AURA3={bd:'rage',bg:'guard',bs:'haste',rg:'regen'};
-function fxBuffTick(dt){if(mode!=='fight'||!FX.api&&!G.ents.some(e=>e.bd>0||e.bg>0||e.bs>0||e.rg>0))return;
+var AURA3X={bd:'rage',bg:'guard',bs:'haste',rg:'regen',burnT:'burn',frzV:'frz',poisT:'pois'};
+function fxBuffTick(dt){for(const e of G.ents)e.frzV=!e.dead&&e.frz>0&&e.stun>0?Math.min(e.frz,e.stun):0;if(mode!=='fight'||!FX.api&&!G.ents.some(e=>e.bd>0||e.bg>0||e.bs>0||e.rg>0||e.burnT>0||e.frzV>0||e.poisT>0))return;
  for(const e of G.ents){if(e.dead){if(e._au)for(const k in e._au){if(FX.api&&e._au[k].id)FX.api.stop(e._au[k].id);}e._au=null;continue;}
   if(e.rg>0){e.rg-=dt;const a=Math.min(e.maxhp-e.hp,(e.rgA||4)*dt);if(a>0){e.hp+=a;e._rgAcc=(e._rgAcc||0)+a;if(e._rgAcc>=4){tag(e,'+'+Math.round(e._rgAcc),'#7dffa0');e._rgAcc=0;}}}
-  for(const k in AURA3){const v=e[k]||0;e._au=e._au||{};const A=e._au[k];
-   if(v>0){if(!A||(A.id&&!FX.api.alive(A.id))&&v>.4||v>A.rem+.6){if(A&&A.id&&FX.api)FX.api.stop(A.id);const N={id:0,rem:v};if(!A)try{pvBuffSnd(AURA3[k],1);}catch(er){}e._au[k]=N;const fx=auraFx(AURA3[k],v,null,(e._bel&&e._bel[k])||'none');fxEnsure().then(api=>{N.id=api.play(fx,{x:e.x,y:e.y||0,z:e.z,yaw:0,scale:(e.sc||1)},null,null);}).catch(()=>{});}
+  for(const k in AURA3X){const v=e[k]||0;e._au=e._au||{};const A=e._au[k];
+   if(v>0){if(!A||(A.id&&!FX.api.alive(A.id))&&v>.4||v>A.rem+.6){if(A&&A.id&&FX.api)FX.api.stop(A.id);const N={id:0,rem:v};if(!A)try{pvBuffSnd(AURA3X[k],1);}catch(er){}e._au[k]=N;const fx=auraFx(AURA3X[k],v,null,(e._bel&&e._bel[k])||'none');fxEnsure().then(api=>{N.id=api.play(fx,{x:e.x,y:e.y||0,z:e.z,yaw:0,scale:(e.sc||1)},null,null);}).catch(()=>{});}
     else{A.rem=v;if(A.id&&FX.api)FX.api.move(A.id,e.x,e.z,e.y||0);}}
-   else if(A){if(A.id&&FX.api)FX.api.stop(A.id);delete e._au[k];try{pvBuffSnd(AURA3[k],0);}catch(er){}}}}}
+   else if(A){if(A.id&&FX.api)FX.api.stop(A.id);delete e._au[k];try{pvBuffSnd(AURA3X[k],0);}catch(er){}}}}}
 /* ---- skill file checker: explains in Thai what the game understood, what was adjusted and what was ignored ---- */
 var SKR_FX={hitDmg:[0,200,'ดาเมจตอนเลเยอร์เริ่ม'],hitR:[0,15,'รัศมีที่โดน'],ccStun:[0,3,'สตัน (วินาที)'],ccRoot:[0,4,'ตรึงกับที่ (วินาที)'],ccLift:[0,12,'กระแทกลอย'],ccSlow:[0,.9,'ทำให้ช้า (0.5 = ช้าลงครึ่งหนึ่ง)'],ccPull:[-8,8,'ดูดเข้า (+) / ผลักออก (−)'],tickDmg:[0,30,'ดาเมจต่อเนื่องต่อครั้ง'],tickEvery:[.1,3,'ดาเมจต่อเนื่องทุกกี่วินาที'],sndVol:[0,1.5,'ความดังเสียง'],start:[0,30,'เริ่มที่วินาที'],dur:[.05,30,'ปล่อยนานกี่วินาที'],light:[0,30,'ส่องแสงรอบตัว'],inten:[0,20,'ความสว่าง']};
 var SKR_KEYS='meshY name on start dur rate burst max shape r plane pos path life speed dir spread swirl gravity drag attract velY render tex blend orient size sizeVar aspect stretch rot spin col inten fadeIn fadeOut fps frameRand fbLife shake flash ground front soft light lightR lightY distort trail boltLen jag branch boltHz emis emisCol hitDmg hitR snd sndVol ccStun ccRoot ccLift ccSlow ccPull tickDmg tickEvery sizeC rC rateC iC thick fill el _help'.split(' ');
@@ -1729,6 +1730,24 @@ function auraFx(kind,D,col,el,opt){opt=opt||{};const E=AURA_EL[el]||null,c=E?[E[
  else if(kind==='haste'){
   L.push(base({shape:'ring',r:.8,pos:[0,.2,0],rate:12,life:[.25,.4],speed:[.6,1],dir:'tangent',swirl:2,velY:1.2,tex:'glow',size:[.1,.02],col:['#ffffff',a,b],inten:1.3}));
   L.push(base({shape:'point',r:0,pos:[0,.04,0],rate:2,life:[.8,.8],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.2,1.9],col:[a,b,b],inten:.4}));}
+ else if(kind==='burn'){ // textured flames that roll up the body (same flipbook as the studio fire wall), a hot core, smoke, embers
+  L.push(base({name:'flames high',shape:'ring',r:.48,pos:[0,1.05,0],rate:22,max:300,life:[.45,.7],speed:[.6,1.1],dir:'up',spread:.15,tex:'fire',fps:12,fbLife:true,blend:'alpha',size:[.36,.8],sizeVar:.3,aspect:.75,sizeC:[[0,.5],[.3,1],[1,.8]],col:['#ffffff','#ffd9a0','#ff9a50'],inten:1.25,fadeIn:.08,fadeOut:.3}));
+  L.push(base({name:'flames',shape:'ring',r:.55,pos:[0,.3,0],rate:34,max:400,life:[.5,.8],speed:[.8,1.5],dir:'up',spread:.18,tex:'fire',fps:12,fbLife:true,blend:'alpha',size:[.42,.95],sizeVar:.3,aspect:.75,sizeC:[[0,.5],[.3,1],[1,.8]],col:['#ffffff','#ffd9a0','#ff9a50'],inten:1.25,light:2.6,lightR:3,lightY:1,fadeIn:.08,fadeOut:.3}));
+  L.push(base({name:'core',shape:'ring',r:.52,pos:[0,.6,0],rate:22,life:[.25,.4],speed:[.6,1.1],dir:'up',tex:'core',blend:'add',size:[.38,.12],aspect:.6,col:['#fff4c0','#ffa030','#ff4a10'],inten:1.1}));
+  L.push(base({name:'smoke',shape:'sphere',r:.3,pos:[0,1.6,0],rate:8,life:[.8,1.2],speed:[.4,.8],dir:'up',tex:'smokeL',fbLife:true,blend:'alpha',size:[.45,1.1],col:['#4a3426','#241a16','#120d0c'],inten:.5,fadeIn:.25}));
+  L.push(base({name:'embers',shape:'sphere',r:.45,pos:[0,.7,0],rate:14,life:[.5,.9],speed:[.8,1.9],dir:'up',spread:.45,gravity:-1.2,tex:'dot',blend:'add',size:[.05,.02],col:['#fff6c8','#ffb040','#ff4010'],inten:2.2}));}
+ else if(kind==='frz'){ // big ice crystals growing from the ground and out of the body, a faint frozen shell, frost mist, glints, shatter at the end
+  const ci=['#f4fdff','#b6e8fa','#6ab2de'];
+  L.push(base({name:'shell',shape:'point',r:0,pos:[0,.95,0],rate:0,burst:1,max:1,dur:.05,life:[D,D],speed:[0,0],dir:'out',render:'dome',pat:'ice',blend:'alpha',size:[1.7,1.7],sizeVar:0,sizeC:[[0,.6],[.05,1.05],[.1,1],[1,1]],col:['#f2fdff','#bfeaff','#4fa8e0'],inten:.7,fadeIn:.02,fadeOut:.05}));
+  L.push(base({name:'ground crystals',shape:'ring',r:.5,pos:[0,.05,0],rate:0,burst:12,max:12,dur:.05,life:[D,D],speed:[0,0],dir:'up',render:'mesh',meshKind:'crystal',meshY:2.7,size:[.42,.42],sizeVar:.45,rot:.5,sizeC:[[0,0],[.04,1.12],[.08,1],[.93,1],[1,.15]],col:ci,emis:.5,emisCol:'#a8e8ff',inten:1,fadeIn:0,fadeOut:.05}));
+  L.push(base({name:'body crystals',shape:'sphere',r:.42,pos:[0,1.0,0],rate:0,burst:7,max:7,dur:.05,life:[D,D],speed:[0,0],dir:'out',render:'mesh',meshKind:'crystal',meshY:2,size:[.26,.26],sizeVar:.35,rot:1,sizeC:[[0,0],[.05,1.1],[.1,1],[.93,1],[1,.15]],col:ci,emis:.5,emisCol:'#a8e8ff',inten:1,fadeIn:0,fadeOut:.05}));
+  L.push(base({name:'mist',shape:'ring',r:.75,pos:[0,.1,0],rate:7,life:[.9,1.4],speed:[.1,.3],dir:'out',tex:'smokeL',blend:'alpha',size:[.6,1.25],col:['#f2fbff','#c4e6f6','#8fbfdc'],inten:.32}));
+  L.push(base({name:'glints',shape:'sphere',r:.62,pos:[0,1,0],rate:5,life:[.35,.6],speed:[0,.04],dir:'out',tex:'flare',size:[.28,.04],col:['#ffffff','#c8f2ff','#7fd0ff'],inten:1.7}));
+  L.push(base({name:'shatter',start:Math.max(0,D-.06),dur:.05,shape:'sphere',r:.65,pos:[0,.9,0],rate:0,burst:22,max:22,life:[.45,.85],speed:[2,4.2],dir:'out',gravity:10,render:'mesh',meshKind:'crystal',meshY:1.6,size:[.12,.07],rot:3,col:ci,emis:.6,emisCol:'#a8e8ff'}));}
+ else if(kind==='pois'){ // bubbles rising off the body, green fumes, dripping venom
+  L.push(base({name:'bubbles',shape:'ring',r:.55,pos:[0,.8,0],rate:20,life:[.7,1.1],speed:[.25,.55],dir:'up',spread:.3,tex:'glow',blend:'alpha',size:[.12,.26],sizeVar:.5,sizeC:[[0,.3],[.85,1],[.92,1.4],[1,0]],col:['#b6f58c','#4fcf3e','#1f7a1c'],inten:1.4}));
+  L.push(base({name:'fumes',shape:'ring',r:.55,pos:[0,1.0,0],rate:12,life:[.9,1.4],speed:[.2,.5],dir:'up',tex:'smokeL',fbLife:true,blend:'alpha',size:[.5,1.2],col:['#8fe06a','#3f8a2e','#1d4a16'],inten:.75,fadeIn:.25}));
+  L.push(base({name:'drips',shape:'sphere',r:.4,pos:[0,1.2,0],rate:6,life:[.5,.8],speed:[0,.1],dir:'random',gravity:6,tex:'dot',blend:'alpha',size:[.08,.06],col:['#b8f080','#4cb83a','#1f5a18'],inten:1}));}
  else{ // regen
   L.push(base({shape:'ring',r:.8,pos:[0,.15,0],rate:9,life:[.9,1.3],speed:[.5,.9],dir:'up',tex:'glow',size:[.12,.03],col:['#ffffff',a,b],inten:1.3}));
   L.push(base({shape:'point',r:0,pos:[0,.04,0],rate:2,life:[1.2,1.2],speed:[0,0],dir:'out',tex:'ring',orient:'flat',size:[1.6,1.9],col:[a,b,b],inten:.4}));}
