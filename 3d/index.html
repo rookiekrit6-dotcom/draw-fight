@@ -1848,7 +1848,7 @@ function chr3Data(lvl){const ch=pv3Char();if(!ch)return null;const kit=CH.model?
 async function chr3Enc(o){const js=JSON.stringify(o);let z=null;try{z=await chr3Z(js);}catch(e){}return chr3Wrap(z?{k:'3d',z}:{k:'3d',j:o});}
 /* a small picture of the character for the admin page, taken right after the next frame is drawn */
 function chr3Thumb(){return new Promise(res=>{if(RP.recDraw||RP.on||mode!=='edit'){res('');return;}let done=0;const fin=v=>{if(done)return;done=1;if(RP.recDraw===f)RP.recDraw=null;res(v);};
- const f=()=>{try{const gc=$('gl'),w=gc.width,h=gc.height,z=Math.min(w,h)*.86,c=document.createElement('canvas');c.width=c.height=200;const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,200,200);
+ const f=()=>{try{const gc=$('gl'),w=gc.width,h=gc.height,z=Math.min(w,h)*.74,c=document.createElement('canvas');c.width=c.height=200;const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,200,200);
   x.drawImage(gc,(w-z)/2,(h-z)/2,z,z,0,0,200,200);let u=c.toDataURL('image/jpeg',.72);if(u.length>58000)u=c.toDataURL('image/jpeg',.45);fin(u.length>58000?'':u);}catch(e){fin('');}};
  RP.recDraw=f;setTimeout(()=>fin(''),1500);});}
 async function chr3Short(){let o=chr3Data(0);if(!o)throw new Error('none');let d=await chr3Enc(o),cut=0;
@@ -2014,6 +2014,33 @@ function pgUI(){if($('pgCard'))return;const go=$('go');if(!go)return;const st=do
  $('pgSurv').onclick=()=>{try{sfx.ui();}catch(e){}pgStart('surv');};$('pgTow').onclick=()=>{try{sfx.ui();}catch(e){}pgStart('tower',+$('pgFl').value||1);};
  pgUi();}
 setTimeout(()=>{try{pgUI();}catch(e){}},0);
+/* ===================== 3D: character vault (several saved characters with pictures) ===================== */
+const VT_KEY='df3d_vault',VT_MAX=24;
+function vtLoad(){let a=null;try{a=JSON.parse(localStorage.getItem(VT_KEY)||'[]');}catch(e){}return Array.isArray(a)?a.filter(x=>x&&x.id&&x.d&&x.d.ch):[];}
+let VT=vtLoad();
+function vtSave(){try{localStorage.setItem(VT_KEY,JSON.stringify(VT));return true;}catch(e){toast('พื้นที่เก็บในเบราว์เซอร์เต็ม ลบตัวละครเก่าออกก่อน');return false;}}
+function vtSnap(){const kit=CH.model?chr3Kit(CH.kit):'',base=chr3IsBase();const ch=Object.assign(pv3CleanCh(clone(CH))||{parts:[]},{msc:CH.msc,myaw:CH.myaw,itMode:CH.itMode,weap:CH.weap});return {ch,sks:SKS.slice(0,10).map(s=>s?clone(s):null),kit,base:base?1:0,own:!!(CH.model&&!kit&&!base)};}
+async function vtAdd(name){if(VT.length>=VT_MAX){toast('คลังเต็ม '+VT_MAX+' ตัว ลบตัวเก่าออกก่อน');return;}const pic=await chr3Thumb().catch(()=>'');
+ const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),n:String(name||'').trim().slice(0,24)||('ตัวละคร '+(VT.length+1)),t:Date.now(),p:pic,d:vtSnap()};VT.unshift(it);
+ if(!vtSave()){VT.shift();return;}try{localStorage.setItem('df3d_vault_cur',it.id);}catch(e){}toast('เก็บ '+it.n+' เข้าคลังแล้ว');vtUi();}
+async function vtOver(id){const it=VT.find(x=>x.id===id);if(!it)return;const old={d:it.d,p:it.p,t:it.t};it.d=vtSnap();it.p=await chr3Thumb().catch(()=>'')||it.p;it.t=Date.now();if(!vtSave()){Object.assign(it,old);return;}toast('บันทึกทับ '+it.n+' แล้ว');vtUi();}
+async function vtUse(id){const it=VT.find(x=>x.id===id);if(!it)return;const c=pv3CleanCh(it.d.ch);if(!c){toast('ข้อมูลตัวละครนี้เสีย');return;}
+ await chr3Apply({ch:c,kit:chr3Kit(it.d.kit),base:it.d.base?1:0,raw:{msc:it.d.ch.msc,myaw:it.d.ch.myaw,itMode:it.d.ch.itMode,weap:it.d.ch.weap},sks:Array.isArray(it.d.sks)?it.d.sks:null});
+ try{localStorage.setItem('df3d_vault_cur',id);}catch(e){}toast('ใช้ '+it.n+' แล้ว'+(it.d.own?' (โมเดลที่นำเข้าเองไม่ได้เก็บไว้ จะเป็นตัวปั้นแทน)':''));vtUi();}
+function vtDel(id){VT=VT.filter(x=>x.id!==id);vtSave();vtUi();}
+function vtUi(){const L=$('vtList');if(!L)return;$('vtN').textContent='คลังตัวละคร ('+VT.length+'/'+VT_MAX+')';L.innerHTML='';let cur='';try{cur=localStorage.getItem('df3d_vault_cur')||'';}catch(e){}
+ if(!VT.length){L.innerHTML='<p class="mute" style="font-size:13px;margin:4px 0">ยังไม่มีตัวละครในคลัง กดเก็บตัวนี้เข้าคลังเพื่อเริ่ม</p>';return;}
+ for(const it of VT){const r=document.createElement('div');r.className='vtR'+(it.id===cur?' on':'');const im=document.createElement(it.p?'img':'div');if(it.p){im.src=it.p;im.alt='';}im.className='vtP';
+  const tx=document.createElement('div');tx.style.cssText='flex:1;min-width:0';const nm=document.createElement('b');nm.textContent=it.n;const sm=document.createElement('small');sm.textContent=(it.id===cur?'กำลังใช้ · ':'')+new Date(it.t).toLocaleDateString('th-TH');tx.append(nm,document.createElement('br'),sm);
+  const bs=document.createElement('div');bs.className='vtB';const mk=(t,f)=>{const b=document.createElement('button');b.textContent=t;b.onclick=f;bs.appendChild(b);return b;};
+  mk('ใช้',()=>{try{sfx.ui();}catch(e){}vtUse(it.id);});mk('บันทึกทับ',()=>{try{sfx.ui();}catch(e){}vtOver(it.id);});
+  const d=mk('ลบ',()=>{if(!d._arm){d._arm=1;d.textContent='ยืนยันลบ';setTimeout(()=>{d._arm=0;d.textContent='ลบ';},3000);return;}vtDel(it.id);});
+  r.append(im,tx,bs);L.appendChild(r);}}
+function vtUI(){if($('vtDet'))return;const anchor=$('pgCard')||$('go');if(!anchor)return;const st=document.createElement('style');
+ st.textContent='#vtDet{border:2px solid var(--ink,#1c2740);border-radius:12px;padding:8px 10px;margin:8px 0}#vtDet summary{cursor:pointer;font-weight:700}.vtR{display:flex;gap:8px;align-items:center;padding:6px;border-radius:10px;margin:6px 0;background:#f3f5fa}.vtR.on{outline:2px solid #ffb020}.vtP{width:56px;height:56px;border-radius:8px;object-fit:cover;background:#dde3ee;flex:none}.vtR small{color:var(--mute,#667);font-size:12px}.vtB{display:flex;flex-direction:column;gap:3px}.vtB button{font-size:12px;padding:3px 8px}#vtNew{display:flex;gap:6px;margin-top:6px}#vtName{flex:1;min-width:0;font:inherit;padding:4px 8px;border:2px solid var(--ink,#1c2740);border-radius:8px}';document.head.appendChild(st);
+ const d=document.createElement('details');d.id='vtDet';d.innerHTML='<summary id="vtN"></summary><div id="vtNew"><input id="vtName" maxlength="24" placeholder="ตั้งชื่อตัวละคร" aria-label="ชื่อตัวละคร"><button id="vtAdd" class="primary">เก็บตัวนี้เข้าคลัง</button></div><div id="vtList"></div><p class="mute" style="font-size:12px;margin:4px 0 0">เก็บได้ '+VT_MAX+' ตัวในเบราว์เซอร์เครื่องนี้ รวมสกิลด้วย โมเดล .glb ที่นำเข้าเองไม่ได้เก็บไว้</p>';
+ anchor.parentNode.insertBefore(d,anchor);$('vtAdd').onclick=async()=>{try{sfx.ui();}catch(e){}const b=$('vtAdd');b.disabled=true;await vtAdd($('vtName').value);$('vtName').value='';b.disabled=false;};vtUi();}
+setTimeout(()=>{try{vtUI();}catch(e){}},0);
 
 /* ---------- effects made in the VFX studio, drawn by the studio engine in a see-through frame over the game ---------- */
 var FX={ifr:null,api:null,loading:null,act:{},ts:1,lights:[],casts:[],lt:0};
@@ -2248,7 +2275,7 @@ function auraFx(kind,D,col,el,opt){if(typeof ST_DEF!=='undefined'&&ST_DEF[kind]&
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);
-window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get PGS(){return PGS;},pgXp,pgStart,pgUi,get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
+window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get PGS(){return PGS;},pgXp,pgStart,pgUi,get VT(){return VT;},vtAdd,vtUse,get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
 })();
 </script>
 </body>
