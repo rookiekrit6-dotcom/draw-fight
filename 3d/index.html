@@ -1300,7 +1300,13 @@ async function pvSig(id,code,onMsg){const key=await pvKey(code);let L=PV_BROKERS
  const hook=m=>{m.on=async(t,p)=>{try{const u=pvUnB64(p),pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:u.slice(0,12)},key,u.slice(12)),o=JSON.parse(PV_TD.decode(pt));if(o&&o.src&&o.src!==id)onMsg(o,S);}catch(e){}};m.sub('df4pv/'+id);
   m.onclose=async()=>{if(S.dead)return;for(let k=0;k<3&&!S.dead;k++){await new Promise(r=>setTimeout(r,1500*(k+1)));for(const u of L){try{const m2=await pvMq(u);if(S.dead){m2.close();return;}S.M=m2;hook(m2);return;}catch(e){}}}if(!S.dead&&S.onclose)S.onclose();};};
  hook(M);return S;}
-function pvPC(){return new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]});}
+/* relay (TURN) for networks that block direct connections: short-lived credentials come from our Cloudflare Worker */
+var PV_TURN_URL='';const PV_ICE={list:null,exp:0,p:null};
+function pvTurnUrl(){let u='';try{u=localStorage.getItem('df4_turn')||'';}catch(e){}return u||PV_TURN_URL;}
+function pvIce(){const u=pvTurnUrl();if(!u||(PV_ICE.list&&Date.now()<PV_ICE.exp))return Promise.resolve(PV_ICE.list);if(PV_ICE.p)return PV_ICE.p;
+ const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>{try{ac&&ac.abort();}catch(e){}},4000);
+ PV_ICE.p=fetch(u,{cache:'no-store',signal:ac?ac.signal:undefined}).then(r=>r.ok?r.json():null).then(j=>{if(j&&Array.isArray(j.iceServers)){PV_ICE.list=j.iceServers.map(s=>({urls:(Array.isArray(s.urls)?s.urls:[s.urls]).filter(x=>!/:53(\?|$)/.test(x)),username:s.username,credential:s.credential}));PV_ICE.exp=Date.now()+20*3600e3;}return PV_ICE.list;}).catch(()=>null).finally(()=>{clearTimeout(tm);PV_ICE.p=null;});return PV_ICE.p;}
+function pvPC(){const base=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}];return new RTCPeerConnection({iceServers:PV_ICE.list&&Date.now()<PV_ICE.exp?base.concat(PV_ICE.list.filter(s=>s.username)):base});}
 async function pvSendBig(dc,o,prog){const s=JSON.stringify(o);if(s.length<15000){try{dc.send(s);}catch(e){}return;}
  const id=Math.random().toString(36).slice(2,9),n=Math.ceil(s.length/15000);
  for(let i=0;i<n;i++){if(!dc||dc.readyState!=='open')return;while(dc.bufferedAmount>1e6){await new Promise(r=>setTimeout(r,30));if(dc.readyState!=='open')return;}try{dc.send(JSON.stringify({t:'ck',id,i,n,d:s.slice(i*15000,(i+1)*15000)}));}catch(e){return;}if(prog&&i%4===0)prog(i/n);}if(prog)prog(1);}
@@ -1328,7 +1334,7 @@ function pvLobbyUI(){const L=$('pvLobby');if(!L)return;if(!PV||!PV.room){L.class
  $('pvStart').classList.toggle('hide',!host);$('pvReady').classList.toggle('hide',host);$('pvResend').classList.toggle('hide',host);
  const mine=R.slots.find(s=>s.pid===me);if(!host)$('pvReady').textContent=mine&&mine.ready?'ยกเลิกพร้อม':'พร้อม';
  $('pvShareRow').classList.toggle('hide',R.mode!=='free');}
-async function pvMake(){if(PV)pvLeave();au();if(!hero){toast('สร้างหรือเลือกตัวละครก่อน');return;}
+async function pvMake(){if(PV)pvLeave();au();await pvIce();if(!hero){toast('สร้างหรือเลือกตัวละครก่อน');return;}
  const o={mode:$('pvMode').value,cap:$('pvCap').value,size:$('pvSize').value,best:+$('pvBest').value};
  if(o.mode==='free'){const pw=pvCharPower(heroSkills(curChar()).map(q=>q.k),k=>SKILL[k]&&SKILL[k].mod);if(pw>PV_CAP[o.cap][0]){toast('ตัวละครของคุณพลังเกินเพดานห้องนี้ เลือกเพดานที่สูงขึ้นหรือเปลี่ยนสกิล');return;}}
  pvStat('กำลังสร้างห้อง');let S=null,code='';
@@ -1379,7 +1385,7 @@ function pvHostChar(p,m){const R=PV.room;p.f=null;p.ready=false;p.err='';const m
   p.f=makeFighter(d.name,d.hc,d.wc,d.limb,d.grip,team,{hp:1,dmg:1},d.bc,d.fin,d.wcls,d.perks,d.wname,d.pts,{plus:d.plus,skills:sk.length?sk:null,sig:d.sig});
   p.name=d.name;p.pw=pw;p.share=!!m.share;p.mods=mods;p.modKeys=sk.filter(q=>SKILL[q.k].net).map(q=>q.k);if(slot)slot.name=d.name;pvSend(p.dc,{t:'acc',ok:true});pvLob();});}
 /* guest */
-async function pvJoin(){const code=String($('pvCodeIn').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length!==5){toast('รหัสห้องมี 5 ตัว');return;}
+async function pvJoin(){await pvIce();const code=String($('pvCodeIn').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length!==5){toast('รหัสห้องมี 5 ตัว');return;}
  if(!hero){toast('สร้างหรือเลือกตัวละครก่อน');return;}if(PV)pvLeave();au();pvStat('กำลังหาห้อง '+code);
  const me='g'+Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join(''),hid='h'+await pvHash('host:'+code);let S;try{S=await pvSig(me,code,pvGuestSig);}catch(e){pvStat('ต่อเซิร์ฟเวอร์จับคู่ไม่ได้ ลองใหม่ หรือใช้แบบแลกรหัสเองด้านล่าง');return;}
  PV={role:'guest',sig:S,me,host:hid,code,room:null,peer:null};const P0=PV;S.send('OFFER',PV.host,{k:'join',v:1});P0.jr=setInterval(()=>{if(PV!==P0||P0.peer){clearInterval(P0.jr);return;}S.send('OFFER',P0.host,{k:'join',v:1});},3000);
@@ -1544,7 +1550,7 @@ function pv3Char(){return pv3CleanCh(clone(CH));}
 function pvRoomNew(o){const [a,b]=PV_SIZES[o.size]||[1,1],slots=[];for(let i=0;i<a;i++)slots.push({team:0,kind:'',name:'',pid:''});for(let i=0;i<b;i++)slots.push({team:1,kind:'',name:'',pid:''});
  slots[0].kind='host';slots[0].name=pv3Name();slots[0].pid='host';return {code:o.code,mode:o.mode,cap:o.cap,size:o.size,best:o.best,slots,started:false};}
 function pv3AudioHook(){if(pv3AudioHook.done||!AC)return;pv3AudioHook.done=true;const oc=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d,...a){const r=oc.call(this,d,...a);try{if(d===AC.destination&&PV&&PV.role==='host'&&PV.adst&&this.context===AC)oc.call(this,PV.adst);}catch(e){}return r;};}
-async function pvMake(){if(PV)pvLeave();au();try{localStorage.setItem('df3d_pvname',pv3Name());}catch(e){}
+async function pvMake(){if(PV)pvLeave();au();await pvIce();try{localStorage.setItem('df3d_pvname',pv3Name());}catch(e){}
  const o={mode:$('pvMode').value,cap:$('pvCap').value,size:$('pvSize').value,best:+$('pvBest').value};
  if(o.mode==='free'&&pv3Pow(SKS)>PV_CAP[o.cap][0]){toast('สกิลของคุณพลังเกินเพดานห้องนี้ เลือกเพดานที่สูงขึ้นหรือเปลี่ยนสกิล');return;}
  pvStat('กำลังสร้างห้อง');let S=null,code=pvCodeGen();try{S=await pvSig('h'+await pvHash('host:'+code),code,pvHostSig);}catch(e){pvStat('ต่อเซิร์ฟเวอร์จับคู่ไม่ได้ ลองใหม่อีกครั้ง');return;}
@@ -1552,7 +1558,7 @@ async function pvMake(){if(PV)pvLeave();au();try{localStorage.setItem('df3d_pvna
  try{PV.stream=PV.cc.captureStream(30);}catch(e){}try{if(AC&&PV.stream){const d=AC.createMediaStreamDestination();PV.adst=d;pv3AudioHook();for(const t of d.stream.getAudioTracks())PV.stream.addTrack(t);}}catch(e){}
  S.onclose=()=>{if(PV&&PV.sig===S)pvStat('หลุดจากเซิร์ฟเวอร์จับคู่ คนที่อยู่ในห้องแล้วยังเล่นต่อได้ แต่คนใหม่เข้าไม่ได้');};
  pvStat('ส่งรหัสห้องให้เพื่อน เพื่อนกดเข้าห้องแล้วพิมพ์รหัสนี้');pvLob();}
-async function pvJoin(){const code=String($('pvCodeIn').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length!==5){toast('รหัสห้องมี 5 ตัว');return;}
+async function pvJoin(){await pvIce();const code=String($('pvCodeIn').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(code.length!==5){toast('รหัสห้องมี 5 ตัว');return;}
  if(PV)pvLeave();au();try{localStorage.setItem('df3d_pvname',pv3Name());}catch(e){}pvStat('กำลังหาห้อง '+code);
  const me='g'+Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join(''),hid='h'+await pvHash('host:'+code);let S;try{S=await pvSig(me,code,pvGuestSig);}catch(e){pvStat('ต่อเซิร์ฟเวอร์จับคู่ไม่ได้ ลองใหม่อีกครั้ง');return;}
  PV={role:'guest',sig:S,me,host:hid,code,room:null,peer:null};const P0=PV;S.send('OFFER',PV.host,{k:'join',v:1});P0.jr=setInterval(()=>{if(PV!==P0||P0.peer){clearInterval(P0.jr);return;}S.send('OFFER',P0.host,{k:'join',v:1});},3000);
