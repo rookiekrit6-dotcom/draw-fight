@@ -2121,6 +2121,223 @@ function ui3Show(k){for(const el of document.querySelectorAll('[data-ui3]'))el.c
 /* tags drawn over the arena follow the chosen language */
 {const _tg=tag;tag=function(e,s,c){try{if(typeof tr3==='function')s=tr3(s);}catch(_){}return _tg.call(this,e,s,c);};}
 setTimeout(()=>{try{ui3Tabs();}catch(e){console.warn(e);}},80);
+/* English text for the EVO system (both games) */
+const EVO_EN={'ลม':'Wind','ไฟ':'Fire','กด ':'Key ','สาย':'Path: ','เงา':'Shadow','โล่!':'Shield!','ลมคม':'Wind Blade','หลบไว':'Quick Dodge','ยักษ์':'Giant','โหมไฟ':'Fan the Flames','คมเงา':'Shadow Edge','มือไว':'Quick Hands','ลมกรด':'Acid Wind',' แต้ม':' pts','สายฟ้า':'Thunder',' ขั้น ':' tier ','ศพปะทุ':'Corpse Burst','ไอเย็น':'Chill','ลอบแทง':'Backstab','ลมหมุน':'Whirling Wind','พลังกาย':'Might','ฟื้นตัว':'Recovery','พายุมืด':'Dark Storm','น้ำแข็ง':'Ice','มีแล้ว ':'Have ','แช่แข็ง':'Freeze','ช็อตแรง':'Big Shock','ลาวาไหล':'Lava Flow','ดูดหมึก':'Ink Drain','หมัดหนัก':'Heavy Fist','พายุหิมะ':'Blizzard','เกราะหนา':'Thick Armor','พายุหมุน':'Cyclone','กำปั้นลม':'Wind Fist','หมัดพายุ':'Storm Fist',' · หายาก':' · rare','เลือดไหล':'Bleed',' · ขั้น ':' · tier ','หมอกร้อน':'Hot Mist','หมึกเพลิง':'Fire Ink','รองเท้าลม':'Wind Boots','ลมเหนือลม':'Over the Wind','ร่างไอน้ำ':'Steam Form','เทพสายฟ้า':'Thunder God','สกิลจุดไฟ':'Igniting Skills','หลบทิ้งไฟ':'Fire Dodge','ไฟฟ้าสถิต':'Static','ไม่ยอมแพ้':'Never Give Up','สายฟ้าเงา':'Shadow Lightning',' (สูงสุด)':' (max)','เงาสังหาร':'Shadow Kill','ดาเมจ +12%':'Damage +12%','กล้ามเหล็ก':'Iron Muscles','โล่น้ำแข็ง':'Ice Shield','วงไฟรอบตัว':'Fire Ring','ราชินีหิมะ':'Snow Queen','ผิวน้ำแข็ง':'Ice Skin','กระแทกพื้น':'Ground Slam','สายเลือด +':'Bloodline +','หลบเข้าเงา':'Into the Shadows','ทุบกระเด็น':'Knockback Smash','คืนสีเลือด':'Crimson Night','ไม่ยอมแพ้!':'Never give up!','เจ้าแห่งเงา':'Lord of Shadows','ทุกห้าครั้ง':'Every Fifth','ระเบิดไอน้ำ':'Steam Burst','ร่างพายุมืด':'Dark Storm Form','สกิลเรียกฟ้า':'Thunder Skills','หลบเยือกแข็ง':'Frost Dodge','ตีถี่ขึ้น 8%':'Attack speed +8%','ร่างพายุหมัด':'Storm Fist Form','บุตรแห่งพายุ':'Child of the Storm','ตีถี่ขึ้น 6%':'Attack speed +6%','คริติคอล +4%':'Crit +4%','ห่วงโซ่สายฟ้า':'Chain Lightning','ดูดเลือด 1.5%':'Lifesteal 1.5%','แตกเป็นเสี่ยง':'Shatter','หลบแล้วฟ้าผ่า':'Dodge Strike','ตีถี่ขึ้น 10%':'Attack speed +10%','ราชาเปลวเพลิง':'King of Flames','เลือดสูงสุด +8%':'Max HP +8%',' · วิวัฒนาการ! ':' · Evolved! ','เดินเร็วขึ้น 5%':'Move speed +5%','เดินเร็วขึ้น 10%':'Move speed +10%','เลือดสูงสุด +15%':'Max HP +15%','รับดาเมจน้อยลง 5%':'Take 5% less damage','รับดาเมจน้อยลง 6%':'Take 6% less damage','ตีโดนมีโอกาสติดไฟ':'Hits may burn','รับดาเมจน้อยลง 10%':'Take 10% less damage','คริติคอลแรงขึ้น 30%':'Crits 30% stronger','ศัตรูตายแล้วระเบิดไฟ':'Enemies explode in fire on death','หลบแล้วแช่แข็งรอบตัว':'Dodging freezes around you','ตีโดนมีโอกาสทำให้ช้า':'Hits may slow','สายเลือดของตัวละครนี้':"This character's bloodline",'ยังไม่ได้รับความสามารถ':'No abilities yet','คริติคอลแรงขึ้นอีก 50%':'Crits 50% stronger','คูลดาวน์สกิลสั้นลง 10%':'Skill cooldown -10%','ตีโดนมีโอกาสไฟฟ้ากระโดด':'Hits may chain lightning','ฆ่าศัตรูแล้วฟื้นเลือด 4%':'Kills heal 4%','การ์ดเริ่มต้น เลือก 1 ใบ':'Starting card, pick 1','เลือดต่ำได้โล่ครั้งเดียว':'Shield once at low HP','ใช้สกิลแล้วระเบิดไฟรอบตัว':'Skills cause a fire burst around you','ศัตรูตายแล้วระเบิดไฟรอบศพ':'Enemies explode in fire when they die','เลเวลอัป! เลือกการ์ด 1 ใบ':'Level up! Pick 1 card','หลบแล้วแช่แข็งศัตรูรอบตัว':'Dodging freezes nearby enemies','ทุก 6 ครั้งที่ตีโดน ฟ้าผ่า':'Lightning every 6 hits','ตีศัตรูที่ติดไฟแรงขึ้น 20%':'+20% damage to burning enemies','หลบแล้วทิ้งกองไฟไว้ที่เดิม':'Dodging leaves a fire behind','ตีศัตรูที่ติดไฟแรงขึ้น 10%':'+10% damage to burning enemies','หลบแล้วตีครั้งถัดไปแรงขึ้น':'Next attack after a dodge hits harder','ใช้สกิลแล้วฟ้าผ่าศัตรู 3 ตัว':'Skills strike 3 enemies with lightning','ตีศัตรูที่โดนช็อตแรงขึ้น 20%':'+20% damage to shocked enemies','ฟื้นเลือด 2% ของดาเมจที่ทำได้':'Heal 2% of damage dealt','ตีศัตรูที่เลือดไหลแรงขึ้น 20%':'+20% damage to bleeding enemies','ตีโดนมีโอกาส 25% ทำให้เลือดไหล':'25% chance on hit to cause bleeding','หลบแล้วฟ้าผ่าศัตรูที่ใกล้ที่สุด':'Dodging strikes the nearest enemy with lightning','ไฟฟ้าสถิตกระโดดได้เพิ่มอีก 1 ตัว':'Static chains to 1 more enemy','ลมรอบตัวพัดศัตรูกระเด็นทุกวินาที':'Wind around you knocks enemies back every second','โอกาสคริติคอล +8% (ดาเมจ 2 เท่า)':'Crit chance +8% (double damage)','ระเบิดจากศพทิ้งบ่อลาวาไว้ 3 วินาที':'Corpse blasts leave lava for 3 seconds','เผาศัตรูที่อยู่ใกล้ตัวทุก 0.8 วินาที':'Burn nearby enemies every 0.8 seconds','ใช้สกิลแล้วกระแทกพื้น ศัตรูรอบตัวมึน':'Skills slam the ground, stunning nearby enemies','ศัตรูที่ช้าหรือแข็งอยู่ตีแรงขึ้น 20%':'+20% damage to slowed or frozen enemies','ตีโดนครบ 5 ครั้ง ฟ้าผ่าลงที่เป้าหมาย':'Every 5 hits, lightning strikes the target','หลบแล้ว การโจมตีครั้งถัดไปแรง 2 เท่า':'After a dodge, your next attack deals double damage','การ์ดหายาก คริติคอล +15% ดูดเลือด 3%':'Rare card: crit +15%, lifesteal 3%','ตีโดนมีโอกาส 8% แช่แข็งศัตรู 1 วินาที':'8% chance on hit to freeze for 1 second','คูลดาวน์สกิลสั้นลง 8% เดินเร็วขึ้น 5%':'Skill cooldown -8%, move speed +5%','ดาเมจ +8% ตีโดนมีโอกาส 25% ทำให้ติดไฟ':'Damage +8%, 25% chance on hit to burn','เลือดสูงสุด +5% ฆ่าศัตรูแล้วฟื้นเลือด 2%':'Max HP +5%, kills heal 2%','การ์ดหายาก เดินเร็วขึ้น 15% ตีถี่ขึ้น 15%':'Rare card: move speed +15%, attack speed +15%','ไฟกับน้ำแข็งรวมกัน รอบตัวมีไอร้อนเผาศัตรู':'Fire and ice combined, hot steam around you burns enemies','การ์ดร่างไอน้ำ ไอร้อนรอบตัวเผาศัตรูแรงขึ้น':'Steam Form card: stronger burning steam around you','หิมะรอบตัวทำให้ศัตรูช้าและโดนดาเมจทุกวินาที':'Snow around you slows and damages enemies every second','ตีโดนมีโอกาส 25% ไฟฟ้ากระโดดไปหาศัตรูอีกตัว':'25% chance on hit to chain lightning to another enemy','ดาเมจ +5% ตีโดนมีโอกาส 30% ผลักศัตรูกระเด็น':'Damage +5%, 30% chance on hit to knock enemies back','การ์ดหายาก ดาเมจ +20% และศพระเบิดใหญ่ขึ้นมาก':'Rare card: damage +20% and much bigger corpse blasts','ตีโดนมีโอกาส 25% ปล่อยคมลมตัดศัตรูรอบเป้าหมาย':'25% chance on hit to slash enemies around the target with wind','การ์ดหายาก เลือดสูงสุด +30% รับดาเมจน้อยลง 10%':'Rare card: max HP +30%, take 10% less damage','ตีโดนมีโอกาส 30% ทำให้ช้า และรับดาเมจน้อยลง 4%':'30% chance on hit to slow, take 4% less damage','การ์ดหายาก ตีถี่ขึ้น 15% และไฟฟ้ากระโดดบ่อยขึ้น':'Rare card: attack speed +15% and more chain lightning','พลังกายกับลมรวมกัน หลบแล้วปล่อยคลื่นกระแทกรอบตัว':'Might and wind combined, dodging releases a shockwave','การ์ดหายาก รับดาเมจน้อยลง 15% และแช่แข็งบ่อยขึ้น':'Rare card: take 15% less damage and freeze more often','การ์ดร่างพายุมืด คริติคอลแล้วไฟฟ้ากระโดดหาศัตรู 2 ตัว':'Dark Storm card: crits chain lightning to 2 enemies','การ์ดร่างพายุมืด ตีโดนครบ 4 ครั้ง ฟ้าผ่าแรงรอบเป้าหมาย':'Dark Storm card: every 4 hits, heavy lightning around the target','การ์ดร่างพายุหมัด หลบแล้วปล่อยคลื่นกระแทกผลักศัตรูรอบตัว':'Storm Fist card: dodging releases a shockwave that knocks enemies back','เลือดต่ำกว่า 30% ดาเมจ +50% นาน 6 วินาที ครั้งเดียวต่อตา':'Below 30% HP: damage +50% for 6 seconds, once per run','หลบแล้ว การโจมตีครั้งถัดไปแรง 1.6 เท่า และเดินเร็วขึ้น 5%':'After a dodge, your next attack deals 1.6× damage; move speed +5%','สายฟ้ากับเงารวมกัน ทุก 5 ครั้งที่ตีโดน ฟ้าผ่ากระโดดหาศัตรู':'Thunder and shadow combined, every 5 hits lightning chains between enemies','การ์ดร่างไอน้ำ ตีโดนมีโอกาส 30% ระเบิดไอน้ำ ทั้งไหม้และช้า':'Steam Form card: 30% chance on hit for a steam burst that burns and slows','เลือดต่ำกว่า 30% ได้โล่ 30% ของเลือดสูงสุด ครั้งเดียวต่อตา':'Below 30% HP: gain a shield of 30% max HP, once per run','การ์ดร่างพายุหมัด ตีถี่ขึ้น 12% ดาเมจ +10% และผลักกระเด็นบ่อยขึ้น':'Storm Fist card: attack speed +12%, damage +10%, more knockback','การ์ดที่เลือกจะสะสมเป็นสายเลือดของตัวละคร ครบขั้นแล้วตัวละครวิวัฒนาการ':'Cards you pick build your character\'s bloodline; reach a tier and your character evolves','เก็บแต้มได้จากการ์ดในเนื้อเรื่อง เอาตัวรอด และหอคอย ชนะได้แต้ม 1.5 เท่า ขั้น 1/2/3 ที่ ':'Earn points from cards in story, survival and tower; wins give 1.5× points; tiers 1/2/3 at ','ร่างผสม: ไฟ+น้ำแข็ง = ร่างไอน้ำ · สายฟ้า+เงา = ร่างพายุมืด · พลังกาย+ลม = ร่างพายุหมัด (ต้องถึงขั้น 2 ทั้งสองสาย)':'Hybrid forms: Fire+Ice = Steam · Thunder+Shadow = Dark Storm · Might+Wind = Storm Fist (both paths at tier 2)','สายเลือดและวิวัฒนาการ':'Bloodline & evolution','ขั้น':'Tier','แต้ม':'pts'};
+function evoEn(){try{if(typeof LANG3!=='undefined')return LANG3==='en';if(typeof LANG!=='undefined')return LANG==='en';}catch(e){}return false;}
+function evoT(s){return evoEn()&&EVO_EN[s]!==undefined?EVO_EN[s]:s;}
+/* ===================== EVO: build cards during a run + bloodline evolution across runs (shared by 2D and 3D) =====================
+   The game supplies an adapter EVA with: U (pixels per unit), player(), foes(), pos(e)->[x,y], dist(a,b) in units, eligible(), solo(),
+   key(), base(p) (a normal hit's damage), area(x,y,r,amt,st,d), status(e,st,d), knock(e,from), heal(p,a), stat(p,k,frac),
+   fx(kind,x,y,r,col), tag(e,s,c), pause(on), aura(p,elem|''), glow(p,col,tier). */
+const EVP={fire:{n:'ไฟ',ic:'🔥',c:'#ff6a3c',au:'fire'},ice:{n:'น้ำแข็ง',ic:'❄️',c:'#7fe0ff',au:'ice'},volt:{n:'สายฟ้า',ic:'⚡',c:'#ffd23a',au:'thunder'},
+ shade:{n:'เงา',ic:'🌑',c:'#a070ff',au:'void'},might:{n:'พลังกาย',ic:'💪',c:'#e0a060',au:'earth'},wind:{n:'ลม',ic:'🌪️',c:'#5fd8a8',au:'wind'}};
+const EVFORM={steam:{n:'ร่างไอน้ำ',a:['fire','ice'],c:'#f0f6ff',au:'light',d:'ไฟกับน้ำแข็งรวมกัน รอบตัวมีไอร้อนเผาศัตรู'},
+ tempest:{n:'ร่างพายุมืด',a:['volt','shade'],c:'#c070ff',au:'psy',d:'สายฟ้ากับเงารวมกัน ทุก 5 ครั้งที่ตีโดน ฟ้าผ่ากระโดดหาศัตรู'},
+ gale:{n:'ร่างพายุหมัด',a:['might','wind'],c:'#ffc070',au:'earth',d:'พลังกายกับลมรวมกัน หลบแล้วปล่อยคลื่นกระแทกรอบตัว'}};
+const EVTIER=[15,45,100];
+/* effect format: st{dmg hp spd as arm crit critM ls cdr} · hit{p s d chain m burst r} · kill{boom{r m s} zone{r d m s} heal}
+   dodge{nova{r m s d} next strike{m s}} · skill{nova{r m s d} strike{n m s} heal} · aura{r e m s} · low{shield rage} · every{n strike{r m s} chain{n m s}} · vs{status:bonus} · onCrit{chain} */
+const EVC=[
+ {id:'f1',p:'fire',n:'หมึกเพลิง',d:'ดาเมจ +8% ตีโดนมีโอกาส 25% ทำให้ติดไฟ',mx:3,fx:{st:{dmg:.08},hit:{p:.25,s:'burn',d:2.5}}},
+ {id:'f2',p:'fire',n:'ศพปะทุ',d:'ศัตรูตายแล้วระเบิดไฟรอบศพ',mx:2,fx:{kill:{boom:{r:1.7,m:1.2,s:'burn'}}}},
+ {id:'f3',p:'fire',n:'ลาวาไหล',d:'ระเบิดจากศพทิ้งบ่อลาวาไว้ 3 วินาที',mx:2,req:'f2',fx:{kill:{zone:{r:1.4,d:3,m:.3,s:'burn'}}}},
+ {id:'f4',p:'fire',n:'โหมไฟ',d:'ตีศัตรูที่ติดไฟแรงขึ้น 20%',mx:2,fx:{vs:{burn:.2}}},
+ {id:'f5',p:'fire',n:'วงไฟรอบตัว',d:'เผาศัตรูที่อยู่ใกล้ตัวทุก 0.8 วินาที',mx:2,fx:{aura:{r:1.6,e:.8,m:.35,s:'burn'}}},
+ {id:'f6',p:'fire',n:'หลบทิ้งไฟ',d:'หลบแล้วทิ้งกองไฟไว้ที่เดิม',mx:1,fx:{dodge:{zone:{r:1.3,d:2.5,m:.35,s:'burn'}}}},
+ {id:'f7',p:'fire',n:'สกิลจุดไฟ',d:'ใช้สกิลแล้วระเบิดไฟรอบตัว',mx:2,fx:{skill:{nova:{r:2,m:1,s:'burn'}}}},
+ {id:'f8',p:'fire',n:'ราชาเปลวเพลิง',d:'การ์ดหายาก ดาเมจ +20% และศพระเบิดใหญ่ขึ้นมาก',mx:1,rare:1,fx:{st:{dmg:.2},kill:{boom:{r:2.6,m:2,s:'burn'}}}},
+ {id:'i1',p:'ice',n:'ไอเย็น',d:'ตีโดนมีโอกาส 30% ทำให้ช้า และรับดาเมจน้อยลง 4%',mx:3,fx:{st:{arm:.04},hit:{p:.3,s:'slow',d:2}}},
+ {id:'i2',p:'ice',n:'ผิวน้ำแข็ง',d:'รับดาเมจน้อยลง 10%',mx:3,fx:{st:{arm:.1}}},
+ {id:'i3',p:'ice',n:'แช่แข็ง',d:'ตีโดนมีโอกาส 8% แช่แข็งศัตรู 1 วินาที',mx:2,fx:{hit:{p:.08,s:'freeze',d:1}}},
+ {id:'i4',p:'ice',n:'แตกเป็นเสี่ยง',d:'ศัตรูที่ช้าหรือแข็งอยู่ตีแรงขึ้น 20%',mx:2,fx:{vs:{slow:.2,freeze:.2}}},
+ {id:'i5',p:'ice',n:'โล่น้ำแข็ง',d:'เลือดต่ำกว่า 30% ได้โล่ 30% ของเลือดสูงสุด ครั้งเดียวต่อตา',mx:1,fx:{low:{shield:.3}}},
+ {id:'i6',p:'ice',n:'หลบเยือกแข็ง',d:'หลบแล้วแช่แข็งศัตรูรอบตัว',mx:1,fx:{dodge:{nova:{r:1.9,m:.6,s:'freeze',d:1}}}},
+ {id:'i7',p:'ice',n:'พายุหิมะ',d:'หิมะรอบตัวทำให้ศัตรูช้าและโดนดาเมจทุกวินาที',mx:2,fx:{aura:{r:2.1,e:1.1,m:.25,s:'slow'}}},
+ {id:'i8',p:'ice',n:'ราชินีหิมะ',d:'การ์ดหายาก รับดาเมจน้อยลง 15% และแช่แข็งบ่อยขึ้น',mx:1,rare:1,fx:{st:{arm:.15},hit:{p:.12,s:'freeze',d:1.2}}},
+ {id:'v1',p:'volt',n:'ไฟฟ้าสถิต',d:'ตีโดนมีโอกาส 25% ไฟฟ้ากระโดดไปหาศัตรูอีกตัว',mx:3,fx:{hit:{p:.25,chain:1,m:.5,s:'shock',d:1.5}}},
+ {id:'v2',p:'volt',n:'มือไว',d:'ตีถี่ขึ้น 10%',mx:3,fx:{st:{as:.1}}},
+ {id:'v3',p:'volt',n:'ทุกห้าครั้ง',d:'ตีโดนครบ 5 ครั้ง ฟ้าผ่าลงที่เป้าหมาย',mx:2,fx:{every:{n:5,strike:{r:1.2,m:1.5,s:'shock'}}}},
+ {id:'v4',p:'volt',n:'ห่วงโซ่สายฟ้า',d:'ไฟฟ้าสถิตกระโดดได้เพิ่มอีก 1 ตัว',mx:2,req:'v1',fx:{hit:{p:0,chain:1,m:0}}},
+ {id:'v5',p:'volt',n:'หลบแล้วฟ้าผ่า',d:'หลบแล้วฟ้าผ่าศัตรูที่ใกล้ที่สุด',mx:1,fx:{dodge:{strike:{m:1.6,s:'shock'}}}},
+ {id:'v6',p:'volt',n:'สกิลเรียกฟ้า',d:'ใช้สกิลแล้วฟ้าผ่าศัตรู 3 ตัว',mx:2,fx:{skill:{strike:{n:3,m:1,s:'shock'}}}},
+ {id:'v7',p:'volt',n:'ช็อตแรง',d:'ตีศัตรูที่โดนช็อตแรงขึ้น 20%',mx:2,fx:{vs:{shock:.2}}},
+ {id:'v8',p:'volt',n:'เทพสายฟ้า',d:'การ์ดหายาก ตีถี่ขึ้น 15% และไฟฟ้ากระโดดบ่อยขึ้น',mx:1,rare:1,fx:{st:{as:.15},hit:{p:.4,chain:2,m:.6,s:'shock',d:1.5}}},
+ {id:'s1',p:'shade',n:'คมเงา',d:'โอกาสคริติคอล +8% (ดาเมจ 2 เท่า)',mx:3,fx:{st:{crit:.08}}},
+ {id:'s2',p:'shade',n:'ดูดหมึก',d:'ฟื้นเลือด 2% ของดาเมจที่ทำได้',mx:3,fx:{st:{ls:.02}}},
+ {id:'s3',p:'shade',n:'ลอบแทง',d:'คริติคอลแรงขึ้นอีก 50%',mx:2,fx:{st:{critM:.5}}},
+ {id:'s4',p:'shade',n:'เงาสังหาร',d:'ฆ่าศัตรูแล้วฟื้นเลือด 4%',mx:2,fx:{kill:{heal:.04}}},
+ {id:'s5',p:'shade',n:'เลือดไหล',d:'ตีโดนมีโอกาส 25% ทำให้เลือดไหล',mx:2,fx:{hit:{p:.25,s:'bleed',d:3}}},
+ {id:'s6',p:'shade',n:'หลบเข้าเงา',d:'หลบแล้ว การโจมตีครั้งถัดไปแรง 2 เท่า',mx:1,fx:{dodge:{next:1}}},
+ {id:'s7',p:'shade',n:'คืนสีเลือด',d:'ตีศัตรูที่เลือดไหลแรงขึ้น 20%',mx:2,fx:{vs:{bleed:.2}}},
+ {id:'s8',p:'shade',n:'เจ้าแห่งเงา',d:'การ์ดหายาก คริติคอล +15% ดูดเลือด 3%',mx:1,rare:1,fx:{st:{crit:.15,ls:.03}}},
+ {id:'m1',p:'might',n:'กล้ามเหล็ก',d:'เลือดสูงสุด +15%',mx:3,fx:{st:{hp:.15}}},
+ {id:'m2',p:'might',n:'เกราะหนา',d:'รับดาเมจน้อยลง 6%',mx:3,fx:{st:{arm:.06}}},
+ {id:'m3',p:'might',n:'ทุบกระเด็น',d:'ดาเมจ +5% ตีโดนมีโอกาส 30% ผลักศัตรูกระเด็น',mx:2,fx:{st:{dmg:.05},hit:{p:.3,s:'knock'}}},
+ {id:'m4',p:'might',n:'ไม่ยอมแพ้',d:'เลือดต่ำกว่า 30% ดาเมจ +50% นาน 6 วินาที ครั้งเดียวต่อตา',mx:1,fx:{low:{rage:.5}}},
+ {id:'m5',p:'might',n:'กระแทกพื้น',d:'ใช้สกิลแล้วกระแทกพื้น ศัตรูรอบตัวมึน',mx:2,fx:{skill:{nova:{r:2.2,m:1.2,s:'stun',d:.6}}}},
+ {id:'m6',p:'might',n:'ฟื้นตัว',d:'เลือดสูงสุด +5% ฆ่าศัตรูแล้วฟื้นเลือด 2%',mx:2,fx:{st:{hp:.05},kill:{heal:.02}}},
+ {id:'m7',p:'might',n:'หมัดหนัก',d:'ดาเมจ +12%',mx:3,fx:{st:{dmg:.12}}},
+ {id:'m8',p:'might',n:'ยักษ์',d:'การ์ดหายาก เลือดสูงสุด +30% รับดาเมจน้อยลง 10%',mx:1,rare:1,fx:{st:{hp:.3,arm:.1}}},
+ {id:'w1',p:'wind',n:'รองเท้าลม',d:'เดินเร็วขึ้น 10%',mx:3,fx:{st:{spd:.1}}},
+ {id:'w2',p:'wind',n:'ลมหมุน',d:'ตีถี่ขึ้น 8%',mx:3,fx:{st:{as:.08}}},
+ {id:'w3',p:'wind',n:'ลมคม',d:'ตีโดนมีโอกาส 25% ปล่อยคมลมตัดศัตรูรอบเป้าหมาย',mx:2,fx:{hit:{p:.25,burst:{r:1.3,m:.6}}}},
+ {id:'w4',p:'wind',n:'หลบไว',d:'หลบแล้ว การโจมตีครั้งถัดไปแรง 1.6 เท่า และเดินเร็วขึ้น 5%',mx:1,fx:{st:{spd:.05},dodge:{next:.6}}},
+ {id:'w5',p:'wind',n:'พายุหมุน',d:'ลมรอบตัวพัดศัตรูกระเด็นทุกวินาที',mx:2,fx:{aura:{r:1.8,e:1,m:.3,s:'knock'}}},
+ {id:'w6',p:'wind',n:'ลมกรด',d:'คูลดาวน์สกิลสั้นลง 10%',mx:2,fx:{st:{cdr:.1}}},
+ {id:'w7',p:'wind',n:'ลมเหนือลม',d:'คูลดาวน์สกิลสั้นลง 8% เดินเร็วขึ้น 5%',mx:2,fx:{st:{cdr:.08,spd:.05}}},
+ {id:'w8',p:'wind',n:'บุตรแห่งพายุ',d:'การ์ดหายาก เดินเร็วขึ้น 15% ตีถี่ขึ้น 15%',mx:1,rare:1,fx:{st:{spd:.15,as:.15}}},
+ {id:'h1',p:'fire',form:'steam',n:'ระเบิดไอน้ำ',d:'การ์ดร่างไอน้ำ ตีโดนมีโอกาส 30% ระเบิดไอน้ำ ทั้งไหม้และช้า',mx:2,fx:{hit:{p:.3,burst:{r:1.5,m:1,s:'burn',s2:'slow'}}}},
+ {id:'h2',p:'ice',form:'steam',n:'หมอกร้อน',d:'การ์ดร่างไอน้ำ ไอร้อนรอบตัวเผาศัตรูแรงขึ้น',mx:1,fx:{aura:{r:2.2,e:1,m:.5,s:'burn'}}},
+ {id:'h3',p:'volt',form:'tempest',n:'สายฟ้าเงา',d:'การ์ดร่างพายุมืด คริติคอลแล้วไฟฟ้ากระโดดหาศัตรู 2 ตัว',mx:1,fx:{onCrit:{chain:2,m:.8,s:'shock'}}},
+ {id:'h4',p:'shade',form:'tempest',n:'พายุมืด',d:'การ์ดร่างพายุมืด ตีโดนครบ 4 ครั้ง ฟ้าผ่าแรงรอบเป้าหมาย',mx:1,fx:{every:{n:4,strike:{r:1.7,m:2,s:'shock'}}}},
+ {id:'h5',p:'might',form:'gale',n:'หมัดพายุ',d:'การ์ดร่างพายุหมัด หลบแล้วปล่อยคลื่นกระแทกผลักศัตรูรอบตัว',mx:1,fx:{dodge:{nova:{r:2.2,m:1.2,s:'knock'}}}},
+ {id:'h6',p:'wind',form:'gale',n:'กำปั้นลม',d:'การ์ดร่างพายุหมัด ตีถี่ขึ้น 12% ดาเมจ +10% และผลักกระเด็นบ่อยขึ้น',mx:1,fx:{st:{as:.12,dmg:.1},hit:{p:.2,s:'knock'}}}];
+/* passives earned by each tier of a path, and by each hybrid form */
+const EVPAS={fire:[{hit:{p:.1,s:'burn',d:2}},{vs:{burn:.1}},{kill:{boom:{r:1.4,m:.8,s:'burn'}}}],
+ ice:[{hit:{p:.12,s:'slow',d:1.5}},{st:{arm:.06}},{dodge:{nova:{r:1.6,m:.4,s:'freeze',d:.8}}}],
+ volt:[{hit:{p:.1,chain:1,m:.4,s:'shock',d:1}},{st:{as:.08}},{every:{n:6,strike:{r:1.1,m:1.2,s:'shock'}}}],
+ shade:[{st:{crit:.04}},{st:{ls:.015}},{st:{critM:.3}}],
+ might:[{st:{hp:.08}},{st:{arm:.05}},{low:{shield:.25}}],
+ wind:[{st:{spd:.05}},{st:{as:.06}},{dodge:{next:.5}}]};
+const EVPASF={steam:{aura:{r:1.7,e:1.4,m:.25,s:'burn'}},tempest:{every:{n:5,chain:{n:2,m:.6,s:'shock'}}},gale:{dodge:{nova:{r:1.9,m:.6,s:'knock'}}}};
+const EVPAS_D={fire:['ตีโดนมีโอกาสติดไฟ','ตีศัตรูที่ติดไฟแรงขึ้น 10%','ศัตรูตายแล้วระเบิดไฟ'],ice:['ตีโดนมีโอกาสทำให้ช้า','รับดาเมจน้อยลง 6%','หลบแล้วแช่แข็งรอบตัว'],
+ volt:['ตีโดนมีโอกาสไฟฟ้ากระโดด','ตีถี่ขึ้น 8%','ทุก 6 ครั้งที่ตีโดน ฟ้าผ่า'],shade:['คริติคอล +4%','ดูดเลือด 1.5%','คริติคอลแรงขึ้น 30%'],
+ might:['เลือดสูงสุด +8%','รับดาเมจน้อยลง 5%','เลือดต่ำได้โล่ครั้งเดียว'],wind:['เดินเร็วขึ้น 5%','ตีถี่ขึ้น 6%','หลบแล้วตีครั้งถัดไปแรงขึ้น']};
+/* ---------- bloodline storage, per character ---------- */
+function evoAll(){try{const o=JSON.parse(localStorage.getItem('df_evo')||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
+function evoBlood(k){const A=evoAll(),b=A[k||EVA.key()]||{};const pts={};for(const p in EVP)pts[p]=Math.max(0,+(b.pts&&b.pts[p])||0);return {pts};}
+function evoSaveBlood(k,b){const A=evoAll();A[k]=b;const ks=Object.keys(A);if(ks.length>60)delete A[ks[0]];try{localStorage.setItem('df_evo',JSON.stringify(A));}catch(e){}}
+function evoTier(pts){let t=0;for(const n of EVTIER)if(pts>=n)t++;return t;}
+function evoForm(b){b=b||evoBlood();let best=null,bv=0;for(const k in EVFORM){const [a,c]=EVFORM[k].a,v=Math.min(b.pts[a],b.pts[c]);if(evoTier(b.pts[a])>=2&&evoTier(b.pts[c])>=2&&v>bv){bv=v;best=k;}}return best;}
+function evoMain(b){b=b||evoBlood();let best=null,bv=0;for(const p in EVP)if(b.pts[p]>bv){bv=b.pts[p];best=p;}return best&&evoTier(bv)>0?best:null;}
+/* ---------- run state ---------- */
+const EVO={run:null,offer:null,ui:null,inner:0};
+function evoNewS(){return {dmg:0,hp:0,spd:0,as:0,arm:0,crit:0,critM:0,ls:0,cdr:0,hit:[],kill:[],dodge:[],skill:[],aura:[],low:[],every:[],vs:{},onCrit:[],zones:[]};}
+function evoAdd(S,fx,p){const P=EVA.player();if(fx.st)for(const k in fx.st){S[k]+=fx.st[k];if(P&&(k==='hp'||k==='spd'||k==='as'))EVA.stat(P,k,fx.st[k]);}
+ if(fx.hit){if(fx.hit.p===0&&fx.hit.chain){const h=S.hit.find(x=>x.chain);if(h)h.chain+=fx.hit.chain;}else S.hit.push(Object.assign({},fx.hit));}
+ for(const k of ['kill','dodge','skill','low'])if(fx[k])S[k].push(Object.assign({},fx[k]));
+ if(fx.aura)S.aura.push(Object.assign({t:fx.aura.e},fx.aura));if(fx.every)S.every.push(Object.assign({c:0},fx.every));if(fx.onCrit)S.onCrit.push(fx.onCrit);
+ if(fx.vs)for(const k in fx.vs)S.vs[k]=(S.vs[k]||0)+fx.vs[k];}
+function evoStart(){EVO.offer=null;evoUiHide();const P=EVA.player();if(!P||!EVA.solo()){EVO.run=null;evoHud();return;}
+ const b=evoBlood(),S=evoNewS();EVO.run={S,cards:{},pts:{},lv:0,xp:0,need:6,cards_on:!!EVA.eligible(),blood:b,form:evoForm(b),next:0,lowUsed:0,rage:0,shield:0};
+ for(const p in EVP){const t=evoTier(b.pts[p]);for(let i=0;i<t;i++)evoAdd(S,EVPAS[p][i],p);}const f=EVO.run.form;if(f)evoAdd(S,EVPASF[f]);
+ evoLook(P);if(EVO.run.cards_on)EVO.run.firstT=1.1;evoHud();}
+function evoLook(P){const R=EVO.run;if(!R||!P)return;const f=R.form,m=evoMain(R.blood),t=m?evoTier(R.blood.pts[m]):0,col=f?EVFORM[f].c:m?EVP[m].c:'';
+ EVA.glow(P,col,f?3:t);EVA.aura(P,(f||t>=2)?(f?EVFORM[f].au:EVP[m].au):'');}
+function evoEnd(win){const R=EVO.run;EVO.run=null;EVO.offer=null;evoUiHide();evoHud();if(!R||!R.cards_on)return null;let got=0;const k=EVA.key(),b=evoBlood(k),before={};for(const p in EVP)before[p]=evoTier(b.pts[p]);
+ const f0=evoForm(b);for(const p in R.pts){const a=Math.round(R.pts[p]*(win?1.5:1));b.pts[p]+=a;got+=a;}evoSaveBlood(k,b);const ups=[];for(const p in EVP){const t=evoTier(b.pts[p]);if(t>before[p])ups.push(EVP[p].ic+' '+evoT(EVP[p].n)+evoT(' ขั้น ')+t);}
+ const f1=evoForm(b);if(f1&&f1!==f0)ups.push('✨ '+evoT(EVFORM[f1].n));return {got,ups};}
+/* ---------- hooks the adapters call ---------- */
+function evoOut(t,amt,basic){const R=EVO.run;if(!R||EVO.inner)return amt;const S=R.S;let m=1+S.dmg;for(const k in S.vs)if(EVA.has(t,k))m+=S.vs[k];if(R.rage>0)m+=.5;
+ if(basic&&R.next>0){m*=1+R.next;R.next=0;EVA.tag(EVA.player(),'!','#ffd84a');}
+ if(Math.random()<Math.min(.75,S.crit)){m*=2+S.critM;R.crit=1;}else R.crit=0;return amt*m;}
+function evoIn(amt){const R=EVO.run;if(!R)return amt;let a=amt*Math.max(.35,1-R.S.arm);if(R.shield>0){const k=Math.min(R.shield,a);R.shield-=k;a-=k;}return a;}
+function evoHit(t,dmg){const R=EVO.run,P=EVA.player();if(!R||EVO.inner||!P)return;const S=R.S;
+ if(R.cards_on){R.xp+=Math.min(3,dmg/Math.max(1,EVA.base(P)))*.55;evoLvCheck();}
+ if(S.ls>0)EVA.heal(P,dmg*S.ls);
+ EVO.inner++;try{
+  for(const h of S.hit){if(Math.random()>=h.p)continue;if(h.s&&!h.chain&&!h.burst)evoSt(t,h.s,h.d);
+   if(h.chain)evoChain(t,h.chain,h.m*EVA.base(P),h.s,h.d);if(h.burst){const [x,y]=EVA.pos(t);EVA.area(x,y,h.burst.r,h.burst.m*EVA.base(P),h.burst.s,2,t);if(h.burst.s2)EVA.area(x,y,h.burst.r,0,h.burst.s2,2,t);EVA.fx('boom',x,y,h.burst.r,EVP.wind.c);}}
+  for(const v of S.every){v.c++;if(v.c>=v.n){v.c=0;if(v.strike){const [x,y]=EVA.pos(t);EVA.area(x,y,v.strike.r,v.strike.m*EVA.base(P),v.strike.s,1.5);EVA.fx('bolt',x,y,v.strike.r,EVP.volt.c);}if(v.chain)evoChain(t,v.chain.n,v.chain.m*EVA.base(P),v.chain.s,1.2);}}
+  if(R.crit)for(const c of S.onCrit)evoChain(t,c.chain,c.m*EVA.base(P),c.s,1.2);
+ }finally{EVO.inner--;}}
+function evoSt(e,s,d){if(s==='knock')EVA.knock(e,EVA.player());else EVA.status(e,s,d||2);}
+function evoChain(from,n,amt,s,d){let cur=from;const hit=new Set([from]);for(let i=0;i<n;i++){let b=null,bd=4.5;for(const e of EVA.foes()){if(hit.has(e))continue;const q=EVA.dist(cur,e);if(q<bd){bd=q;b=e;}}if(!b)break;hit.add(b);
+ const [x1,y1]=EVA.pos(cur),[x2,y2]=EVA.pos(b);EVA.fx('link',x1,y1,0,EVP.volt.c,x2,y2);EVA.area(x2,y2,.4,amt,s,d,null,b);cur=b;}}
+function evoKill(t){const R=EVO.run,P=EVA.player();if(!R||!P)return;const S=R.S;if(R.cards_on){R.xp+=t.boss?6:1.5;evoLvCheck();}
+ const [x,y]=EVA.pos(t);EVO.inner++;try{for(const k of S.kill){if(k.heal)EVA.heal(P,EVA.maxhp(P)*k.heal);if(k.boom){EVA.area(x,y,k.boom.r,k.boom.m*EVA.base(P),k.boom.s,2.5,t);EVA.fx('boom',x,y,k.boom.r,EVP.fire.c);}
+  if(k.zone)S.zones.push({x,y,r:k.zone.r,t:k.zone.d,m:k.zone.m,s:k.zone.s,tk:0});}}finally{EVO.inner--;}}
+function evoDodge(){const R=EVO.run,P=EVA.player();if(!R||!P)return;const [x,y]=EVA.pos(P);EVO.inner++;try{for(const d of R.S.dodge){
+ if(d.next)R.next=Math.max(R.next,d.next);if(d.nova){EVA.area(x,y,d.nova.r,d.nova.m*EVA.base(P),d.nova.s,d.nova.d||1.5);EVA.fx('ring',x,y,d.nova.r,'#ffffff');}
+ if(d.zone)R.S.zones.push({x,y,r:d.zone.r,t:d.zone.d,m:d.zone.m,s:d.zone.s,tk:0});
+ if(d.strike){let b=null,bd=9;for(const e of EVA.foes()){const q=EVA.dist(P,e);if(q<bd){bd=q;b=e;}}if(b){const [bx,by]=EVA.pos(b);EVA.area(bx,by,1,d.strike.m*EVA.base(P),d.strike.s,1.5,null,b);EVA.fx('bolt',bx,by,1,EVP.volt.c);}}}}finally{EVO.inner--;}}
+function evoSkill(){const R=EVO.run,P=EVA.player();if(!R||!P)return;const [x,y]=EVA.pos(P);EVO.inner++;try{for(const k of R.S.skill){
+ if(k.nova){EVA.area(x,y,k.nova.r,k.nova.m*EVA.base(P),k.nova.s,k.nova.d||2);EVA.fx(k.nova.s==='burn'?'boom':'ring',x,y,k.nova.r,k.nova.s==='burn'?EVP.fire.c:EVP.might.c);}
+ if(k.strike){const L=EVA.foes().sort((a,b)=>EVA.dist(P,a)-EVA.dist(P,b)).slice(0,k.strike.n);for(const e of L){const [ex,ey]=EVA.pos(e);EVA.area(ex,ey,.9,k.strike.m*EVA.base(P),k.strike.s,1.5,null,e);EVA.fx('bolt',ex,ey,.9,EVP.volt.c);}}}}finally{EVO.inner--;}}
+function evoCdr(){const R=EVO.run;return R?Math.min(.5,R.S.cdr):0;}
+function evoTick(dt){const R=EVO.run,P=EVA.player();if(!R||!P||EVO.offer)return;const S=R.S;
+ if(R.firstT>0){R.firstT-=dt;if(R.firstT<=0)evoOffer(true);}
+ if(R.rage>0)R.rage-=dt;
+ EVO.inner++;try{
+  for(const a of S.aura){a.t-=dt;if(a.t<=0){a.t=a.e;const [x,y]=EVA.pos(P);const n=EVA.area(x,y,a.r,a.m*EVA.base(P),a.s,1.5);if(n)EVA.fx('ring',x,y,a.r,a.s==='burn'?EVP.fire.c:a.s==='slow'?EVP.ice.c:EVP.wind.c);}}
+  for(const z of S.zones){z.t-=dt;z.tk-=dt;if(z.tk<=0){z.tk=.5;EVA.area(z.x,z.y,z.r,z.m*EVA.base(P),z.s,1.5);EVA.fx('zone',z.x,z.y,z.r,EVP.fire.c);}}S.zones=S.zones.filter(z=>z.t>0);
+  if(!R.lowUsed&&EVA.hpFrac(P)<.3&&S.low.length){R.lowUsed=1;for(const l of S.low){if(l.shield){R.shield=EVA.maxhp(P)*l.shield;EVA.tag(P,evoT('โล่!'),'#9fe8ff');EVA.fx('ring',...EVA.pos(P),1.5,EVP.ice.c);}if(l.rage){R.rage=6;EVA.tag(P,evoT('ไม่ยอมแพ้!'),'#ff7a5a');}}}
+ }finally{EVO.inner--;}}
+/* ---------- level ups and card offers ---------- */
+function evoLvCheck(){const R=EVO.run;if(!R||!R.cards_on||EVO.offer)return;if(R.xp>=R.need){R.xp-=R.need;R.lv++;R.need=Math.round(6+R.lv*2.6);evoOffer(false);}evoHud();}
+function evoPool(){const R=EVO.run,b=R.blood,L=[];for(const c of EVC){const n=R.cards[c.id]||0;if(n>=c.mx)continue;if(c.req&&!R.cards[c.req])continue;if(c.rare&&evoTier(b.pts[c.p])<3)continue;if(c.form&&R.form!==c.form)continue;
+ let w=1+evoTier(b.pts[c.p])*.7+(R.pts[c.p]||0)*.25;if(c.req)w+=1.5;if(c.rare||c.form)w*=.7;L.push([c,w]);}return L;}
+function evoPick3(){const L=evoPool(),out=[];while(out.length<3&&L.length){let s=0;for(const x of L)s+=x[1];let r=Math.random()*s,i=0;for(;i<L.length-1;i++){r-=L[i][1];if(r<=0)break;}out.push(L[i][0]);L.splice(i,1);}return out;}
+function evoOffer(first){const R=EVO.run;if(!R)return;const C=evoPick3();if(!C.length)return;EVO.offer={C,first};EVA.pause(true);evoUiShow();}
+function evoTake(i){const O=EVO.offer,R=EVO.run;if(!O||!R)return;const c=O.C[i];if(!c)return;EVO.offer=null;R.cards[c.id]=(R.cards[c.id]||0)+1;R.pts[c.p]=(R.pts[c.p]||0)+1;evoAdd(R.S,c.fx,c.p);
+ const P=EVA.player();if(P)EVA.tag(P,evoT(c.n),EVP[c.p].c);evoUiHide();EVA.pause(false);evoHud();if(R.xp>=R.need)setTimeout(evoLvCheck,250);}
+/* ---------- UI: card picker and the small list of cards in this run ---------- */
+function evoCss(){if(document.getElementById('evoCss'))return;const s=document.createElement('style');s.id='evoCss';s.textContent='#evoPick{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,14,28,.62);font-family:Kanit,Sarabun,sans-serif}#evoPick h2{color:#fff;margin:0;font-size:24px;text-shadow:0 2px 0 #000}#evoPick .row3{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:0 10px}#evoPick button.card{width:210px;min-height:230px;border-radius:16px;border:3px solid #1c2740;background:#fff;box-shadow:5px 5px 0 #1c2740;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 12px;cursor:pointer;font:inherit;color:#1c2740;text-align:center;transition:transform .12s}#evoPick button.card:hover,#evoPick button.card:focus{transform:translateY(-4px)}#evoPick .ic{font-size:40px;line-height:1}#evoPick .pth{font-size:12px;padding:2px 10px;border-radius:9px;color:#fff;font-weight:700}#evoPick .nm{font-weight:800;font-size:18px}#evoPick .ds{font-size:14px;line-height:1.4;color:#3b4660}#evoPick .st{font-size:12px;color:#7a8499}#evoPick .k{font-size:12px;color:#fff;background:#1c2740;border-radius:6px;padding:0 6px}#evoPick .tip{color:#dfe6f5;font-size:13px}#evoHud{position:fixed;left:8px;top:46px;z-index:15;display:flex;flex-wrap:wrap;gap:3px;max-width:46vw;pointer-events:none;font:600 12px Kanit,Sarabun,sans-serif}#evoHud span{background:rgba(255,255,255,.88);border:2px solid #1c2740;border-radius:8px;padding:0 5px}#evoHud .xp{flex-basis:100%;height:5px;background:#e3e7f0;border-radius:4px;overflow:hidden;border:0;padding:0}#evoHud .xp i{display:block;height:100%;background:#ffb020}';document.head.appendChild(s);}
+function evoUiShow(){evoCss();const O=EVO.offer;if(!O)return;let el=document.getElementById('evoPick');if(!el){el=document.createElement('div');el.id='evoPick';document.body.appendChild(el);}
+ el.innerHTML='';const h=document.createElement('h2');h.textContent=evoT(O.first?'การ์ดเริ่มต้น เลือก 1 ใบ':'เลเวลอัป! เลือกการ์ด 1 ใบ');const row=document.createElement('div');row.className='row3';
+ O.C.forEach((c,i)=>{const P=EVP[c.p],b=document.createElement('button');b.className='card';b.style.borderColor=P.c;const n=(EVO.run.cards[c.id]||0);
+  const mk=(cl,t,tag)=>{const x=document.createElement(tag||'div');x.className=cl;x.textContent=t;b.appendChild(x);return x;};
+  mk('ic',P.ic);const pt=mk('pth',(c.form?evoT(EVFORM[c.form].n):evoT('สาย')+evoT(P.n))+(c.rare?evoT(' · หายาก'):''));pt.style.background=c.form?'#7a4ce0':P.c;mk('nm',evoT(c.n));mk('ds',evoT(c.d));if(c.mx>1)mk('st',evoT('มีแล้ว ')+n+'/'+c.mx);mk('k',evoT('กด ')+(i+1));
+  b.onclick=()=>evoTake(i);row.appendChild(b);});
+ const tip=document.createElement('div');tip.className='tip';tip.textContent=evoT('การ์ดที่เลือกจะสะสมเป็นสายเลือดของตัวละคร ครบขั้นแล้วตัวละครวิวัฒนาการ');el.append(h,row,tip);el.style.display='flex';try{row.firstChild.focus();}catch(e){}}
+function evoUiHide(){const el=document.getElementById('evoPick');if(el)el.style.display='none';}
+addEventListener('keydown',e=>{if(!EVO.offer)return;const i=['Digit1','Digit2','Digit3','Numpad1','Numpad2','Numpad3'].indexOf(e.code);if(i>=0){e.preventDefault();e.stopPropagation();evoTake(i%3);}},true);
+function evoHud(){evoCss();let el=document.getElementById('evoHud');const R=EVO.run;if(!R||!R.cards_on||!EVA.showHud()){if(el)el.style.display='none';return;}
+ if(!el){el=document.createElement('div');el.id='evoHud';document.body.appendChild(el);}el.style.display='flex';el.innerHTML='';
+ const xp=document.createElement('span');xp.className='xp';const xi=document.createElement('i');xi.style.width=Math.min(100,R.xp/R.need*100)+'%';xp.appendChild(xi);el.appendChild(xp);
+ for(const id in R.cards){const c=EVC.find(x=>x.id===id);if(!c)continue;const s=document.createElement('span');s.style.borderColor=EVP[c.p].c;s.textContent=EVP[c.p].ic+evoT(c.n)+(R.cards[id]>1?' ×'+R.cards[id]:'');el.appendChild(s);}}
+/* ---------- bloodline panel (in the character screen of each game) ---------- */
+function evoPanel(box){if(!box)return;box.innerHTML='';const b=evoBlood(),f=evoForm(b);const h=document.createElement('b');h.textContent=evoT('สายเลือดของตัวละครนี้');box.appendChild(h);
+ for(const p in EVP){const P=EVP[p],v=b.pts[p],t=evoTier(v),nx=EVTIER[t]||EVTIER[2],r=document.createElement('div');r.className='evoRow';
+  const top=document.createElement('div');top.textContent=P.ic+' '+evoT(P.n)+evoT(' · ขั้น ')+t+' · '+v+(t<3?' / '+nx:evoT(' (สูงสุด)'));const bar=document.createElement('div');bar.className='evoBar';const fi=document.createElement('i');fi.style.cssText='width:'+Math.min(100,v/EVTIER[2]*100)+'%;background:'+P.c;bar.appendChild(fi);
+  const ds=document.createElement('small');ds.textContent=t?EVPAS_D[p].slice(0,t).map(evoT).join(' · '):evoT('ยังไม่ได้รับความสามารถ');r.append(top,bar,ds);box.appendChild(r);}
+ const fm=document.createElement('p');fm.className='mute';fm.style.cssText='margin:6px 0 0;font-size:13px';fm.textContent=f?'✨ '+evoT(EVFORM[f].n)+': '+evoT(EVFORM[f].d):evoT('ร่างผสม: ไฟ+น้ำแข็ง = ร่างไอน้ำ · สายฟ้า+เงา = ร่างพายุมืด · พลังกาย+ลม = ร่างพายุหมัด (ต้องถึงขั้น 2 ทั้งสองสาย)');box.appendChild(fm);
+ const nt=document.createElement('p');nt.className='mute';nt.style.cssText='margin:4px 0 0;font-size:12px';nt.textContent=evoT('เก็บแต้มได้จากการ์ดในเนื้อเรื่อง เอาตัวรอด และหอคอย ชนะได้แต้ม 1.5 เท่า ขั้น 1/2/3 ที่ ')+EVTIER.join('/')+evoT(' แต้ม');box.appendChild(nt);
+ if(!document.getElementById('evoCss2')){const s=document.createElement('style');s.id='evoCss2';s.textContent='.evoRow{margin:6px 0;font-size:14px}.evoRow small{color:#667;display:block;font-size:12px}.evoBar{height:7px;border-radius:5px;background:#e3e7f0;overflow:hidden;margin:2px 0}.evoBar i{display:block;height:100%}';document.head.appendChild(s);}}
+/* ===================== EVO adapter for the 3D game ===================== */
+const EVA={U:1,
+ player:()=>G.pl,foes:()=>G.ents.filter(e=>e.team&&!e.dead),
+ pos:e=>[e.x,e.z],dist:(a,b)=>Math.hypot(a.x-b.x,a.z-b.z),
+ eligible:()=>!G.pvp&&!G.wkFoe&&!!G.run&&['story','surv','tower'].indexOf(G.run.kind)>=0,
+ solo:()=>!G.pvp&&mode==='fight'&&!!G.pl,
+ key:()=>{let v='';try{v=localStorage.getItem('df3d_vault_cur')||'';}catch(e){}return '3d:'+(v||'main');},
+ base:p=>p.dmg||10,maxhp:p=>p.maxhp,hpFrac:p=>p.hp/Math.max(1,p.maxhp),showHud:()=>true,
+ area:(x,z,r,amt,st,d,except,only)=>{let n=0;for(const e of only?[only]:EVA.foes()){if(e===except||e.dead)continue;if(!only&&Math.hypot(e.x-x,e.z-z)>r+(e.rad||.5))continue;n++;
+  if(amt>0)hurt(e,amt,{x,z,src:G.pl});if(st&&!e.dead)evoSt(e,st,d);}return n;},
+ status:(e,s,d)=>{if(e.dead)return;if(s==='burn'){e.burnT=Math.max(e.burnT||0,d);e.burnD=Math.max(e.burnD||0,(G.pl?G.pl.dmg:10)*.15);e._dotSrc=G.pl;}
+  else if(s==='slow'){e.slowT=Math.max(e.slowT||0,d);e.slowM=e.boss?.75:.5;}else if(s==='freeze'){e.frz=Math.max(e.frz||0,d);e.stun=Math.max(e.stun||0,e.boss?d*.5:d);}
+  else if(s==='stun')e.stun=Math.max(e.stun||0,e.boss?d*.5:d);else if(s==='shock'||s==='bleed'){try{stApply(e,s,d,G.pl);}catch(_){}}},
+ has:(e,s)=>s==='burn'?e.burnT>0:s==='slow'?e.slowT>0:s==='freeze'?(e.frz>0&&e.stun>0):(typeof stGet==='function'?stGet(e,s)>0:false),
+ knock:(e,f)=>{if(e.dead)return;const dx=e.x-f.x,dz=e.z-f.z,l=Math.hypot(dx,dz)||1,k=e.boss?.4:1.3;e.x+=dx/l*k;e.z+=dz/l*k;},
+ heal:(p,a)=>{if(a>0&&!p.dead){p.hp=Math.min(p.maxhp,p.hp+a);p._evH=(p._evH||0)+a;if(p._evH>=5){tag(p,'+'+Math.round(p._evH),'#7dffa0');p._evH=0;}}},
+ stat:(p,k,f)=>{if(k==='hp'){const r=p.hp/Math.max(1,p.maxhp);p.maxhp=Math.round(p.maxhp*(1+f));p.hp=Math.min(p.maxhp,Math.max(p.hp,p.maxhp*r));}else if(k==='spd')p.spd*=1+f;else if(k==='as')p.asM=(p.asM||1)*(1+f);},
+ fx:(k,x,z,r,col,x2,z2)=>{try{const c=colOf(col,[1,1,1]);if(k==='link'){for(let i=1;i<=5;i++)skBurst(x+(x2-x)*i/6,1,z+(z2-z)*i/6,{n:3,speed:1,up:1,size:.18,life:.3,grav:0},c);return;}
+  G.rings.push({x,z,r:Math.max(.5,r),col:c,t:0,d:k==='zone'?.5:.35});if(k==='boom')skBurst(x,.5,z,{n:20,speed:5,up:4,size:.25,life:.5,rad:r*.4},c);
+  else if(k==='bolt')skBurst(x,4,z,{n:16,speed:2,up:-9,size:.2,life:.35,grav:0},c);}catch(_){}},
+ tag:(e,s,c)=>{try{tag(e,s,c);}catch(_){}},
+ pause:on=>{G.evoPause=!!on;},
+ glow:(p,c,t)=>{p.evoGlow=t>0&&c?{c,t,k:0}:null;},
+ aura:(p,el)=>{try{if(typeof AURA3X!=='undefined'&&!AURA3X.evoAu)AURA3X.evoAu='rage';}catch(_){}p.evoAu=el?999:0;p._bel=p._bel||{};p._bel.evoAu=el||'none';}};
+/* runs start with the first wave; a tower climb keeps its cards from floor to floor */
+{const _sw=spawnWave;spawnWave=function(){const first=G.wave===0;const r=_sw.apply(this,arguments);try{if(first&&G.pl){const R=EVO.run,P=G.pl;
+ if(R&&R.sess&&R.sess===G.run&&G.run&&G.run.kind==='tower'){const S=R.S;R.lowUsed=0;R.shield=0;for(const k of ['hp','spd','as'])if(S[k])EVA.stat(P,k,S[k]);evoLook(P);EVA.pause(false);evoHud();}
+ else{if(R)evoEnd(false);evoStart();if(EVO.run)EVO.run.sess=G.run||null;}}}catch(e){}return r;};}
+{const _e=end;end=function(win){const was=G.over;try{if(!was&&EVO.run&&!(G.run&&G.run.kind==='tower'&&win&&!G.wkFoe)){const g=evoEnd(win);if(g&&(g.got||g.ups.length))setTimeout(()=>{try{toast(evoT('สายเลือด +')+g.got+evoT(' แต้ม')+(g.ups.length?evoT(' · วิวัฒนาการ! ')+g.ups.join(' · '):''));}catch(_){}},900);}
+ else if(!was&&EVO.run){EVO.offer=null;evoUiHide();EVA.pause(false);}}catch(e){}return _e.apply(this,arguments);};}
+for(const id of ['quit','ovB'])try{$(id).addEventListener('click',()=>{if(EVO.run){evoEnd(false);}EVA.pause(false);},true);}catch(e){}
+{const _h=hurt;hurt=function(t,dmg,from){if(!EVO.run||G.pvp||RP.on||!t)return _h.apply(this,arguments);const P=G.pl;
+ if(t===P)dmg=evoIn(dmg);else if(!EVO.inner)dmg=evoOut(t,dmg,!G.skCur&&!G.elCur);const h0=t.hp,was=t.dead;const r=_h.call(this,t,dmg,from);
+ try{if(t!==P&&t.hp<h0)evoHit(t,h0-t.hp);if(t!==P&&!was&&t.dead&&!t._evk){t._evk=1;evoKill(t);}}catch(e){}return r;};}
+{const _t=skTry;skTry=function(p,i){const c0=G.skcd[i];const r=_t.apply(this,arguments);try{if(r&&EVO.run&&p===G.pl&&!(c0>0)){if(G.skcd[i]>0)G.skcd[i]*=1-evoCdr();evoSkill();}}catch(_){}return r;};}
+{const _s=step;step=function(dt){if(G.evoPause)return;_s(dt);try{const P=G.pl;if(EVO.run&&P&&!P.dead&&!G.pvp){if(P.asM>1&&P.cd>0)P.cd-=dt*(P.asM-1);if(P.dash>0&&!P._evDg)evoDodge();P._evDg=P.dash>0;evoTick(dt);
+ if(P.evoAu>0&&typeof FX!=='undefined'&&!FX.api&&!P._evFx){P._evFx=1;try{fxEnsure();}catch(_){}}
+ const g0=P.evoGlow;if(g0){g0.k-=dt;if(g0.k<=0){g0.k=.45-g0.t*.08;skBurst(P.x,1+Math.random(),P.z,{n:3+g0.t*2,speed:1.2,up:1.6,size:.14,life:.6,grav:-1,rad:.5},colOf(g0.c,[1,1,1]));}}}}catch(e){}};}
+/* bloodline card in the character tab */
+function evo3Panel(){let d=$('evoDet');if(!d){const anchor=$('vtDet');if(!anchor)return;d=document.createElement('details');d.id='evoDet';d.open=true;d.style.cssText='border:2px solid var(--ink,#1c2740);border-radius:12px;padding:8px 10px;margin:8px 0';
+ d.innerHTML='<summary style="cursor:pointer;font-weight:700">สายเลือดและวิวัฒนาการ</summary><div id="evoBox"></div>';anchor.after(d);d.dataset.ui3='char';try{let t='play';try{t=localStorage.getItem('df3d_tab')||'play';}catch(_){}ui3Show(t);}catch(_){}}
+ evoPanel($('evoBox'));}
+setTimeout(()=>{try{evo3Panel();}catch(e){}},150);
+setInterval(()=>{try{if(mode==='edit'&&$('evoDet')&&!$('evoDet').classList.contains('ui3h'))evo3Panel();}catch(e){}},4000);
 
 /* ---------- effects made in the VFX studio, drawn by the studio engine in a see-through frame over the game ---------- */
 var FX={ifr:null,api:null,loading:null,act:{},ts:1,lights:[],casts:[],lt:0};
@@ -2355,7 +2572,7 @@ function auraFx(kind,D,col,el,opt){if(typeof ST_DEF!=='undefined'&&ST_DEF[kind]&
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);
-window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get PGS(){return PGS;},pgXp,pgStart,pgUi,get VT(){return VT;},vtAdd,vtUse,get ST3P(){return ST3P;},st3Start,get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
+window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get PGS(){return PGS;},pgXp,pgStart,pgUi,get VT(){return VT;},vtAdd,vtUse,get ST3P(){return ST3P;},st3Start,get EVO(){return EVO;},evoTake,evoBlood,evoSaveBlood,evoForm,evoKey:()=>EVA.key(),get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
 })();
 </script>
 </body>
