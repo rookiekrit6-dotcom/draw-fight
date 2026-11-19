@@ -1168,7 +1168,7 @@ function stFromEl(src,t,el,basic){if(!el||!t||t.dead)return;const m=basic?1:.6,R
    Loaded a moment after the page opens; a recorded sound replaces the synthesized recipe of the same name. Until it arrives,
    or if it fails to load, the synthesized sounds keep playing as before. */
 var RB={buf:{},state:0,loops:{}};
-function rbUrl(){return /\/(3d|vfx)\/[^/]*$/.test(location.pathname)?'../sfx/bank.json':'sfx/bank.json';}
+function rbUrl(){return /\/(3d|vfx)\/[^/]*$/.test(location.pathname)?'../sfx/bank.json?v=4':'sfx/bank.json?v=4';}
 function rbLoad(){if(!RB||RB.state)return;RB.state=1;let OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC||!window.fetch){RB.state=3;return;}
  fetch(rbUrl()).then(r=>r.ok?r.json():null).then(j=>{if(!j){RB.state=3;return;}const ctx=new OC(1,1,24000);
   for(const k in j){const e=j[k],arr=[];arr.g=+e.g||1;arr.loop=!!e.loop;RB.buf[k]=arr;
