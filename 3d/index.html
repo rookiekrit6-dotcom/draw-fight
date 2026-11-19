@@ -1884,7 +1884,7 @@ skFire=chr3Own(skFire,a=>a[0]&&a[0].p);fxFollow=chr3Own(fxFollow,a=>a[0]&&a[0].p
 {const _h=hurt;hurt=function(){if(!CF3.on||!CF3.saved)return _h.apply(this,arguments);const cur=CF3.saved.map(([e])=>[e,e.team]);for(const [e,t] of CF3.saved)e.team=t;
  try{return _h.apply(this,arguments);}finally{for(const [e,t] of cur)e.team=t;}};}
 {const _pf=pvFoe;pvFoe=function(o,e){if(!G.pvp&&o&&o.team&&o.hp!=null)return !e.team;return _pf(o,e);};}
-function chr3FoeAI(dt){const f=G.wkFoe,p=G.pl;if(!f||G.over||!p||p.dead)return;
+function chr3FoeAI(dt){const f=G.wkFoe||{boss:true},p=G.pl;if(G.over||!p||p.dead)return;
  for(const e of G.ents){if(!e.wk||e.dead)continue;for(let i=0;i<10;i++)if(e.skcd[i]>0)e.skcd[i]-=dt;e.skT=(e.skT||0)-dt;
   if(e.skT>0||e.stun>0||e.atkT>0||stSkillBlocked(e))continue;const d=Math.hypot(p.x-e.x,p.z-e.z);if(d>12)continue;
   const rd=[];for(let i=0;i<10;i++)if(e.sks[i]&&!(e.skcd[i]>0))rd.push(i);if(!rd.length)continue;
@@ -1944,6 +1944,76 @@ setInterval(()=>{try{if(mode==='edit')chrBossUi();}catch(e){}},60000);
 function dfTo2dUi(){if($('to2d'))return;const go=$('go');if(!go)return;const panel=go.parentNode,b=document.createElement('button');b.id='to2d';b.textContent='← สลับไปเกม 2D';b.style.cssText='margin:0 0 8px;font-size:14px';
  b.onclick=()=>{try{localStorage.setItem('df_mode','2d');}catch(e){}location.href='../?m=2d';};panel.insertBefore(b,panel.firstChild);}
 setTimeout(()=>{try{dfTo2dUi();}catch(e){}},0);
+/* ===================== 3D: levels and stat points, survival mode, tower mode ===================== */
+const PG_KEY='df3d_prog';
+const PG_ST=[
+ {k:'hp',n:'พลังชีวิต',per:5,max:40,u:'% เลือด'},
+ {k:'atk',n:'พลังโจมตี',per:4,max:40,u:'% ดาเมจ'},
+ {k:'spd',n:'ความเร็ว',per:2,max:15,u:'% ความเร็ว'},
+ {k:'def',n:'เกราะ',per:3,max:15,u:'% ลดดาเมจที่โดน'},
+ {k:'cd',n:'ร่ายไว',per:3,max:12,u:'% ลดคูลดาวน์สกิล'}];
+function pgLoad(){let o=null;try{o=JSON.parse(localStorage.getItem(PG_KEY)||'null');}catch(e){}o=o&&typeof o==='object'?o:{};
+ const n=(v,d)=>isFinite(+v)&&+v>=0?Math.floor(+v):d;const pt={};for(const s of PG_ST)pt[s.k]=Math.min(s.max,n(o.pt&&o.pt[s.k],0));
+ return {lv:Math.max(1,n(o.lv,1)),xp:n(o.xp,0),pt,surv:n(o.surv,0),tower:n(o.tower,0),kills:n(o.kills,0)};}
+let PGS=pgLoad();
+function pgSave(){try{localStorage.setItem(PG_KEY,JSON.stringify(PGS));}catch(e){}}
+function pgNeed(lv){return 40+lv*25;}
+function pgUsed(){let u=0;for(const s of PG_ST)u+=PGS.pt[s.k];return u;}
+function pgFree(){return (PGS.lv-1)*3-pgUsed();}
+function pgMul(k){const s=PG_ST.find(x=>x.k===k);return PGS.pt[k]*s.per/100;}
+/* experience: kills in any solo mode; levels give 3 points each */
+function pgXp(n,why){if(G.pvp||n<=0)return;PGS.xp+=Math.round(n);let up=0;while(PGS.xp>=pgNeed(PGS.lv)){PGS.xp-=pgNeed(PGS.lv);PGS.lv++;up++;}pgSave();
+ if(up){try{toast('เลเวลอัป! เลเวล '+PGS.lv+' ได้แต้มพลัง '+(up*3)+' แต้ม');}catch(e){}try{if(G.pl)tag(G.pl,'LEVEL UP','#ffd84a');}catch(e){}try{sd3Play('ui_lvl',.7,1)||beep(660,.25,990);}catch(e){}}pgUi();}
+/* the player's bonuses in solo modes; online rooms stay even */
+function pgApply(p){if(!p||p._pg||G.pvp)return;p._pg=1;const h=1+pgMul('hp');p.maxhp=Math.round(p.maxhp*h);p.hp=p.maxhp;p.spd*=1+pgMul('spd');p.dmg*=1+pgMul('atk');}
+{const _h=hurt;hurt=function(t,dmg,from){if(!G.pvp&&t&&isFinite(dmg)){if(t===G.pl)dmg*=Math.max(.5,1-pgMul('def'));else dmg*=1+pgMul('atk');}
+ const r=_h.call(this,t,dmg,from);try{if(!G.pvp&&t&&t!==G.pl&&t.dead&&!t._xpd&&mode==='fight'){t._xpd=1;PGS.kills++;const R=G.run||{};pgXp(t.boss?30+(R.lvl||0)*3:4+Math.min(20,(R.lvl||G.wave||1)));}}catch(e){}return r;};}
+{const _t=skTry;skTry=function(p,i){const c0=G.skcd[i];const r=_t.apply(this,arguments);if(r&&p===G.pl&&!G.pvp&&!(c0>0)&&G.skcd[i]>0)G.skcd[i]*=Math.max(.6,1-pgMul('cd'));return r;};}
+/* ---------- run kinds: normal 3 waves, survival (endless), tower (floors) ---------- */
+const PG_COL=[['#6c4bd8','#ffd84a','#553ab0'],['#2f9e6b','#fff1a8','#1f6e4a'],['#d9534f','#ffe08a','#9e2f2b'],['#3a7bd5','#c8f0ff','#244f8c'],['#444a5c','#ff6b6b','#262a36'],['#c27c0e','#fff3c4','#7e5007']];
+function pgMob(tier){const c=PG_COL[tier%PG_COL.length],m=clone(IMP);m.parts[0].c=c[0];m.parts[1].c=c[1];m.parts[2].c=c[1];m.parts[3].c=c[2];return m;}
+function pgBossKit(n){const ks=KITS.filter(k=>k.file&&!k.pack);return ks.length?ks[(n*5+3)%ks.length]:null;}
+function pgPre(n){const k=pgBossKit(n);if(k)mdlKit(k.id);}
+function pgBoss(n,hp,dmg){const k=pgBossKit(n);let ch=null,sks=[];if(k&&MDLS['kit:'+k.id]){ch=clone(IMP);mdlDress(ch,MDLS['kit:'+k.id],'kit:'+k.id,{kit:k.id,msc:k.msc||1});ch.move=k.move||ch.move;sks=(k.sk||[]).slice(0,10).map(s=>{try{return skCheck(clone(s));}catch(e){return null;}});}
+ const b=mkEnt(ch||pgMob(n),0,14,1,ch?1.45:2.1);b.noWeap=!ch;b.hp=b.maxhp=hp;b.dmg=dmg;b.spd=2.3;b.boss=true;if(ch){b.wk=1;b.sks=sks;while(b.sks.length<10)b.sks.push(null);b.skcd=[0,0,0,0,0,0,0,0,0,0];b.skT=2.5;}return b;}
+function pgRing(n,make){for(let i=0;i<n;i++){const a=i/n*2*PI+Math.random()*.4,r=11+Math.random()*5,e=make(i);e.x=Math.cos(a)*r;e.z=Math.sin(a)*r;G.ents.push(e);}}
+function pgWave(lvl,n,boss){const hp=30+lvl*11,dmg=6+lvl*.9,spd=2.5+Math.min(2.4,lvl*.11);
+ pgRing(n,i=>{const e=mkEnt(pgMob(Math.floor(lvl/3)),0,0,1,.85+Math.min(.35,lvl*.012));e.noWeap=true;e.hp=e.maxhp=Math.round(hp*(.85+Math.random()*.3));e.spd=spd;e.dmg=dmg;return e;});
+ if(boss)G.ents.push(pgBoss(boss,Math.round(220+lvl*42),Math.round(14+lvl*1.3)));}
+{const _sw=spawnWave;spawnWave=function(){if(G.wave===0&&G.pl)pgApply(G.pl);const R=G.run;if(G.wkFoe||!R||R.kind==='wave')return _sw.apply(this,arguments);
+ if(R.kind==='surv'){R.lvl=(R.lvl||0)+1;G.wave=1;const boss=R.lvl%5===0;pgWave(R.lvl,Math.min(14,3+Math.floor(R.lvl*.8)),boss?R.lvl:0);if(R.lvl>1)pgXp(8+R.lvl*2);pgPre(Math.floor(R.lvl/5)*5+5);
+  $('wave').textContent='เอาตัวรอด · รอบ '+R.lvl+(boss?' · บอส':'');return;}
+ if(R.kind==='tower'){R.lvl=R.floor;G.wave=3;const boss=R.floor%5===0;pgWave(R.floor+2,Math.min(9,2+Math.floor(R.floor/2)),boss?R.floor:0);pgPre(Math.floor(R.floor/5)*5+5);
+  $('wave').textContent='หอคอย · ชั้น '+R.floor+(boss?' · บอส':'');return;}
+ return _sw.apply(this,arguments);};}
+{const _e=end;end=function(win){const R=G.run;if(G.over)return;let note='';
+ if(R&&R.kind==='surv'&&!G.wkFoe){const got=Math.max(0,(R.lvl||1)-1),best=got>PGS.surv;if(best){PGS.surv=got;pgSave();}
+  _e.call(this,false);$('ovT').textContent='ผ่าน '+got+' รอบ';$('ovP').textContent=(best?'สถิติใหม่! ':'สถิติสูงสุด '+PGS.surv+' รอบ · ')+'ทุก 5 รอบมีบอส ลองอัปแต้มพลังแล้วสู้ใหม่';$('ovA').textContent='เริ่มเอาตัวรอดใหม่';R.lvl=0;pgUi();return;}
+ if(R&&R.kind==='tower'&&!G.wkFoe){if(win){const f=R.floor;if(f>PGS.tower)PGS.tower=f;pgSave();pgXp(20+f*5);R.floor=f+1;
+   _e.call(this,true);$('ovT').textContent='ผ่านชั้น '+f+' แล้ว!';$('ovP').textContent='ชั้นถัดไปคือชั้น '+R.floor+(R.floor%5===0?' มีบอสรออยู่':'')+' เลือดจะเต็มตอนเริ่มชั้นใหม่';$('ovA').textContent='ขึ้นชั้น '+R.floor;}
+  else{_e.call(this,false);$('ovT').textContent='ตกจากชั้น '+R.floor;$('ovP').textContent='ชั้นที่ผ่านสูงสุด '+PGS.tower+' · อัปแต้มพลังแล้วลองใหม่';$('ovA').textContent='ลองชั้น '+R.floor+' อีกครั้ง';}pgUi();return;}
+ _e.apply(this,arguments);$('ovA').textContent='สู้อีกรอบ';};}
+for(const id of ['go'])try{$(id).addEventListener('click',()=>{G.run={kind:'wave'};},true);}catch(e){}
+async function pgStart(kind,floor){if(PV&&PV.room){toast('ออกจากห้องออนไลน์ก่อน');return;}G.wkFoe=null;G.run=kind==='tower'?{kind,floor:Math.max(1,floor|0)}:{kind,lvl:0};
+ const f=kind==='tower'?G.run.floor:5,k=pgBossKit(Math.ceil(f/5)*5);if(k&&!MDLS['kit:'+k.id]){toast('กำลังโหลดบอส...');await Promise.race([mdlKit(k.id),new Promise(r=>setTimeout(r,5000))]);}start();}
+/* ---------- side panel card ---------- */
+function pgUi(){const box=$('pgCard');if(!box)return;const need=pgNeed(PGS.lv),fr=pgFree();
+ $('pgLv').textContent='เลเวล '+PGS.lv;$('pgXpT').textContent=PGS.xp+' / '+need+' XP';$('pgXpB').style.width=Math.min(100,PGS.xp/need*100)+'%';
+ $('pgFree').textContent=fr>0?'มีแต้มพลังว่าง '+fr+' แต้ม':'ไม่มีแต้มว่าง เก็บ XP เพื่อเลเวลอัป';$('pgFree').style.color=fr>0?'#c2410c':'';
+ for(const s of PG_ST){$('pgV_'+s.k).textContent=PGS.pt[s.k]+'/'+s.max;$('pgB_'+s.k).textContent='+'+PGS.pt[s.k]*s.per+s.u;$('pgP_'+s.k).disabled=fr<=0||PGS.pt[s.k]>=s.max;}
+ $('pgSurv').textContent='โหมดเอาตัวรอด · สถิติ '+PGS.surv+' รอบ';const sel=$('pgFl'),mx=PGS.tower+1;if(+sel.dataset.mx!==mx){sel.innerHTML='';for(let f=mx;f>=1;f--){const o=document.createElement('option');o.value=f;o.textContent='ชั้น '+f+(f%5===0?' (บอส)':'');sel.appendChild(o);}sel.dataset.mx=mx;}
+ $('pgTowT').textContent='ผ่านสูงสุดชั้น '+PGS.tower;}
+function pgUI(){if($('pgCard'))return;const go=$('go');if(!go)return;const st=document.createElement('style');
+ st.textContent='#pgCard,#pgModes{border:2px solid var(--ink,#1c2740);border-radius:12px;padding:8px 10px;margin:8px 0}#pgCard summary{cursor:pointer;font-weight:700}.pgR{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin:4px 0;font-size:14px}.pgR small{color:var(--mute,#667);display:block;font-size:12px}.pgR button{min-width:36px;padding:2px 8px}#pgXp{height:8px;border-radius:5px;background:#e3e7f0;overflow:hidden;margin:4px 0}#pgXpB{height:100%;background:#ffb020;width:0}#pgModes .r{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}#pgModes button{flex:1;min-width:140px}';document.head.appendChild(st);
+ const c=document.createElement('details');c.id='pgCard';let rows='';for(const s of PG_ST)rows+='<div class="pgR"><span>'+s.n+'<small id="pgB_'+s.k+'"></small></span><b id="pgV_'+s.k+'"></b><button id="pgP_'+s.k+'" aria-label="เพิ่ม '+s.n+'">+</button></div>';
+ c.innerHTML='<summary><span id="pgLv"></span> · <span id="pgFree" style="font-weight:600"></span></summary><div id="pgXp"><div id="pgXpB"></div></div><div class="mute" id="pgXpT" style="font-size:12px"></div>'+rows+'<button id="pgRs" style="font-size:13px;margin-top:4px">คืนแต้มทั้งหมด (ฟรี)</button><p class="mute" style="font-size:12px;margin:6px 0 0">ได้ XP จากการสู้คนเดียวทุกโหมด เลเวลละ 3 แต้ม ค่าพลังใช้ในโหมดคนเดียว ไม่มีผลในห้องออนไลน์</p>';
+ const m=document.createElement('div');m.id='pgModes';m.innerHTML='<b>โหมดเล่นคนเดียว</b><div class="r"><button id="pgSurv" class="primary"></button></div><div class="r"><button id="pgTow" class="primary">โหมดหอคอย</button><select id="pgFl" aria-label="เลือกชั้น"></select></div><div class="mute" id="pgTowT" style="font-size:12px;margin-top:4px"></div><div class="mute" style="font-size:12px;margin-top:4px">ปุ่มลงสนามด้านล่างคือโหมดปกติ 3 รอบ</div>';
+ go.parentNode.insertBefore(c,go);go.parentNode.insertBefore(m,go);
+ for(const s of PG_ST)$('pgP_'+s.k).onclick=()=>{if(pgFree()<=0||PGS.pt[s.k]>=s.max)return;try{sfx.ui();}catch(e){}PGS.pt[s.k]++;pgSave();pgUi();};
+ $('pgRs').onclick=()=>{try{sfx.ui();}catch(e){}for(const s of PG_ST)PGS.pt[s.k]=0;pgSave();pgUi();};
+ $('pgSurv').onclick=()=>{try{sfx.ui();}catch(e){}pgStart('surv');};$('pgTow').onclick=()=>{try{sfx.ui();}catch(e){}pgStart('tower',+$('pgFl').value||1);};
+ pgUi();}
+setTimeout(()=>{try{pgUI();}catch(e){}},0);
 
 /* ---------- effects made in the VFX studio, drawn by the studio engine in a see-through frame over the game ---------- */
 var FX={ifr:null,api:null,loading:null,act:{},ts:1,lights:[],casts:[],lt:0};
@@ -2178,7 +2248,7 @@ function auraFx(kind,D,col,el,opt){if(typeof ST_DEF!=='undefined'&&ST_DEF[kind]&
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);
-window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
+window.__d3={get PV(){return PV;},get MDLS(){return MDLS;},kitUse,get KITS(){return KITS;},pvMake,pvJoin,pvStart,pvLob,pvLeave,db3Draw,stApply,stOnBurn,ST_DEF,get RB(){return RB;},sd3Play,get RP(){return RP;},rpStart,rpStop,rpRecord,get STA(){return STA;},hurt,skTry,get CHR(){return CHR;},chr3Short,chr3Get,chr3Fight,chr3Apply,chr3Undo,chrBossUi,get PGS(){return PGS;},pgXp,pgStart,pgUi,get CH(){return CH;},get SKS(){return SKS;},get G(){return G;},FX,fxNear,hurt,get FXW(){return FXW;},get DKV(){return DKV;},get SKS(){return SKS;},skCheck,skTry,skPower,skCd,SKPRE,edEnt,BN,get MODEL(){return MODEL;},G,IN,get CH(){return CH;},start,stop,PRE,load(k){CH=clone(PRE[k]);sel=0;ui();},pkImport,dfpRead,dfpZip,dfpAll,get KITB(){return KITB;},get SD3(){return SD3;},PKW};
 })();
 </script>
 </body>
