@@ -32,6 +32,7 @@ button:hover{background:#fff6cc}button.on{background:var(--hi)}button.big{font-s
 #draw{background:#111;border:2px solid var(--ink);border-radius:10px;touch-action:none;cursor:crosshair;width:256px;height:256px;display:block;margin:4px auto}
 #frames{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}#frames canvas{width:40px;height:40px;border:2px solid var(--ink);border-radius:6px;background:#111;cursor:pointer}#frames canvas.on{outline:3px solid var(--hi)}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0}
+html.embed,html.embed body{background:transparent!important;overflow:hidden}html.embed #app{display:block;padding:0;height:100vh}html.embed #top,html.embed #side,html.embed #tlWrap,html.embed #hud,html.embed #pathHint{display:none!important}html.embed #view{position:fixed;inset:0;border:0;border-radius:0;background:transparent;min-height:0}
 @media (max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:auto 50vh auto auto;height:auto}#side{grid-row:auto;grid-column:1}#view{height:50vh}}
 </style></head>
 <body>
@@ -53,6 +54,7 @@ button:hover{background:#fff6cc}button.on{background:var(--hi)}button.big{font-s
     <div class="f"><span>แสงฟุ้ง</span><input type="range" id="gBloom" min="0" max="2" step=".05"><input type="number" id="gBloomN" step=".05"></div>
     <div class="f"><span>ความสว่าง</span><input type="range" id="gExpo" min=".3" max="2.5" step=".05"><input type="number" id="gExpoN" step=".05"></div>
     <label class="row" style="font-size:13px"><input type="checkbox" id="gMan" checked> โชว์ตัวละครเทียบขนาด</label><label class="row" style="font-size:13px"><input type="checkbox" id="gRays" checked> ลำแสงทะลุฝุ่น</label><label class="row" style="font-size:13px"><input type="checkbox" id="gFlare" checked> แสงสะท้อนเลนส์</label></div>
+   <div class="grp" style="background:#fffbe6"><b>ใช้เป็นสกิลในเกม 3D</b><p class="mute" style="margin:2px 0 4px">ในเกม จุดกลางของฉาก (0,0,0) คือจุดที่สกิลเกิด และทิศเข้าไปในจอ (−Z) คือทิศที่ตัวละครหัน ตั้งดาเมจได้ในหน้า "ตั้งค่า" ของแต่ละเลเยอร์</p><div class="f"><span>ชื่อสกิล</span><input id="xName" maxlength="24" style="grid-column:2/4"></div><div class="f"><span>เกิดที่</span><select id="xWhere"><option value="front">หน้าตัวละคร</option><option value="self">ที่ตัวเอง</option><option value="target">ที่ศัตรูใกล้สุด</option></select></div><div class="f"><span>ระยะข้างหน้า</span><input type="range" id="xDist" min="0" max="18" step=".5" value="5"><input type="number" id="xDistN" step=".5" value="5"></div><div class="f"><span>ขนาดในเกม</span><input type="range" id="xScale" min=".2" max="3" step=".05" value="1"><input type="number" id="xScaleN" step=".05" value="1"></div><div class="f"><span>คูลดาวน์ (วิ)</span><input type="range" id="xCd" min="1" max="60" step=".5" value="8"><input type="number" id="xCdN" step=".5" value="8"></div><div class="f"><span>ใส่ช่องสกิล</span><select id="xSlot"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option><option value="4">5</option><option value="5">6</option><option value="6">7</option><option value="7">8</option><option value="8">9</option><option value="9">10 (0)</option></select></div><div class="row"><button id="xGame" class="on">ใส่ในเกม 3D</button><button id="xFile">บันทึกเป็นไฟล์สกิล</button></div><p class="mute" id="xMsg" style="margin:2px 0"></p></div>
   </div>
   <div class="pg" id="pg_set"><div id="props"></div></div>
   <div class="pg" id="pg_drw">
@@ -71,7 +73,7 @@ button:hover{background:#fff6cc}button.on{background:var(--hi)}button.big{font-s
 </div>
 <script>
 'use strict';
-const $=id=>document.getElementById(id);
+const $=id=>document.getElementById(id);const EMBED=/[?&]embed=1/.test(location.search);if(EMBED)document.documentElement.classList.add('embed');
 /* ===================== math ===================== */
 const V3={sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],len:a=>Math.hypot(a[0],a[1],a[2]),norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];}};
 function persp(f,a,n,fa){const t=1/Math.tan(f/2);return [t/a,0,0,0,0,t,0,0,0,0,(fa+n)/(n-fa),-1,0,0,2*fa*n/(n-fa),0];}
@@ -87,7 +89,7 @@ function curve(c,t,d){if(!c||!c.length)return d;if(t<=c[0][0])return c[0][1];for
 function hex2lin(h){const n=parseInt(h.slice(1),16);return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255].map(v=>Math.pow(v,2.2));}
 
 /* ===================== GL setup ===================== */
-const cv=$('gl'),gl=cv.getContext('webgl2',{antialias:false,alpha:false,preserveDrawingBuffer:true,premultipliedAlpha:false});
+const cv=$('gl'),gl=cv.getContext('webgl2',EMBED?{antialias:false,alpha:true,premultipliedAlpha:true,preserveDrawingBuffer:false}:{antialias:false,alpha:false,preserveDrawingBuffer:true,premultipliedAlpha:false});
 if(!gl){document.body.innerHTML='<p style="padding:20px">เบราว์เซอร์นี้ไม่รองรับ WebGL2 ลองเปิดด้วย Chrome หรือ Edge รุ่นใหม่</p>';throw new Error('no webgl2');}
 const HDR=!!gl.getExtension('EXT_color_buffer_float');
 const Q={high:{bloomLv:4,rays:1,dist:1,blend:1,rate:1,grain:1,res:1},med:{bloomLv:4,rays:0,dist:1,blend:1,rate:1,grain:1,res:.85},low:{bloomLv:3,rays:0,dist:0,blend:0,rate:.6,grain:0,res:.7}};let QL='high';
@@ -160,7 +162,7 @@ const P_RAY=prog(FSQ,`#version 300 es
 precision highp float;in vec2 vU;out vec4 o;uniform sampler2D uT;uniform vec2 uLS;
 void main(){vec2 d=(uLS-vU)/40.;vec2 p=vU;vec3 s=vec3(0.);float w=1.;for(int i=0;i<40;i++){s+=texture(uT,p).rgb*w;w*=.955;p+=d;}o=vec4(s/18.,1.);}`);
 const P_FIN=prog(FSQ,`#version 300 es
-precision highp float;in vec2 vU;out vec4 o;uniform sampler2D uS,uB0,uB1,uB2,uB3,uDT,uRT;uniform float uBl,uEx,uFl,uDsOn,uRay,uLI,uGr,uTm,uAsp;uniform vec2 uLS;
+precision highp float;in vec2 vU;out vec4 o;uniform sampler2D uS,uB0,uB1,uB2,uB3,uDT,uRT;uniform float uBl,uEx,uFl,uDsOn,uRay,uLI,uGr,uTm,uAsp,uEmb;uniform vec2 uLS;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 float hs(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+uTm*13.)*43758.5453);}
 void main(){vec2 uv=vU;if(uDsOn>0.)uv+=texture(uDT,vU).rg*.012;vec2 cd=(vU-.5)*.0025;vec3 c=vec3(texture(uS,uv+cd).r,texture(uS,uv).g,texture(uS,uv-cd).b);
@@ -168,7 +170,7 @@ void main(){vec2 uv=vU;if(uDsOn>0.)uv+=texture(uDT,vU).rg*.012;vec2 cd=(vU-.5)*.
  if(uRay>0.)c+=texture(uRT,vU).rgb*uRay;
  if(uLI>0.){vec2 a=vec2(uAsp,1.);vec3 fl=vec3(0.);for(int k=0;k<3;k++){float s=float(k);vec2 g=.5-(uLS-.5)*(.45+s*.55);float r=.025+s*.035;fl+=vec3(.5+.3*s,.4,.9-.2*s)*smoothstep(r,r*.3,length((vU-g)*a))*.05;}
   fl+=vec3(.55,.45,1.)*exp(-abs(vU.y-uLS.y)*90.)*exp(-abs(vU.x-uLS.x)*2.2)*.1;c+=fl*uLI;}
- c=c*uEx+vec3(1.,.95,1.)*uFl;c=aces(c);vec2 v=vU-.5;c*=1.-dot(v,v)*.75;c=pow(c,vec3(1./2.2));c+=(hs(vU*vec2(1920.,1080.))-.5)*.035*uGr;o=vec4(c,1.);}`);
+ c=c*uEx+vec3(1.,.95,1.)*uFl;c=aces(c);vec2 v=vU-.5;if(uEmb<.5)c*=1.-dot(v,v)*.75;c=pow(c,vec3(1./2.2));c+=(hs(vU*vec2(1920.,1080.))-.5)*.035*uGr;float A=1.;if(uEmb>.5){A=clamp(max(texture(uS,uv).a*.95,max(c.r,max(c.g,c.b))),0.,1.);c=min(c,vec3(A));}o=vec4(c,A);}`);
 const quad=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,quad);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
 const fsVAO=gl.createVertexArray();gl.bindVertexArray(fsVAO);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
 const ptQ=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,ptQ);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-.5,-.5,.5,-.5,-.5,.5,.5,.5]),gl.STATIC_DRAW);
@@ -219,7 +221,7 @@ buildTex();
 /* ===================== scene state ===================== */
 const S={name:'',dur:8,bloom:1,expo:1,man:true,layers:[],tex:{},time:0,simT:0,playing:true,loop:true,speed:1,sel:0,cam:{yaw:.25,pitch:.1,dist:15,tx:0,ty:3},camKeys:[],camOn:true,rays:1,flare:1,shake:0,flash:0,seed:7};
 let UID=1;
-function layer(o){return Object.assign({id:UID++,name:'เลเยอร์',on:true,start:0,dur:1,rate:30,burst:0,max:600,shape:'point',r:1,plane:'xy',pos:[0,3,0],path:null,life:[.6,1.2],speed:[1,2],dir:'out',spread:.2,swirl:0,gravity:0,drag:0,attract:0,velY:0,render:'sprite',tex:'glow',blend:'add',orient:'bill',size:[.5,.5],sizeVar:.3,aspect:1,stretch:0,rot:1,spin:[0,0],col:['#ffffff','#c070ff','#5020a0'],inten:2,fadeIn:.1,fadeOut:.5,fps:12,frameRand:true,fbLife:false,shake:0,flash:0,ground:false,front:false,soft:true,light:0,lightR:6,lightY:0,distort:0,trail:10,boltLen:[.6,1.2],jag:.3,branch:2,boltHz:18,emis:0,emisCol:'#ff7a30'},o);}
+function layer(o){return Object.assign({id:UID++,name:'เลเยอร์',on:true,start:0,dur:1,rate:30,burst:0,max:600,shape:'point',r:1,plane:'xy',pos:[0,3,0],path:null,life:[.6,1.2],speed:[1,2],dir:'out',spread:.2,swirl:0,gravity:0,drag:0,attract:0,velY:0,render:'sprite',tex:'glow',blend:'add',orient:'bill',size:[.5,.5],sizeVar:.3,aspect:1,stretch:0,rot:1,spin:[0,0],col:['#ffffff','#c070ff','#5020a0'],inten:2,fadeIn:.1,fadeOut:.5,fps:12,frameRand:true,fbLife:false,shake:0,flash:0,ground:false,front:false,soft:true,light:0,lightR:6,lightY:0,distort:0,trail:10,boltLen:[.6,1.2],jag:.3,branch:2,boltHz:18,emis:0,emisCol:'#ff7a30',hitDmg:0,hitR:2},o);}
 
 /* ===================== simulation ===================== */
 function resetSim(){R=mulberry(S.seed);S.simT=0;S.shake=0;S.flash=0;for(const L of S.layers){L._p=[];L._acc=0;L._fired=false;}}
@@ -235,7 +237,7 @@ function spawn(L,n,et){const c=emitterPos(L,et),r=L.r*curve(L.rC,clamp(et/(L.dur
   switch(L.dir){case 'in':d=V3.mul(on,-1);break;case 'up':d=[0,1,0];break;case 'down':d=[0,-1,0];break;case 'tangent':d=V3.norm(V3.cross(ax,on));break;case 'flat':{const q=runit();d=V3.norm([q[0],0,q[2]]);break;}case 'random':d=runit();break;default:d=on;}
   if(L.spread)d=V3.norm(V3.add(d,V3.mul(runit(),L.spread)));const sp=rnd(L.speed);const v=V3.mul(d,sp);v[1]+=L.velY||0;
   const q={p,v,d,age:0,life:Math.max(.02,rnd(L.life)),sv:1+rr(-1,1)*L.sizeVar,rot:L.rot?R()*6.2832*L.rot:0,spin:rnd(L.spin),fr:L.frameRand?Math.floor(R()*64):0,seed:R(),ax:runit(),bl:rnd(L.boltLen)};if(L.render==='trail')q.h=[p.slice()];L._p.push(q);}}
-function step(dt){const t=S.simT,rs=Q[QL].rate;for(const L of S.layers){if(!L._p)L._p=[];const et=t-L.start;if(L.on&&et>=0&&et<=L.dur){if(!L._fired){L._fired=true;if(L.burst)spawn(L,Math.max(1,Math.round(L.burst*(L.burst>3?rs:1))),0);if(L.shake)S.shake=Math.max(S.shake,L.shake);if(L.flash){S.flash=Math.max(S.flash,L.flash);}}
+function step(dt){const t=S.simT,rs=Q[QL].rate;for(const L of S.layers){if(!L._p)L._p=[];const et=t-L.start;if(L.on&&et>=0&&et<=L.dur){if(!L._fired){L._fired=true;if(L.hitDmg>0&&S.events)S.events.push({p:emitterPos(L,0).slice(),r:L.hitR||2,dmg:L.hitDmg});if(L.burst)spawn(L,Math.max(1,Math.round(L.burst*(L.burst>3?rs:1))),0);if(L.shake)S.shake=Math.max(S.shake,L.shake);if(L.flash){S.flash=Math.max(S.flash,L.flash);}}
   L._acc+=L.rate*rs*curve(L.rateC,et/(L.dur||1),1)*dt;const n=Math.floor(L._acc);L._acc-=n;if(n>0)spawn(L,n,et);}
   const c0=emitterPos(L,clamp(et,0,L.dur)),ax=axisOf(L),g=L.gravity,dr=Math.max(0,1-L.drag*dt),sw=L.swirl*dt,cs=Math.cos(sw),sn=Math.sin(sw),tr=L.render==='trail'?Math.max(2,L.trail|0):0;
   const ps=L._p;let j=0;for(let i=0;i<ps.length;i++){const q=ps[i];q.age+=dt;if(q.age>=q.life)continue;q.v[1]+=g*dt;if(L.attract){q.v=V3.add(q.v,V3.mul(V3.sub(c0,q.p),L.attract*dt));}q.v=V3.mul(q.v,dr);q.p=V3.add(q.p,V3.mul(q.v,dt));
@@ -260,7 +262,7 @@ function fillInst(L,list){const T=TEX[L.tex]||TEX.glow,fr=T.fr,iE=iEof(L);const 
 let LT=[];
 function gatherLights(){const out=[];for(const L of S.layers){if(!L.on||!(L.light>0)||!L._p||!L._p.length)continue;let cx=0,cy=0,cz=0,env=0,n=0;for(const q of L._p){const a=fadeA(L,q.age/q.life);if(a>env)env=a;cx+=q.p[0];cy+=q.p[1];cz+=q.p[2];n++;}env*=iEof(L);if(env<.01)continue;const c=hex2lin(L.col[1]),c0=hex2lin(L.col[0]),I=L.light*env;out.push({p:[cx/n,cy/n+(L.lightY||0),cz/n],c:[0,1,2].map(i=>(c[i]*.6+c0[i]*.4)*I),r:L.lightR,I});}
  out.sort((a,b)=>b.I-a.I);LT=out.slice(0,8);}
-function setLights(P){const n=LT.length;gl.uniform1i(P.u.uNL,n);const lp=new Float32Array(24),lc=new Float32Array(24),lr=new Float32Array(8);LT.forEach((l,i)=>{lp.set(l.p,i*3);lc.set(l.c.map(x=>x*.15),i*3);lr[i]=l.r;});gl.uniform3fv(P.u.uLP,lp);gl.uniform3fv(P.u.uLC,lc);gl.uniform1fv(P.u.uLR,lr);gl.uniform3f(P.u.uAmb,.035,.03,.055);}
+function setLights(P){const n=LT.length;gl.uniform1i(P.u.uNL,n);const lp=new Float32Array(24),lc=new Float32Array(24),lr=new Float32Array(8);LT.forEach((l,i)=>{lp.set(l.p,i*3);lc.set(l.c.map(x=>x*.15),i*3);lr[i]=l.r;});gl.uniform3fv(P.u.uLP,lp);gl.uniform3fv(P.u.uLC,lc);gl.uniform1fv(P.u.uLR,lr);if(EMBED)gl.uniform3f(P.u.uAmb,.13,.12,.16);else gl.uniform3f(P.u.uAmb,.035,.03,.055);}
 /* ribbons: trails + lightning bolts */
 let rn=0;
 function ribPush(pts,w0,w1,col,a0,a1){const n=pts.length;if(n<2)return;for(let i=0;i<n-1;i++){if(rn+6>RMAX)return;const A=pts[i],B=pts[i+1],t0=i/(n-1),t1=(i+1)/(n-1);const d=V3.sub(B,A);const vd=V3.sub(A,EYE);let sd=V3.cross(d,vd);const sl=V3.len(sd);if(sl<1e-6)continue;sd=V3.mul(sd,1/sl);
@@ -278,32 +280,59 @@ function drawMeshes(L,list,emit){const c0=hex2lin(L.col[0]),c1=hex2lin(L.col[1])
 function drawFigure(){const parts=[[[0,1.62,0],[.12,.13,.12]],[[0,1.28,0],[.17,.27,.11]],[[0,.95,0],[.15,.12,.1]],[[-.09,.5,0],[.065,.42,.07]],[[.09,.5,0],[.065,.42,.07]],[[-.23,1.2,0],[.05,.3,.05]],[[.23,1.2,0],[.05,.3,.05]]];let n=0;for(const [p,s] of parts){const o=n*MST;minst.set([p[0]+5.2,p[1],p[2]+2,s[0],s[1],s[2],0,1,0,0,.045,.04,.05,0],o);n++;}
  gl.uniform3f(P_MESH.u.uEm,0,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,mib);gl.bufferSubData(gl.ARRAY_BUFFER,0,minst,0,n*MST);const [st,cnt]=MESH.ranges[3];gl.drawArraysInstanced(gl.TRIANGLES,st,cnt,n);}
 function lightScreen(){const l=LT[0];if(!l)return null;const p=l.p,v=[VP[0]*p[0]+VP[4]*p[1]+VP[8]*p[2]+VP[12],VP[1]*p[0]+VP[5]*p[1]+VP[9]*p[2]+VP[13],VP[3]*p[0]+VP[7]*p[1]+VP[11]*p[2]+VP[15]];if(v[2]<=.1)return null;const x=v[0]/v[2]*.5+.5,y=v[1]/v[2]*.5+.5;const vis=clamp(1.3-Math.max(Math.abs(x-.5),Math.abs(y-.5))*2,0,1);return {x,y,I:Math.min(1.5,l.I/12)*vis};}
+const OR={bill:0,flat:1,vel:2,axis:3};
+function blendAdd(){gl.blendFuncSeparate(gl.ONE,gl.ONE,gl.ZERO,gl.ONE);}function blendAlpha(){gl.blendFuncSeparate(gl.ONE,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);}
+function drawEffects(q){
+ gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.disable(gl.BLEND);gl.useProgram(P_MESH.p);gl.uniformMatrix4fv(P_MESH.u.uVP,false,VP);gl.uniform3fv(P_MESH.u.uE,EYE);setLights(P_MESH);gl.bindVertexArray(meshVAO);gl.enable(gl.CULL_FACE);
+ if(S.man&&!EMBED)drawFigure();for(const L of S.layers)if(L.on&&L.render==='mesh'&&L._p&&L._p.length)drawMeshes(L,L._p);gl.disable(gl.CULL_FACE);
+ gl.depthMask(false);gl.enable(gl.BLEND);gl.useProgram(P_PT.p);gl.uniformMatrix4fv(P_PT.u.uVP,false,VP);gl.uniform3fv(P_PT.u.uCR,CR);gl.uniform3fv(P_PT.u.uCU,CU);gl.uniform3fv(P_PT.u.uCF,CF);gl.uniform1i(P_PT.u.uT,0);setLights(P_PT);gl.activeTexture(gl.TEXTURE0);gl.bindVertexArray(ptVAO);
+ const draw=(L,list,ori)=>{const n=fillInst(L,list);if(!n)return;gl.bindBuffer(gl.ARRAY_BUFFER,ib);gl.bufferSubData(gl.ARRAY_BUFFER,0,inst,0,n*ST);const T=TEX[L.tex]||TEX.glow;gl.bindTexture(gl.TEXTURE_2D,T.t);gl.uniform2f(P_PT.u.uG,T.g[0],T.g[1]);gl.uniform1f(P_PT.u.uN,T.fr);gl.uniform1f(P_PT.u.uBl,(L.fbLife||L.fps>0)&&q.blend?1:0);gl.uniform1i(P_PT.u.uLit,T.lit);gl.uniform1i(P_PT.u.uO,ori);gl.uniform1f(P_PT.u.uSoft,L.soft&&ori!==1?.45:0);gl.drawArraysInstanced(gl.TRIANGLE_STRIP,0,4,n);};
+ for(const pass of ['alpha','add','front'])for(const L of S.layers){if(!L.on||L.render!=='sprite'||!L._p||!L._p.length||(L.inten<=0&&!(TEX[L.tex]&&TEX[L.tex].lit)))continue;const lp=L.blend==='add'?'add':(L.front?'front':'alpha');if(lp!==pass)continue;let list=L._p;if(pass!=='add'){list=list.slice().sort((a,b)=>V3.dot(V3.sub(b.p,EYE),CF)-V3.dot(V3.sub(a.p,EYE),CF));blendAlpha();}else blendAdd();draw(L,list,OR[L.orient]||0);}
+ rn=0;for(const L of S.layers)if(L.on&&(L.render==='trail'||L.render==='bolt')&&L._p&&L._p.length)drawRibbons(L);if(rn){blendAdd();gl.useProgram(P_RIB.p);gl.uniformMatrix4fv(P_RIB.u.uVP,false,VP);gl.bindVertexArray(ribVAO);gl.bindBuffer(gl.ARRAY_BUFFER,rbuf);gl.bufferSubData(gl.ARRAY_BUFFER,0,rib,0,rn*9);gl.drawArrays(gl.TRIANGLES,0,rn);}
+ gl.disable(gl.BLEND);}
+function drawDistort(){let n0=0;gl.useProgram(P_DST.p);gl.uniformMatrix4fv(P_DST.u.uVP,false,VP);gl.uniform3fv(P_DST.u.uCR,CR);gl.uniform3fv(P_DST.u.uCU,CU);gl.uniform3fv(P_DST.u.uCF,CF);gl.uniform1i(P_DST.u.uT,0);gl.uniform1f(P_DST.u.uTm,S.simT);gl.bindVertexArray(dsVAO);
+ for(const L of S.layers){if(!L.on||!(L.distort>0)||L.render!=='sprite'||!L._p||!L._p.length)continue;const n=fillInst(L,L._p);if(!n)continue;gl.bindBuffer(gl.ARRAY_BUFFER,ib);gl.bufferSubData(gl.ARRAY_BUFFER,0,inst,0,n*ST);const T=TEX[L.tex]||TEX.glow;gl.bindTexture(gl.TEXTURE_2D,T.t);gl.uniform2f(P_DST.u.uG,T.g[0],T.g[1]);gl.uniform1f(P_DST.u.uDs,L.distort);gl.uniform1i(P_DST.u.uO,OR[L.orient]||0);gl.drawArraysInstanced(gl.TRIANGLE_STRIP,0,4,n);n0++;}return n0;}
+function postFX(now,w,h,ls,dOn){const q=Q[QL];gl.disable(gl.BLEND);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);
+ gl.useProgram(P_BRT.p);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.b[0][0].f);gl.viewport(0,0,FB.b[0][0].w,FB.b[0][0].h);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,FB.s.t);gl.uniform1i(P_BRT.u.uT,0);gl.uniform1f(P_BRT.u.uTh,HDR?1.:.6);drawFS();
+ gl.useProgram(P_BLR.p);gl.uniform1i(P_BLR.u.uT,0);for(let i=0;i<q.bloomLv;i++){const A=FB.b[i][0],B=FB.b[i][1];if(i>0){gl.bindFramebuffer(gl.FRAMEBUFFER,A.f);gl.viewport(0,0,A.w,A.h);gl.bindTexture(gl.TEXTURE_2D,FB.b[i-1][0].t);gl.uniform2f(P_BLR.u.uD,0,0);drawFS();}
+  gl.bindFramebuffer(gl.FRAMEBUFFER,B.f);gl.viewport(0,0,B.w,B.h);gl.bindTexture(gl.TEXTURE_2D,A.t);gl.uniform2f(P_BLR.u.uD,1/A.w,0);drawFS();gl.bindFramebuffer(gl.FRAMEBUFFER,A.f);gl.bindTexture(gl.TEXTURE_2D,B.t);gl.uniform2f(P_BLR.u.uD,0,1/A.h);drawFS();}
+ for(let i=q.bloomLv;i<4;i++){gl.bindFramebuffer(gl.FRAMEBUFFER,FB.b[i][0].f);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);}
+ let ray=0;if(q.rays&&ls&&ls.I>.02){gl.useProgram(P_RAY.p);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.r.f);gl.viewport(0,0,FB.r.w,FB.r.h);gl.bindTexture(gl.TEXTURE_2D,FB.b[0][0].t);gl.uniform1i(P_RAY.u.uT,0);gl.uniform2f(P_RAY.u.uLS,ls.x,ls.y);drawFS();ray=.22*Math.min(1,ls.I*1.5)*S.rays;}
+ gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,w,h);if(EMBED){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);}gl.useProgram(P_FIN.p);const tu=[FB.s.t,FB.b[0][0].t,FB.b[1][0].t,FB.b[2][0].t,FB.b[3][0].t,FB.d.t,FB.r.t];['uS','uB0','uB1','uB2','uB3','uDT','uRT'].forEach((n,i)=>{gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(gl.TEXTURE_2D,tu[i]);gl.uniform1i(P_FIN.u[n],i);});gl.activeTexture(gl.TEXTURE0);
+ gl.uniform1f(P_FIN.u.uBl,S.bloom*(HDR?1:1.6));gl.uniform1f(P_FIN.u.uEx,S.expo);gl.uniform1f(P_FIN.u.uFl,S.flash);gl.uniform1f(P_FIN.u.uDsOn,dOn);gl.uniform1f(P_FIN.u.uRay,ray);gl.uniform1f(P_FIN.u.uLI,ls&&S.flare&&!EMBED?ls.I:0);gl.uniform2f(P_FIN.u.uLS,ls?ls.x:.5,ls?ls.y:.5);gl.uniform1f(P_FIN.u.uGr,EMBED?0:q.grain);gl.uniform1f(P_FIN.u.uTm,now%1000);gl.uniform1f(P_FIN.u.uAsp,w/h);gl.uniform1f(P_FIN.u.uEmb,EMBED?1:0);drawFS();}
 function render(now){const q=Q[QL],dpr=Math.min(2,devicePixelRatio||1)*q.res,w=Math.max(2,Math.floor(cv.clientWidth*dpr)),h=Math.max(2,Math.floor(cv.clientHeight*dpr));if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}ensureFB(w,h);camera(w,h,S.simT);gatherLights();
  gl.bindFramebuffer(gl.FRAMEBUFFER,FB.s.f);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
  gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);gl.useProgram(P_BG.p);gl.uniformMatrix4fv(P_BG.u.uIVP,false,IVP);gl.uniform1f(P_BG.u.uT,now/1000);drawFS();
  gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.useProgram(P_GND.p);gl.uniformMatrix4fv(P_GND.u.uVP,false,VP);gl.uniform3fv(P_GND.u.uE,EYE);setLights(P_GND);drawFS();
- // solid meshes (rocks, figure)
- gl.useProgram(P_MESH.p);gl.uniformMatrix4fv(P_MESH.u.uVP,false,VP);gl.uniform3fv(P_MESH.u.uE,EYE);setLights(P_MESH);gl.bindVertexArray(meshVAO);gl.enable(gl.CULL_FACE);
- if(S.man)drawFigure();for(const L of S.layers)if(L.on&&L.render==='mesh'&&L._p&&L._p.length)drawMeshes(L,L._p);gl.disable(gl.CULL_FACE);
- // particles
- gl.depthMask(false);gl.enable(gl.BLEND);gl.useProgram(P_PT.p);gl.uniformMatrix4fv(P_PT.u.uVP,false,VP);gl.uniform3fv(P_PT.u.uCR,CR);gl.uniform3fv(P_PT.u.uCU,CU);gl.uniform3fv(P_PT.u.uCF,CF);gl.uniform1i(P_PT.u.uT,0);setLights(P_PT);gl.activeTexture(gl.TEXTURE0);gl.bindVertexArray(ptVAO);
- const OR={bill:0,flat:1,vel:2,axis:3};
- const draw=(L,list,ori)=>{const n=fillInst(L,list);if(!n)return;gl.bindBuffer(gl.ARRAY_BUFFER,ib);gl.bufferSubData(gl.ARRAY_BUFFER,0,inst,0,n*ST);const T=TEX[L.tex]||TEX.glow;gl.bindTexture(gl.TEXTURE_2D,T.t);gl.uniform2f(P_PT.u.uG,T.g[0],T.g[1]);gl.uniform1f(P_PT.u.uN,T.fr);gl.uniform1f(P_PT.u.uBl,(L.fbLife||L.fps>0)&&q.blend?1:0);gl.uniform1i(P_PT.u.uLit,T.lit);gl.uniform1i(P_PT.u.uO,ori);gl.uniform1f(P_PT.u.uSoft,L.soft&&ori!==1?.45:0);gl.drawArraysInstanced(gl.TRIANGLE_STRIP,0,4,n);};
- for(const pass of ['alpha','add','front'])for(const L of S.layers){if(!L.on||L.render!=='sprite'||!L._p||!L._p.length||(L.inten<=0&&!TEX[L.tex]?.lit))continue;const lp=L.blend==='add'?'add':(L.front?'front':'alpha');if(lp!==pass)continue;let list=L._p;if(pass!=='add'){list=list.slice().sort((a,b)=>V3.dot(V3.sub(b.p,EYE),CF)-V3.dot(V3.sub(a.p,EYE),CF));gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);}else gl.blendFunc(gl.ONE,gl.ONE);draw(L,list,OR[L.orient]||0);}
- // ribbons
- rn=0;for(const L of S.layers)if(L.on&&(L.render==='trail'||L.render==='bolt')&&L._p&&L._p.length)drawRibbons(L);if(rn){gl.blendFunc(gl.ONE,gl.ONE);gl.useProgram(P_RIB.p);gl.uniformMatrix4fv(P_RIB.u.uVP,false,VP);gl.bindVertexArray(ribVAO);gl.bindBuffer(gl.ARRAY_BUFFER,rbuf);gl.bufferSubData(gl.ARRAY_BUFFER,0,rib,0,rn*9);gl.drawArrays(gl.TRIANGLES,0,rn);}
- // heat distortion buffer
- let dOn=0;if(q.dist&&HDR){gl.bindFramebuffer(gl.FRAMEBUFFER,FB.d.f);gl.viewport(0,0,FB.d.w,FB.d.h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.disable(gl.DEPTH_TEST);gl.blendFunc(gl.ONE,gl.ONE);gl.useProgram(P_DST.p);gl.uniformMatrix4fv(P_DST.u.uVP,false,VP);gl.uniform3fv(P_DST.u.uCR,CR);gl.uniform3fv(P_DST.u.uCU,CU);gl.uniform3fv(P_DST.u.uCF,CF);gl.uniform1i(P_DST.u.uT,0);gl.uniform1f(P_DST.u.uTm,S.simT);gl.bindVertexArray(dsVAO);
-  for(const L of S.layers){if(!L.on||!(L.distort>0)||L.render!=='sprite'||!L._p||!L._p.length)continue;const n=fillInst(L,L._p);if(!n)continue;gl.bindBuffer(gl.ARRAY_BUFFER,ib);gl.bufferSubData(gl.ARRAY_BUFFER,0,inst,0,n*ST);const T=TEX[L.tex]||TEX.glow;gl.bindTexture(gl.TEXTURE_2D,T.t);gl.uniform2f(P_DST.u.uG,T.g[0],T.g[1]);gl.uniform1f(P_DST.u.uDs,L.distort);gl.uniform1i(P_DST.u.uO,OR[L.orient]||0);gl.drawArraysInstanced(gl.TRIANGLE_STRIP,0,4,n);dOn=1;}gl.enable(gl.DEPTH_TEST);}
- gl.disable(gl.BLEND);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);
- // bloom
- gl.useProgram(P_BRT.p);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.b[0][0].f);gl.viewport(0,0,FB.b[0][0].w,FB.b[0][0].h);gl.bindTexture(gl.TEXTURE_2D,FB.s.t);gl.uniform1i(P_BRT.u.uT,0);gl.uniform1f(P_BRT.u.uTh,HDR?1.:.6);drawFS();
- gl.useProgram(P_BLR.p);gl.uniform1i(P_BLR.u.uT,0);for(let i=0;i<q.bloomLv;i++){const A=FB.b[i][0],B=FB.b[i][1];if(i>0){gl.bindFramebuffer(gl.FRAMEBUFFER,A.f);gl.viewport(0,0,A.w,A.h);gl.bindTexture(gl.TEXTURE_2D,FB.b[i-1][0].t);gl.uniform2f(P_BLR.u.uD,0,0);drawFS();}
-  gl.bindFramebuffer(gl.FRAMEBUFFER,B.f);gl.viewport(0,0,B.w,B.h);gl.bindTexture(gl.TEXTURE_2D,A.t);gl.uniform2f(P_BLR.u.uD,1/A.w,0);drawFS();gl.bindFramebuffer(gl.FRAMEBUFFER,A.f);gl.bindTexture(gl.TEXTURE_2D,B.t);gl.uniform2f(P_BLR.u.uD,0,1/A.h);drawFS();}
- for(let i=q.bloomLv;i<4;i++){gl.bindFramebuffer(gl.FRAMEBUFFER,FB.b[i][0].f);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);}
- const ls=lightScreen();let ray=0;if(q.rays&&ls&&ls.I>.02){gl.useProgram(P_RAY.p);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.r.f);gl.viewport(0,0,FB.r.w,FB.r.h);gl.bindTexture(gl.TEXTURE_2D,FB.b[0][0].t);gl.uniform1i(P_RAY.u.uT,0);gl.uniform2f(P_RAY.u.uLS,ls.x,ls.y);drawFS();ray=.22*Math.min(1,ls.I*1.5)*S.rays;}
- gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,w,h);gl.useProgram(P_FIN.p);const tu=[FB.s.t,FB.b[0][0].t,FB.b[1][0].t,FB.b[2][0].t,FB.b[3][0].t,FB.d.t,FB.r.t];['uS','uB0','uB1','uB2','uB3','uDT','uRT'].forEach((n,i)=>{gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(gl.TEXTURE_2D,tu[i]);gl.uniform1i(P_FIN.u[n],i);});gl.activeTexture(gl.TEXTURE0);
- gl.uniform1f(P_FIN.u.uBl,S.bloom*(HDR?1:1.6));gl.uniform1f(P_FIN.u.uEx,S.expo);gl.uniform1f(P_FIN.u.uFl,S.flash);gl.uniform1f(P_FIN.u.uDsOn,dOn);gl.uniform1f(P_FIN.u.uRay,ray);gl.uniform1f(P_FIN.u.uLI,ls&&S.flare?ls.I:0);gl.uniform2f(P_FIN.u.uLS,ls?ls.x:.5,ls?ls.y:.5);gl.uniform1f(P_FIN.u.uGr,q.grain);gl.uniform1f(P_FIN.u.uTm,now%1000);gl.uniform1f(P_FIN.u.uAsp,w/h);drawFS();}
+ drawEffects(q);let dOn=0;if(q.dist&&HDR){gl.bindFramebuffer(gl.FRAMEBUFFER,FB.d.f);gl.viewport(0,0,FB.d.w,FB.d.h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);dOn=drawDistort()?1:0;gl.disable(gl.BLEND);}
+ postFX(now,w,h,lightScreen(),dOn);}
+
+/* ===================== embed mode: effects drawn over the game, with the game's camera ===================== */
+const FXI=[],FXC={};let fxSeq=0;
+function fxKey(o){const s=JSON.stringify(o);let h=0;for(let i=0;i<s.length;i+=7)h=(h*31+s.charCodeAt(i))|0;return 'k'+(h>>>0).toString(36)+s.length.toString(36);}
+function sanitizeFx(o,pref){if(!o||o.format!=='dfvfx'||!Array.isArray(o.layers))throw new Error('bad fx');const num=(v,d,a,b)=>{v=+v;return isFinite(v)?clamp(v,a,b):d;};const tex={};
+ for(const k in (o.tex||{})){const T=o.tex[k];if(!T||!Array.isArray(T.frames)||!/^[a-z0-9]+$/i.test(k))continue;const fr=T.frames.filter(u=>typeof u==='string'&&/^data:image\/png;base64,/.test(u)).slice(0,8);if(fr.length)tex[k]={name:String(T.name||'').slice(0,24),fps:num(T.fps,12,0,30),frames:fr};}
+ const D=layer({});const layers=o.layers.slice(0,40).map(x=>{const L=layer({});for(const k in D){if(k==='id'||!x||x[k]===undefined)continue;const d=D[k],v=x[k];if(typeof d==='number')L[k]=num(v,d,-1e3,1e3);else if(typeof d==='boolean')L[k]=!!v;else if(typeof d==='string')L[k]=/Col$/.test(k)?(/^#[0-9a-f]{6}$/i.test(v)?v:d):String(v).slice(0,40);else if(Array.isArray(d)&&Array.isArray(v))L[k]=d.map((dv,i)=>typeof dv==='number'?num(v[i],dv,-1e3,1e3):(/^#[0-9a-f]{6}$/i.test(v[i])?v[i]:dv));}
+  for(const k of ['sizeC','rC','rateC','iC'])if(Array.isArray(x[k]))L[k]=x[k].slice(0,16).map(p=>[num(p[0],0,0,1),num(p[1],1,0,100)]);if(Array.isArray(x.path))L.path=x.path.slice(0,400).map(p=>[0,1,2].map(i=>num(p[i],0,-100,100)));L.max=Math.min(L.max,1500);L.hitDmg=num(x.hitDmg,0,0,200);L.hitR=num(x.hitR,2,0,15);if(tex[L.tex])L.tex=pref+L.tex;return L;});
+ return {dur:num(o.dur,6,.5,30),layers,tex,bloom:num(o.bloom,1,0,2),expo:num(o.expo,1,.3,2.5)};}
+function fxLoad(o){const k=fxKey(o);if(FXC[k])return FXC[k];const F=sanitizeFx(o,k+'_');FXC[k]=F;for(const t in F.tex){const T=F.tex[t],n=T.frames.length,c=cvs(256*n,256),g=c.getContext('2d');let left=n;T.frames.forEach((u,i)=>{const im=new Image();im.onload=()=>{g.drawImage(im,i*256,0);if(--left===0)upTex(k+'_'+t,c,n);};im.src=u;});}return F;}
+function withInst(I,fn){const o=[S.layers,S.simT,S.shake,S.flash,S.events];S.layers=I.layers;S.simT=I.simT;S.shake=I.shake;S.flash=I.flash;S.events=I.events;try{fn();}finally{I.simT=S.simT;I.shake=S.shake;I.flash=S.flash;I.events=S.events;[S.layers,S.simT,S.shake,S.flash,S.events]=o;}}
+function instXf(I,cam){const th=I.xf.yaw+Math.PI,c=Math.cos(th),s=Math.sin(th),k=I.xf.scale,p=[I.xf.x,I.xf.y||0,I.xf.z];
+ const M=[c*k,0,-s*k,0,0,k,0,0,s*k,0,c*k,0,p[0],p[1],p[2],1];VP=mmul(cam.VP,M);const toL=v=>[c*v[0]-s*v[2],v[1],s*v[0]+c*v[2]];EYE=V3.mul(toL(V3.sub(cam.EYE,p)),1/k);CR=V3.norm(toL(cam.CR));CU=V3.norm(toL(cam.CU));CF=V3.norm(toL(cam.CF));
+ return {toW:v=>{const x=v[0]*k,y=v[1]*k,z=v[2]*k;return [c*x+s*z+p[0],y+p[1],-s*x+c*z+p[2]];}};}
+const EMB={
+ play(o,xf,onHit){try{const F=fxLoad(o);const I={id:++fxSeq,F,layers:F.layers.map(L=>Object.assign(layer({}),JSON.parse(JSON.stringify(L)))),simT:0,shake:0,flash:0,events:[],xf:Object.assign({x:0,y:0,z:0,yaw:0,scale:1},xf),onHit,end:F.dur+Math.max(...F.layers.map(L=>Array.isArray(L.life)?L.life[1]:1),0)+.2};for(const L of I.layers){L._p=[];L._acc=0;L._fired=false;}FXI.push(I);if(FXI.length>12)FXI.shift();return I.id;}catch(e){console.warn('fx',e);return 0;}},
+ clear(){FXI.length=0;},
+ count(){return FXI.length;},
+ setQuality(q){if(Q[q]){QL=q;FB=null;}},
+ frame(cam){const q=Q[QL],nw=performance.now(),dt=clamp(EMB._t?(nw-EMB._t)/1000:(cam.dt||0),0,.25);EMB._t=nw;const V=lookAt(cam.EYE,cam.T,[0,1,0]);cam.CR=[V[0],V[4],V[8]];cam.CU=[V[1],V[5],V[9]];cam.CF=[-V[2],-V[6],-V[10]];
+  let shake=0;for(const I of FXI){const X=instXf(I,cam);withInst(I,()=>{const tgt=S.simT+dt;let n=0;while(S.simT<tgt-1e-6&&n<20){step(Math.min(1/60,tgt-S.simT));n++;}if(S.events&&S.events.length){for(const e of S.events){const w=X.toW(e.p);if(I.onHit)try{I.onHit(w[0],w[2],e.r*I.xf.scale,e.dmg);}catch(er){}}S.events=[];}});shake=Math.max(shake,I.shake);}
+  for(let i=FXI.length-1;i>=0;i--)if(FXI[i].simT>FXI[i].end)FXI.splice(i,1);
+  const dpr=Math.min(2,devicePixelRatio||1)*q.res,w=Math.max(2,Math.floor(cv.clientWidth*dpr)),h=Math.max(2,Math.floor(cv.clientHeight*dpr));if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+  if(!FXI.length){if(EMB._drawn){gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);EMB._drawn=false;}return {shake:0,n:0};}
+  ensureFB(w,h);gl.bindFramebuffer(gl.FRAMEBUFFER,FB.s.f);gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);let fl=0,bestL=null;
+  for(const I of FXI){instXf(I,cam);withInst(I,()=>{gatherLights();drawEffects(q);fl=Math.max(fl,S.flash);});}
+  VP=cam.VP;EYE=cam.EYE;S.flash=fl*.5;S.bloom=1;S.expo=1;S.rays=0;postFX(performance.now(),w,h,null,0);EMB._drawn=true;return {shake,n:FXI.length};}};
 
 /* ===================== main loop ===================== */
 let lastT=performance.now(),fpsA=60,rec=null;
@@ -326,7 +355,7 @@ const PRE={
   {name:'ควันม่วงที่ฐาน',start:.8,dur:3.8,rate:12,shape:'disc',r:3,plane:'xz',pos:[0,.5,0],dir:'flat',speed:[.1,.4],velY:.15,life:[2.5,3.5],tex:'smokeL',fbLife:true,blend:'alpha',size:[2.4,4],col:['#6a58a0','#4a3c70','#2a2040'],inten:.75,fadeIn:.3,fadeOut:.5,spin:[-.2,.2]},
   {name:'ยุบเป็นดาว',start:4.55,dur:.75,burst:1,rate:0,pos:[0,3.6,.1],life:[.75,.75],speed:[0,0],tex:'flare',size:[3,3],sizeC:[[0,.2],[.35,1.6],[.6,.8],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffe0f0','#ffb0e0'],inten:8,fadeIn:.05,fadeOut:.3,light:10,lightR:8},
   {name:'เส้นแสงแนวนอน',start:4.6,dur:.6,burst:1,rate:0,pos:[0,3.6,.1],life:[.6,.6],speed:[0,0],tex:'streak',size:[1,1],aspect:14,sizeC:[[0,.3],[.4,1],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffd0ff','#c080ff'],inten:14,fadeIn:.05,fadeOut:.4},
-  {name:'ลูกไฟระเบิด',start:6,dur:.25,burst:16,rate:30,max:40,shape:'sphere',r:.5,pos:[0,1.1,0],dir:'out',speed:[1,3],drag:2.2,velY:.9,life:[1,1.7],tex:'fire',fbLife:true,blend:'alpha',size:[2.2,4.6],sizeVar:.3,spin:[-.6,.6],col:['#ffffff','#ffd0c0','#d0a0ff'],inten:1.7,fadeIn:.02,fadeOut:.2,shake:2.2,flash:.03,light:16,lightR:9,lightY:.6},
+  {name:'ลูกไฟระเบิด',start:6,dur:.25,burst:16,rate:30,max:40,shape:'sphere',r:.5,pos:[0,1.1,0],dir:'out',speed:[1,3],drag:2.2,velY:.9,life:[1,1.7],tex:'fire',fbLife:true,blend:'alpha',size:[2.2,4.6],sizeVar:.3,spin:[-.6,.6],col:['#ffffff','#ffd0c0','#d0a0ff'],inten:1.7,fadeIn:.02,fadeOut:.2,shake:2.2,flash:.03,light:16,lightR:9,lightY:.6,hitDmg:40,hitR:3.5},
   {name:'ควันหลังระเบิด',start:6.15,dur:.6,burst:10,rate:14,max:30,shape:'sphere',r:.8,pos:[0,1.4,0],dir:'out',speed:[.6,1.6],drag:1,velY:.7,life:[2.5,3.8],tex:'smokeL',fbLife:true,blend:'alpha',size:[2.5,5.5],sizeVar:.3,spin:[-.3,.3],col:['#6a5070','#4a3a55','#201828'],inten:.85,fadeIn:.1,fadeOut:.5},
   {name:'คลื่นกระแทกพื้น',start:6,dur:.1,burst:1,rate:0,pos:[0,.15,0],life:[1.1,1.1],speed:[0,0],tex:'shock',orient:'flat',size:[1,16],sizeVar:0,rot:0,col:['#ffd0a0','#c060ff','#6020c0'],inten:4,fadeIn:0,fadeOut:.7},
   {name:'อากาศบิดตอนระเบิด',start:6,dur:.1,burst:1,rate:0,pos:[0,1.4,.2],life:[1.4,1.4],speed:[0,0],tex:'shock',size:[2,13],sizeVar:0,rot:0,col:['#ffffff','#ffffff','#ffffff'],inten:0,distort:1.2,fadeIn:0,fadeOut:.8},
@@ -334,25 +363,25 @@ const PRE={
   {name:'ประกายไฟระเบิด',start:6,dur:.2,burst:110,rate:0,shape:'sphere',r:.4,pos:[0,1.2,0],dir:'out',speed:[4,12],gravity:-6,drag:1.2,life:[.6,1.5],render:'trail',trail:8,size:[.05,.02],col:['#ffffff','#ffc060','#ff60c0'],inten:7,fadeIn:0,fadeOut:.5,ground:true},
   {name:'ลำแสงจากฟ้า',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,12,0],life:[2.3,2.3],speed:[0,0],tex:'beam',orient:'axis',size:[24,24],aspect:.045,sizeC:[[0,.15],[.06,1],[.75,1],[1,.4]],sizeVar:0,rot:0,col:['#ffffff','#ffd8b0','#ff9a90'],inten:7,fadeIn:.04,fadeOut:.35,shake:1.2,flash:.05},
   {name:'ลำแสงด้านนอก',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,12,0],life:[2.3,2.3],speed:[0,0],tex:'beam',orient:'axis',size:[24,24],aspect:.16,sizeC:[[0,.2],[.08,1],[.8,1.1],[1,.6]],sizeVar:0,rot:0,col:['#ffa060','#ff7090','#a040ff'],inten:2.2,fadeIn:.05,fadeOut:.4},
-  {name:'แสงจากลำแสง',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,1.5,0],life:[2.3,2.3],speed:[0,0],tex:'core',size:[4,4],sizeC:[[0,0],[.06,1.4],[.8,1],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffb080','#ff60a0'],inten:3,fadeIn:.03,fadeOut:.3,light:14,lightR:8},
+  {name:'แสงจากลำแสง',start:6.5,dur:2.3,burst:1,rate:0,pos:[0,1.5,0],life:[2.3,2.3],speed:[0,0],tex:'core',size:[4,4],sizeC:[[0,0],[.06,1.4],[.8,1],[1,0]],sizeVar:0,rot:0,col:['#ffffff','#ffb080','#ff60a0'],inten:3,fadeIn:.03,fadeOut:.3,light:14,lightR:8,hitDmg:30,hitR:2.5},
   {name:'รอยแตกเรืองแสง',start:6,dur:.1,burst:1,rate:0,pos:[0,.05,0],life:[3.8,3.8],speed:[0,0],tex:'cracks',orient:'flat',size:[7.5,7.5],sizeVar:0,rot:1,col:['#ffe0a0','#ff7030','#802040'],inten:1.8,fadeIn:.02,fadeOut:.7},
   {name:'รอยไหม้ดำ',start:6.05,dur:.1,burst:1,rate:0,pos:[0,.04,0],life:[4,4],speed:[0,0],tex:'glow',orient:'flat',blend:'alpha',size:[8,8],sizeVar:0,rot:0,col:['#000000','#000000','#000000'],inten:1,fadeIn:.1,fadeOut:.3},
   {name:'เศษหินลอยขึ้น',start:6.5,dur:.4,burst:45,rate:30,max:80,shape:'disc',r:2.6,plane:'xz',pos:[0,.3,0],dir:'up',spread:.35,speed:[1,4.5],gravity:.15,drag:.5,life:[2.2,3.4],render:'mesh',size:[.32,.28],sizeVar:.6,spin:[-2.5,2.5],col:['#5a4a48','#40343a','#2a2228'],inten:1,emis:.6,fadeIn:.05,fadeOut:.15},
   {name:'เศษหินร่วงลง',start:8.4,dur:.3,burst:40,rate:0,shape:'disc',r:2.5,plane:'xz',pos:[0,4.5,0],dir:'down',spread:.4,speed:[.5,2],gravity:-9,life:[1.2,1.8],render:'mesh',size:[.25,.22],sizeVar:.6,spin:[-4,4],col:['#4a3e42','#3a3038','#2a2228'],inten:1,emis:.4,fadeIn:.05,fadeOut:.1,ground:true},
   {name:'ประกายลอยในลำแสง',start:6.5,dur:2.2,rate:80,shape:'disc',r:1,plane:'xz',pos:[0,.5,0],dir:'up',spread:.3,speed:[2,6],life:[.8,1.6],render:'trail',trail:6,size:[.04,.015],col:['#ffffff','#ffc090','#ff60c0'],inten:6,fadeIn:.1,fadeOut:.5},
   {name:'ฝุ่นควันหลังระเบิด',start:6.2,dur:2.5,rate:14,shape:'disc',r:3.5,plane:'xz',pos:[0,.5,0],dir:'flat',speed:[.4,1.4],drag:.4,velY:.12,life:[3,4.5],tex:'smokeL',fbLife:true,blend:'alpha',size:[2.5,5.5],col:['#7a6680','#4a3e55','#201a28'],inten:.8,fadeIn:.2,fadeOut:.6,spin:[-.2,.2]}]},
- fireball:{n:'ลูกไฟพุ่งตามเส้นทาง',dur:4,bloom:1,expo:1,cam:{yaw:.0,pitch:.12,dist:15,tx:0,ty:2.5},layers:[
-  {name:'แกนลูกไฟ',start:.2,dur:1.6,rate:90,shape:'sphere',r:.2,path:[[-6,2,0],[-2,3.5,0],[2,3.2,0],[5,1,0]],dir:'random',speed:[.2,.8],life:[.3,.6],tex:'fire',fbLife:true,blend:'alpha',size:[1.2,.5],col:['#ffffff','#ffffff','#ffd0a0'],inten:3,fadeIn:.05,fadeOut:.3,light:8,lightR:6},
-  {name:'ควันตามหลัง',start:.3,dur:1.6,rate:40,shape:'sphere',r:.3,path:[[-6,2,0],[-2,3.5,0],[2,3.2,0],[5,1,0]],dir:'random',speed:[.1,.4],velY:.6,life:[1,1.8],tex:'smokeL',fbLife:true,blend:'alpha',size:[.6,1.8],spin:[-1,1],col:['#605050','#403838','#201818'],inten:.8,fadeIn:.1,fadeOut:.5},
-  {name:'ประกายหาง',start:.2,dur:1.6,rate:60,shape:'sphere',r:.3,path:[[-6,2,0],[-2,3.5,0],[2,3.2,0],[5,1,0]],dir:'random',speed:[.5,2],gravity:-3,life:[.3,.8],render:'trail',trail:6,size:[.04,.01],col:['#ffffff','#ffb040','#ff3010'],inten:6,fadeIn:0,fadeOut:.5},
-  {name:'ระเบิด',start:1.8,dur:.2,burst:14,rate:20,max:30,shape:'sphere',r:.3,pos:[5,1,0],dir:'out',speed:[1,3],drag:2,velY:.8,life:[.9,1.5],tex:'fire',fbLife:true,blend:'alpha',size:[1.6,3.6],spin:[-.6,.6],col:['#ffffff','#ffffff','#ffd0a0'],inten:3,fadeIn:0,fadeOut:.2,shake:1.5,flash:.03,light:14,lightR:8},
-  {name:'ประกาย',start:1.8,dur:.2,burst:80,rate:0,shape:'sphere',r:.3,pos:[5,1,0],dir:'out',speed:[4,11],gravity:-8,life:[.5,1.2],render:'trail',trail:7,size:[.05,.02],col:['#ffffff','#ffc060','#ff4010'],inten:7,fadeIn:0,fadeOut:.5,ground:true},
-  {name:'รอยแตก',start:1.8,dur:.1,burst:1,rate:0,pos:[5,.05,0],life:[2,2],speed:[0,0],tex:'cracks',orient:'flat',size:[4,4],sizeVar:0,rot:1,col:['#ffe0a0','#ff6020','#401010'],inten:3,fadeIn:0,fadeOut:.7},
-  {name:'คลื่นที่พื้น',start:1.8,dur:.1,burst:1,rate:0,pos:[5,.1,0],life:[.8,.8],speed:[0,0],tex:'shock',orient:'flat',size:[1,8],sizeVar:0,rot:0,col:['#ffd080','#ff6020','#401010'],inten:4,fadeIn:0,fadeOut:.7}]},
+ fireball:{n:'ลูกไฟพุ่งตามเส้นทาง',dur:4,bloom:1,expo:1,cam:{yaw:1.3,pitch:.14,dist:17,tx:0,ty:2.5},layers:[
+  {name:'แกนลูกไฟ',start:.2,dur:1.6,rate:90,shape:'sphere',r:.2,path:[[0,2,1],[0,3.4,-3],[0,3,-7],[0,1,-10]],dir:'random',speed:[.2,.8],life:[.3,.6],tex:'fire',fbLife:true,blend:'alpha',size:[1.2,.5],col:['#ffffff','#ffffff','#ffd0a0'],inten:3,fadeIn:.05,fadeOut:.3,light:8,lightR:6},
+  {name:'ควันตามหลัง',start:.3,dur:1.6,rate:40,shape:'sphere',r:.3,path:[[0,2,1],[0,3.4,-3],[0,3,-7],[0,1,-10]],dir:'random',speed:[.1,.4],velY:.6,life:[1,1.8],tex:'smokeL',fbLife:true,blend:'alpha',size:[.6,1.8],spin:[-1,1],col:['#605050','#403838','#201818'],inten:.8,fadeIn:.1,fadeOut:.5},
+  {name:'ประกายหาง',start:.2,dur:1.6,rate:60,shape:'sphere',r:.3,path:[[0,2,1],[0,3.4,-3],[0,3,-7],[0,1,-10]],dir:'random',speed:[.5,2],gravity:-3,life:[.3,.8],render:'trail',trail:6,size:[.04,.01],col:['#ffffff','#ffb040','#ff3010'],inten:6,fadeIn:0,fadeOut:.5},
+  {name:'ระเบิด',start:1.8,dur:.2,burst:14,rate:20,max:30,shape:'sphere',r:.3,pos:[0,1,-10],dir:'out',speed:[1,3],drag:2,velY:.8,life:[.9,1.5],tex:'fire',fbLife:true,blend:'alpha',size:[1.6,3.6],spin:[-.6,.6],col:['#ffffff','#ffffff','#ffd0a0'],inten:3,fadeIn:0,fadeOut:.2,shake:1.5,flash:.03,light:14,lightR:8,hitDmg:35,hitR:2.5},
+  {name:'ประกาย',start:1.8,dur:.2,burst:80,rate:0,shape:'sphere',r:.3,pos:[0,1,-10],dir:'out',speed:[4,11],gravity:-8,life:[.5,1.2],render:'trail',trail:7,size:[.05,.02],col:['#ffffff','#ffc060','#ff4010'],inten:7,fadeIn:0,fadeOut:.5,ground:true},
+  {name:'รอยแตก',start:1.8,dur:.1,burst:1,rate:0,pos:[0,.05,-10],life:[2,2],speed:[0,0],tex:'cracks',orient:'flat',size:[4,4],sizeVar:0,rot:1,col:['#ffe0a0','#ff6020','#401010'],inten:3,fadeIn:0,fadeOut:.7},
+  {name:'คลื่นที่พื้น',start:1.8,dur:.1,burst:1,rate:0,pos:[0,.1,-10],life:[.8,.8],speed:[0,0],tex:'shock',orient:'flat',size:[1,8],sizeVar:0,rot:0,col:['#ffd080','#ff6020','#401010'],inten:4,fadeIn:0,fadeOut:.7}]},
  circle:{n:'วงเวทสายฟ้าฟาด',dur:5,bloom:1.1,expo:1,cam:{yaw:.3,pitch:.35,dist:14,tx:0,ty:2},layers:[
   {name:'วงเวทบนพื้น',start:0,dur:3.2,burst:1,rate:0,pos:[0,.05,0],life:[3.2,3.2],speed:[0,0],tex:'circle',orient:'flat',size:[7,7],sizeC:[[0,0],[.15,1.05],[.2,1],[.9,1],[1,1.3]],sizeVar:0,rot:0,spin:[.6,.6],col:['#a0f0ff','#40c0ff','#ffffff'],inten:5,fadeIn:.05,fadeOut:.15,light:4,lightR:6,lightY:.8},
   {name:'แสงจากวงเวท',start:.2,dur:2.8,rate:60,shape:'ring',r:3.3,plane:'xz',pos:[0,.1,0],dir:'up',speed:[1,3],life:[.6,1.2],render:'trail',trail:7,size:[.04,.01],col:['#ffffff','#60d0ff','#2060ff'],inten:6,fadeIn:.1,fadeOut:.5},
-  {name:'สายฟ้าฟาด',start:2.9,dur:.45,rate:14,max:6,shape:'point',pos:[0,10,0],dir:'down',spread:.05,speed:[0,0],life:[.1,.18],render:'bolt',boltLen:[10,10],jag:.18,branch:4,boltHz:30,size:[.12,.06],col:['#ffffff','#b0e8ff','#4080ff'],inten:9,fadeIn:0,fadeOut:.4,shake:2,flash:.04,light:20,lightR:10,lightY:-8},
+  {name:'สายฟ้าฟาด',start:2.9,dur:.45,rate:14,max:6,shape:'point',pos:[0,10,0],dir:'down',spread:.05,speed:[0,0],life:[.1,.18],render:'bolt',boltLen:[10,10],jag:.18,branch:4,boltHz:30,size:[.12,.06],col:['#ffffff','#b0e8ff','#4080ff'],inten:9,fadeIn:0,fadeOut:.4,shake:2,flash:.04,light:20,lightR:10,lightY:-8,hitDmg:45,hitR:3},
   {name:'แสงแตกกระจาย',start:2.95,dur:.15,burst:90,rate:0,shape:'sphere',r:.3,pos:[0,.4,0],dir:'out',speed:[4,12],gravity:-7,life:[.4,1],render:'trail',trail:7,size:[.05,.02],col:['#ffffff','#80d0ff','#2040ff'],inten:8,fadeIn:0,fadeOut:.5,ground:true},
   {name:'รอยแตกไฟฟ้า',start:2.95,dur:.1,burst:1,rate:0,pos:[0,.06,0],life:[2,2],speed:[0,0],tex:'cracks',orient:'flat',size:[6,6],sizeVar:0,rot:1,col:['#ffffff','#60c0ff','#2030a0'],inten:4,fadeIn:0,fadeOut:.7},
   {name:'คลื่นไฟฟ้า',start:2.95,dur:.1,burst:1,rate:0,pos:[0,.12,0],life:[.9,.9],speed:[0,0],tex:'shock',orient:'flat',size:[1,12],sizeVar:0,rot:0,col:['#ffffff','#60c0ff','#2030a0'],inten:5,fadeIn:0,fadeOut:.7},
@@ -386,7 +415,8 @@ const F=[
  ['แบบการวาด',[['render','วาดเป็น','s',[['sprite','ภาพ (สไปรต์)'],['trail','เส้นแสงลากหาง'],['bolt','สายฟ้าแตกกิ่ง'],['mesh','ก้อนหิน 3 มิติ']]],['trail','ความยาวหาง (จุด)','n',2,30,1],['boltLen.0','สายฟ้ายาวต่ำสุด','n',.1,20,.05],['boltLen.1','สายฟ้ายาวสูงสุด','n',.1,20,.05],['jag','ความหยัก','n',0,1,.01],['branch','จำนวนกิ่ง','n',0,8,1],['boltHz','เปลี่ยนรูปต่อวิ','n',1,60,1],['emis','ความร้อนเรืองแสง (หิน)','n',0,5,.05],['emisCol','สีความร้อน','c']]],
  ['หน้าตา',[['tex','ภาพ','tex'],['blend','การผสมแสง','s',[['add','เรืองแสง (บวกแสง)'],['alpha','ทึบ (ควัน เศษหิน)']]],['front','วาดทับแสง (ของทึบ)','b'],['orient','การหัน','s',[['bill','หันหาจอเสมอ'],['flat','นอนบนพื้น'],['vel','ยืดตามทิศที่พุ่ง'],['axis','ตั้งตรง (ลำแสง)']]],['size.0','ขนาดตอนเกิด','n',0,30,.01],['size.1','ขนาดตอนหาย','n',0,30,.01],['sizeVar','สุ่มขนาด','n',0,1,.01],['aspect','กว้างต่อสูง','n',.02,20,.01],['stretch','ยืดตามความเร็ว','n',0,.5,.005],['spin.0','หมุนตัว ต่ำสุด','n',-10,10,.1],['spin.1','หมุนตัว สูงสุด','n',-10,10,.1],['fps','ความเร็วเฟรมภาพ','n',0,30,1],['fbLife','เล่นภาพตามอายุ','b'],['soft','ขอบนุ่มตรงพื้น','b']]],
  ['สีและแสง',[['col.0','สีตอนเกิด','c'],['col.1','สีกลางอายุ','c'],['col.2','สีตอนหาย','c'],['inten','ความสว่าง','n',0,20,.1],['light','ส่องแสงรอบตัว','n',0,30,.1],['lightR','ระยะแสง','n',.5,30,.1],['distort','อากาศบิด','n',0,4,.05],['fadeIn','ค่อยๆ โผล่','n',0,1,.01],['fadeOut','ค่อยๆ จาง','n',0,1,.01]]],
- ['ลูกเล่นจอ',[['shake','จอสั่นตอนเริ่ม','n',0,4,.05],['flash','จอแวบสว่าง','n',0,1.5,.05]]]];
+ ['ลูกเล่นจอ',[['shake','จอสั่นตอนเริ่ม','n',0,4,.05],['flash','จอแวบสว่าง','n',0,1.5,.05]]],
+ ['ทำดาเมจเมื่อใช้ในเกม',[['hitDmg','ดาเมจตอนเลเยอร์เริ่ม','n',0,200,1],['hitR','รัศมีโดน','n',0,15,.1]]]];
 function gp(o,k){const a=k.split('.');return a.length>1?o[a[0]][+a[1]]:o[k];}function spv(o,k,v){const a=k.split('.');if(a.length>1)o[a[0]][+a[1]]=v;else o[k]=v;}
 function changed(full){const t=S.time;resetSim();simTo(t);if(full)uiLayers();}
 function uiProps(){const box=$('props');box.innerHTML='';const L=S.layers[S.sel];if(!L){box.innerHTML='<p class="mute">ยังไม่มีเลเยอร์</p>';return;}
@@ -479,7 +509,15 @@ $('recB').onclick=()=>{if(rec){stopRec();return;}if(!cv.captureStream||!window.M
  rec.onstop=()=>{const b=new Blob(recChunks,{type:rec.mimeType||'video/webm'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=((S.name||'skill').replace(/[^\w\-ก-๙]+/g,'_'))+(/mp4/.test(b.type)?'.mp4':'.webm');a.click();rec=null;$('recB').textContent='อัดเป็นวิดีโอ';msg('บันทึกวิดีโอแล้ว');};
  S.time=0;resetSim();S.playing=true;syncPlay();rec.start();$('recB').textContent='■ กำลังอัด...';};
 
+
+/* ===================== export as a game skill ===================== */
+for(const id of ['xDist','xScale','xCd']){$(id).oninput=()=>{$(id+'N').value=$(id).value;};$(id+'N').onchange=()=>{$(id).value=$(id+'N').value;};}
+function mkSkill(){const fx=toJSON();const name=($('xName').value||S.name||'สกิลจากสตูดิโอ').slice(0,24);let dmg=0;for(const L of S.layers)if(L.on)dmg+=L.hitDmg||0;
+ return {format:'dfskill',v:1,name,author:'',color:S.layers[0]?S.layers[0].col[1]:'#c070ff',cd:+$('xCd').value||8,steps:[{at:0,do:'vfx',where:$('xWhere').value,dist:+$('xDist').value,scale:+$('xScale').value}],fx,desc:'เอฟเฟกต์จากสตูดิโอ'+(dmg?' · ดาเมจรวม '+dmg:'')};}
+$('xGame').onclick=()=>{const sk=mkSkill();const j=JSON.stringify(sk);if(j.length>900000){$('xMsg').textContent='เอฟเฟกต์นี้ใหญ่เกินไป ('+Math.round(j.length/1024)+' KB) ลองลดภาพวาดหรือจำนวนเฟรม';return;}
+ try{const KEY='df3d_skills_v2';let a=[];try{a=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}if(!Array.isArray(a))a=[];while(a.length<10)a.push(null);a[+$('xSlot').value]=sk;localStorage.setItem(KEY,JSON.stringify(a));$('xMsg').innerHTML='';const t=document.createElement('span');t.textContent='ใส่สกิล "'+sk.name+'" ในช่อง '+(+$('xSlot').value+1)+' แล้ว ';const ln=document.createElement('a');ln.href='../3d/';ln.textContent='เปิดเกม 3D';$('xMsg').append(t,ln);}catch(e){$('xMsg').textContent='บันทึกไม่ได้ (พื้นที่เก็บในเบราว์เซอร์เต็ม) ลองกด "บันทึกเป็นไฟล์สกิล" แทน';}};
+$('xFile').onclick=()=>{const sk=mkSkill();const b=new Blob([JSON.stringify(sk)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(sk.name.replace(/[^\w\-ก-๙]+/g,'_')||'skill')+'.dfskill';a.click();$('xMsg').textContent='บันทึกไฟล์สกิลแล้ว นำเข้าในเกม 3D ได้ที่หน้าสกิล';};
 /* ===================== start ===================== */
-loadPreset('wormhole');tab('lay');requestAnimationFrame(frame);
+if(EMBED){window.__vfxEmbed=EMB;}else{loadPreset('wormhole');tab('lay');requestAnimationFrame(frame);}
 window.__vfx={S,loadPreset,simTo,resetSim,toJSON,fromJSON,HDR,TEX};
 </script></body></html>
