@@ -29,5 +29,39 @@
   }
  ],
  "models": [],
- "packs": []
+ "packs": [],
+ "skills": [
+  {
+   "name": "ฟันแสงจันทร์",
+   "author": "วาดแล้วสู้",
+   "desc": "ฟันโค้งข้างหน้า เร็วและแรง ดาเมจ 18",
+   "file": "skills/moonslash.dfskill",
+   "slot": 0,
+   "size": 3967
+  },
+  {
+   "name": "หอกน้ำแข็ง",
+   "author": "วาดแล้วสู้",
+   "desc": "หนามน้ำแข็งพุ่งจากพื้น ตรึงศัตรู 1.2 วิ",
+   "file": "skills/icespike.dfskill",
+   "slot": 3,
+   "size": 4004
+  },
+  {
+   "name": "พายุหมุน",
+   "author": "วาดแล้วสู้",
+   "desc": "ดูดศัตรูเข้ากลางพายุแล้วโยนขึ้นฟ้า",
+   "file": "skills/tornado.dfskill",
+   "slot": 6,
+   "size": 3946
+  },
+  {
+   "name": "หลุมดำระเบิด",
+   "author": "วาดแล้วสู้",
+   "desc": "ท่าไม้ตาย ดูด สตัน ระเบิด ลำแสง (กดซ้ำเพื่อจุดระเบิดเร็ว)",
+   "file": "skills/wormhole_ult.dfskill",
+   "slot": 9,
+   "size": 25037
+  }
+ ]
 }
