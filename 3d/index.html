@@ -1301,7 +1301,7 @@ async function pvSig(id,code,onMsg){const key=await pvKey(code);let L=PV_BROKERS
   m.onclose=async()=>{if(S.dead)return;for(let k=0;k<3&&!S.dead;k++){await new Promise(r=>setTimeout(r,1500*(k+1)));for(const u of L){try{const m2=await pvMq(u);if(S.dead){m2.close();return;}S.M=m2;hook(m2);return;}catch(e){}}}if(!S.dead&&S.onclose)S.onclose();};};
  hook(M);return S;}
 /* relay (TURN) for networks that block direct connections: short-lived credentials come from our Cloudflare Worker */
-var PV_TURN_URL='';const PV_ICE={list:null,exp:0,p:null};
+var PV_TURN_URL='https://df-turn.rookiekrit6.workers.dev/';const PV_ICE={list:null,exp:0,p:null};
 function pvTurnUrl(){let u='';try{u=localStorage.getItem('df4_turn')||'';}catch(e){}return u||PV_TURN_URL;}
 function pvIce(){const u=pvTurnUrl();if(!u||(PV_ICE.list&&Date.now()<PV_ICE.exp))return Promise.resolve(PV_ICE.list);if(PV_ICE.p)return PV_ICE.p;
  const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>{try{ac&&ac.abort();}catch(e){}},4000);
