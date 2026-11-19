@@ -1846,10 +1846,16 @@ function chr3SkDec(o){if(!o)return null;if(typeof o.pre==='number')return SKPRE[
 function chr3Data(lvl){const ch=pv3Char();if(!ch)return null;const kit=CH.model?chr3Kit(CH.kit):'',base=chr3IsBase();
  return {v:1,ch,raw:{msc:CH.msc,myaw:CH.myaw,itMode:CH.itMode,weap:CH.weap},kit,base:base?1:0,sks:lvl>1?[]:SKS.slice(0,10).map(s=>chr3SkEnc(s,lvl===1)),name:pv3Name(),own:!!(CH.model&&!kit&&!base)};}
 async function chr3Enc(o){const js=JSON.stringify(o);let z=null;try{z=await chr3Z(js);}catch(e){}return chr3Wrap(z?{k:'3d',z}:{k:'3d',j:o});}
+/* a small picture of the character for the admin page, taken right after the next frame is drawn */
+function chr3Thumb(){return new Promise(res=>{if(RP.recDraw||RP.on||mode!=='edit'){res('');return;}let done=0;const fin=v=>{if(done)return;done=1;if(RP.recDraw===f)RP.recDraw=null;res(v);};
+ const f=()=>{try{const gc=$('gl'),w=gc.width,h=gc.height,z=Math.min(w,h)*.86,c=document.createElement('canvas');c.width=c.height=200;const x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,200,200);
+  x.drawImage(gc,(w-z)/2,(h-z)/2,z,z,0,0,200,200);let u=c.toDataURL('image/jpeg',.72);if(u.length>58000)u=c.toDataURL('image/jpeg',.45);fin(u.length>58000?'':u);}catch(e){fin('');}};
+ RP.recDraw=f;setTimeout(()=>fin(''),1500);});}
 async function chr3Short(){let o=chr3Data(0);if(!o)throw new Error('none');let d=await chr3Enc(o),cut=0;
  for(let l=1;l<3&&d.length>14000;l++){o=chr3Data(l);d=await chr3Enc(o);cut=l;}if(d.length>14000)throw new Error('big');
  if(CHR.cache[d])return {code:CHR.cache[d],cut,own:o.own};
- const j=await chrFetch('/c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d,n:o.name})});
+ const pic=await chr3Thumb().catch(()=>'');
+ const j=await chrFetch('/c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d,n:o.name,p:pic})});
  if(j&&j.code){CHR.cache[d]=j.code;CHR.last=j.code;return {code:j.code,cut,own:o.own};}throw new Error(j&&j.error||'fail');}
 async function chr3Parse(d){const p=chr3Peek(d);if(!p||p.k!=='3d')throw new Error('รหัสนี้เป็นตัวละครเกม 2 มิติ เปิดได้ที่หน้าเกมหลัก');
  let o=p.j;if(p.z)o=JSON.parse(await chr3UnZ(p.z));const ch=pv3CleanCh(o&&o.ch);if(!ch)throw new Error('ข้อมูลตัวละครเสีย');
@@ -1863,9 +1869,29 @@ async function chr3FoeCh(o){const ch=clone(o.ch);if(o.kit){const mm=await mdlKit
  else if(o.base){const mm=chr3BaseMdl();if(mm)mdlDress(ch,mm,'base:0',Object.assign({},o.raw));}return ch;}
 /* one opponent made from a shared code: mul 1 for a shadow fight, boss of the week is tougher */
 async function chr3Fight(o,boss){if(PV&&PV.room){toast('ออกจากห้องออนไลน์ก่อน แล้วค่อยสู้กับตัวนี้');return;}const ch=await chr3FoeCh(o);
- G.wkFoe={ch,boss:!!boss,title:(boss?'👑 บอสประจำสัปดาห์: ':'สู้กับ ')+o.name+' · '+o.code};start();}
+ G.wkFoe={ch,sks:o.sks||[],boss:!!boss,title:(boss?'👑 บอสประจำสัปดาห์: ':'สู้กับ ')+o.name+' · '+o.code};start();}
 {const _sw=spawnWave;spawnWave=function(){const f=G.wkFoe;if(!f)return _sw();G.wave=3;const b=mkEnt(f.ch,0,12,1,f.boss?1.25:1);
- b.hp=b.maxhp=Math.round(b.maxhp*(f.boss?4:2));b.dmg=Math.round(b.dmg*(f.boss?1.3:1));if(f.boss)b.boss=true;G.ents.push(b);$('wave').textContent=f.title;};}
+ b.hp=b.maxhp=Math.round(b.maxhp*(f.boss?4:2));b.wk=1;b.sks=(f.sks||[]).slice(0,10);while(b.sks.length<10)b.sks.push(null);b.skcd=[0,0,0,0,0,0,0,0,0,0];b.skT=2;b.dmg=Math.round(b.dmg*(f.boss?1.3:1));if(f.boss)b.boss=true;G.ents.push(b);$('wave').textContent=f.title;};}
+/* the opponent from a code uses its own skills: while it casts, sides are swapped so the skill code aims at the player;
+   damage itself is dealt with the real sides restored */
+const CF3={on:0,saved:null};
+function chr3Flip(p,fn){if(CF3.on||G.pvp||!p||!p.team)return fn();CF3.on=1;CF3.saved=G.ents.map(e=>[e,e.team]);for(const e of G.ents)e.team=e.team?0:1;
+ try{return fn();}finally{for(const [e,t] of CF3.saved)e.team=t;CF3.saved=null;CF3.on=0;}}
+/* every function the online mode wraps for whose side it is gets the same treatment here */
+function chr3Own(fn,who){return function(){const p=who(arguments);if(!G.pvp&&!CF3.on&&p&&p.team&&p.hp!=null)return chr3Flip(p,()=>fn.apply(this,arguments));return fn.apply(this,arguments);};}
+skCast=chr3Own(skCast,a=>a[0]);skHit=chr3Own(skHit,a=>a[0]);kitAtk=chr3Own(kitAtk,a=>a[0]);fxHit=chr3Own(fxHit,a=>a[0]);fxZone=chr3Own(fxZone,a=>a[0]);
+skFire=chr3Own(skFire,a=>a[0]&&a[0].p);fxFollow=chr3Own(fxFollow,a=>a[0]&&a[0].p);
+{const _h=hurt;hurt=function(){if(!CF3.on||!CF3.saved)return _h.apply(this,arguments);const cur=CF3.saved.map(([e])=>[e,e.team]);for(const [e,t] of CF3.saved)e.team=t;
+ try{return _h.apply(this,arguments);}finally{for(const [e,t] of cur)e.team=t;}};}
+{const _pf=pvFoe;pvFoe=function(o,e){if(!G.pvp&&o&&o.team&&o.hp!=null)return !e.team;return _pf(o,e);};}
+function chr3FoeAI(dt){const f=G.wkFoe,p=G.pl;if(!f||G.over||!p||p.dead)return;
+ for(const e of G.ents){if(!e.wk||e.dead)continue;for(let i=0;i<10;i++)if(e.skcd[i]>0)e.skcd[i]-=dt;e.skT=(e.skT||0)-dt;
+  if(e.skT>0||e.stun>0||e.atkT>0||stSkillBlocked(e))continue;const d=Math.hypot(p.x-e.x,p.z-e.z);if(d>12)continue;
+  const rd=[];for(let i=0;i<10;i++)if(e.sks[i]&&!(e.skcd[i]>0))rd.push(i);if(!rd.length)continue;
+  if(Math.random()>dt*(f.boss?1.1:.75))continue;const i=rd[Math.floor(Math.random()*rd.length)],s=e.sks[i];
+  e.skcd[i]=skCd(s)*(f.boss?1:1.25);e.skT=f.boss?1.2:1.8;e.yaw=Math.atan2(p.x-e.x,p.z-e.z);const sk0=G.skCur;G.skCur=s;try{skCast(e,s,true);}finally{G.skCur=sk0;}
+  e._pop={n:s.name,t:1.4,c:'#ffb4b6'};}}
+{const _s=step;step=function(dt){_s(dt);try{if(!G.pvp)chr3FoeAI(dt);}catch(e){}};}
 /* the play, quit and back buttons were bound to the original functions, so clear the opponent on their clicks */
 for(const id of ['go','quit','ovB'])try{$(id).addEventListener('click',()=>{G.wkFoe=null;},true);}catch(e){}
 /* make the shared character your own; the one before is kept so it can be put back */
@@ -1898,7 +1924,7 @@ function chr3UI(){if($('chr3Det'))return;const go=$('go');if(!go)return;const st
   const ok=()=>{msg('คัดลอก '+r.code+' แล้ว ใส่ในคำอธิบายคลิปหรือส่งให้เพื่อนได้เลย'+note);toast('คัดลอกรหัส '+r.code+' แล้ว');},no=()=>msg('รหัสคือ '+r.code+' กดค้างที่ช่องเพื่อคัดลอก'+note);
   try{navigator.clipboard.writeText(r.code).then(ok,no);}catch(e){no();}};
  const load=async b=>{busy(b,true);msg('กำลังโหลดตัวละคร...');try{const o=await chr3Get(inp.value);busy(b,false);return o;}catch(e){busy(b,false);msg(String(e&&e.message||e));return null;}};
- q('chr3Fi').onclick=async()=>{sfx.ui();const o=await load(q('chr3Fi'));if(!o)return;msg('สู้กับ '+o.name+' (เลือดหนา 2 เท่า)');await chr3Fight(o,false);};
+ q('chr3Fi').onclick=async()=>{sfx.ui();const o=await load(q('chr3Fi'));if(!o)return;msg('สู้กับ '+o.name+' (เลือดหนา 2 เท่า ใช้สกิลของตัวเองได้)');await chr3Fight(o,false);};
  q('chr3Use').onclick=async()=>{const b=q('chr3Use');sfx.ui();if(!chrIsShort(inp.value)){msg('ใส่รหัสแบบ DF-XXXXXX');return;}
   if(!b._arm){b._arm=1;b.textContent='กดอีกครั้งเพื่อแทนตัวละครตอนนี้';msg('ตัวละครตอนนี้จะถูกเก็บไว้ กดคืนตัวละครก่อนหน้าได้');return;}b._arm=0;b.textContent='ใช้เป็นตัวของฉัน';
   const o=await load(b);if(!o)return;chr3Keep();try{await chr3Apply(o);msg('ใช้ '+o.name+' แล้ว');toast('ได้ตัวละคร '+o.code+' แล้ว');}catch(e){msg('ใช้ตัวละครนี้ไม่สำเร็จ');}back();};
@@ -1908,7 +1934,7 @@ function chr3UI(){if($('chr3Det'))return;const go=$('go');if(!go)return;const st
  chrBossUi();}
 /* boss of the week: shown here only when the boss is a 3D character */
 function chrBossUi(){const card=$('bossCard3');if(!card)return;const now=Date.now();if(CHR.bossT&&now-CHR.bossT<10*60e3){chrBossShow(card);return;}CHR.bossT=now;
- chrFetch('/boss',null,6000).then(async j=>{let b=j&&j.boss||null;if(b){const p=chr3Peek(b.d);if(!p||p.k!=='3d')b=null;else try{b.o=await chr3Parse(b.d);b.o.code=b.code;}catch(e){b=null;}}CHR.boss=b;chrBossShow(card);}).catch(()=>{CHR.boss=null;chrBossShow(card);});}
+ chrFetch('/boss?m=3d',null,6000).then(async j=>{let b=j&&j.boss||null;if(b){const p=chr3Peek(b.d);if(!p||p.k!=='3d')b=null;else try{b.o=await chr3Parse(b.d);b.o.code=b.code;}catch(e){b=null;}}CHR.boss=b;chrBossShow(card);}).catch(()=>{CHR.boss=null;chrBossShow(card);});}
 function chrBossShow(card){const b=CHR.boss;card.classList.toggle('hide',!b);if(!b)return;card.innerHTML='';const h=document.createElement('b');h.textContent='👑 บอสประจำสัปดาห์: '+(b.n||b.o.name||'ไม่มีชื่อ');
  const p=document.createElement('p');p.className='mute';p.style.cssText='margin:4px 0;font-size:13px';p.textContent=(b.by?'ผู้สร้าง '+b.by+' · ':'')+(b.note||'ตัวละครจากผู้ชนะประกวดคลิป #วาดแล้วสู้')+' · รหัส '+b.code;
  const go=document.createElement('button');go.className='primary';go.textContent='ท้าสู้บอส (เลือดหนา 4 เท่า)';go.onclick=()=>{sfx.ui();chr3Fight(Object.assign({},b.o,{name:b.n||b.o.name}),true);};card.append(h,p,go);}
