@@ -561,7 +561,7 @@ function sd3Render(name){const R=SD3.rec[name];if(!R||SD3.buf[name]||SD3.pend[na
     if(l.ft){const f=oc.createBiquadFilter();f.type=l.ft;f.frequency.setValueAtTime(l.ff0,t0);if(l.ff1)f.frequency.exponentialRampToValueAtTime(l.ff1,t0+d);f.Q.value=l.q||.8;node.connect(f);node=f;}}
    if(l.x){const ws=oc.createWaveShaper(),c=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/511.5-1;c[i]=Math.tanh(x*l.x)/Math.tanh(l.x);}ws.curve=c;node.connect(ws);node=ws;}
    node.connect(g);g.connect(out);src.start(t0);src.stop(t0+d+.02);}
-  SD3.pend[name]=1;oc.startRendering().then(b=>{SD3.buf[name]=b;}).catch(()=>{});}catch(e){SD3.pend[name]=1;}}
+  SD3.pend[name]=1;oc.startRendering().then(b=>{SD3.buf[name]=sndNorm(b);}).catch(()=>{});}catch(e){SD3.pend[name]=1;}}
 function sd3Prep(){const ks=Object.keys(SD3.rec);let i=0;const step=()=>{for(let n=0;n<6&&i<ks.length;n++)sd3Render(ks[i++]);if(i<ks.length)setTimeout(step,30);};step();}
 {const O=(w,f0,f1,d,v,o)=>Object.assign({t:'o',w,f0,f1,d,v},o),N=(ft,f0,f1,d,v,o)=>Object.assign({t:'n',ft,f0,f1,d,v},o),FM=(f0,f1,m,i,d,v,o)=>Object.assign({t:'o',w:'sine',f0,f1,m,i,d,v},o);
  Object.assign(SD3.rec,{
@@ -891,7 +891,7 @@ function skLib(){const A=(d,ks)=>({dur:d,keys:[{t:0,r:{}}].concat(ks).concat([{t
 let SKS=null,skSel=0;try{const q=JSON.parse(localStorage.getItem(SKEY)||'null');if(Array.isArray(q))SKS=Array.from({length:10},(_,i)=>i).map(i=>{try{return q[i]?skCheck(q[i]):null;}catch(e){return null;}});}catch(e){}
 const SKPRE=skSamples().concat(skLib());if(!SKS)SKS=[0,1,3].map(i=>clone(SKPRE[i]));while(SKS.length<10)SKS.push(null);
 function skSave(){try{localStorage.setItem(SKEY,JSON.stringify(SKS));return true;}catch(e){return false;}}
-function skReset(){G.casts=[];G.fxp=[];G.rings=[];G.beams=[];G.falls=[];G.sprs=[];G.sshots=[];G.circs=[];G.pils=[];G.ports=[];G.flashes=[];G.orbs=[];G.skcd=[0,0,0];if(G.pl)G.pl.skA=null;edEnt.skA=null;edEnt.skHold=0;}
+function skReset(){G.casts=[];G.fxp=[];G.rings=[];G.beams=[];G.falls=[];G.sprs=[];G.sshots=[];G.circs=[];G.pils=[];G.ports=[];G.flashes=[];G.orbs=[];G.skcd=[0,0,0,0,0,0,0,0,0,0];if(G.pl)G.pl.skA=null;edEnt.skA=null;edEnt.skHold=0;}
 function skBusy(){return G.casts.length||G.fxp.length||G.rings.length||G.beams.length||G.falls.length||G.sprs.length||G.sshots.length||G.circs.length||G.orbs.length||G.pils.length||G.ports.length||G.flashes.length;}
 function skCast(p,s,live){let tg=null,bd=16;if(live)for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z);if(d<bd){bd=d;tg=e;}}if(tg)p.yaw=Math.atan2(tg.x-p.x,tg.z-p.z);
  const c={s,p,t:0,i:0,live,tg,steps:s.steps.slice().sort((a,b)=>a.at-b.at)};G.casts.push(c);const d=s.anim?s.anim.dur:.45;p.atkT=p.atkDur=d;p.did=true;p.cd=Math.max(p.cd||0,d);p.skHold=p.skDur=d;p.skA=s.anim?{a:s.anim,t:0,c}:null;}
@@ -1086,7 +1086,7 @@ function vsynRender(name){if(VSYN_C[name])return VSYN_C[name];const OC=window.Of
  else if(name==='whoosh'){const g=ac.createGain();g.gain.setValueAtTime(0,0);g.gain.linearRampToValueAtTime(.8,D*.35);g.gain.exponentialRampToValueAtTime(.001,D);chain(noise(D),[filt('bandpass',2400,380,2.5,D)],g);}
  else if(name==='chime'){for(const [f,v] of [[880,.35],[1320,.22],[1760,.16],[2637,.08]]){const g=ac.createGain();env(g,.004,.02,D-.1,v);chain(osc('sine',f),[],g);}}
  else{const g=ac.createGain();env(g,.4,D-1.2,.8,.9);chain(noise(D),[filt('lowpass',160,60,1,D)],g);const g2=ac.createGain();env(g2,.5,D-1.2,.7,.5);chain(osc('sine',38,30,D),[],g2);}
- return VSYN_C[name]=ac.startRendering();}
+ return VSYN_C[name]=ac.startRendering().then(b=>typeof sndNorm==='function'?sndNorm(b):b);}
 var VSYN_AC=null,VSYN_DEC={};
 function vsynPlay(snd,vol,data){try{if(!VSYN_AC)VSYN_AC=new (window.AudioContext||window.webkitAudioContext)();if(VSYN_AC.state==='suspended')VSYN_AC.resume();}catch(e){return;}
  const go=b=>{const s=VSYN_AC.createBufferSource(),g=VSYN_AC.createGain();s.buffer=b;g.gain.value=Math.max(0,Math.min(1.5,vol==null?1:vol));s.connect(g);g.connect(VSYN_AC.destination);s.start();};
@@ -1198,10 +1198,12 @@ function fxAuto(c,q,x,z){if(!c||!c.s||c.s.fx||!fxAutoOn()||G.over&&mode==='fight
  if(!m){return q.do==='burst'||q.do==='sprite';}
  const col=typeof q.color==='string'&&/^#[0-9a-f]{6}$/i.test(q.color)?q.color:c.s.color;
  const r=q.do==='beam'?num(q.len,12,1,40):q.do==='portal'?num(q.size,4,1,12)*.8:q.do==='shot'?2.4:num(q.r,m[2],.3,12);
- const fx=fxAutoFx(m[0],col,m[1],q.do==='circle'||q.do==='buff'?'rune':'');if(!fx)return false;const sc=Math.max(.45,Math.min(q.do==='circle'||q.do==='buff'||q.do==='stun'?1.5:2.2,r/m[2]));
+ const fx=fxAutoFx(m[0],col,m[1],q.do==='circle'||q.do==='buff'?'rune':'');if(!fx)return false;const sc=Math.max(.45,Math.min(q.do==='circle'||q.do==='buff'||q.do==='stun'?1.15:1.7,r/m[2]));const nowT=performance.now()/1000;if(m[0]==='circle'||m[0]==='trap'){if(nowT-(FXA_C._rune||0)<1.4)return q.do==='ring'||q.do==='circle';FXA_C._rune=nowT;}if(FX.api&&FX.api.count()>8&&!(q.do==='area'||q.do==='pillar'||q.do==='beam'))return q.do==='ring'||q.do==='circle';
  let px=x,pz=z;if(q.do==='dash'||q.do==='shot'||q.do==='beam'){px=c.p.x;pz=c.p.z;}
  fxEnsure().then(api=>{api.play(fx,{x:px,y:0,z:pz,yaw:c.p.yaw,scale:sc},null,null);}).catch(()=>{});
  return q.do==='ring'||q.do==='circle'||q.do==='buff'&&false;}
+/* even out synthesized sound levels: aim every sound at the same loudness, never above 0.9 peak */
+function sndNorm(b){try{let s=0,n=0,pk=0;for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);for(let i=0;i<d.length;i++){const v=d[i];s+=v*v;n++;const a=v<0?-v:v;if(a>pk)pk=a;}}if(!pk||!n)return b;const rms=Math.sqrt(s/n),db=20*Math.log10(rms+1e-9);let k=Math.pow(10,(-21-db)/20);k=Math.max(.3,Math.min(4,k));if(pk*k>.9)k=.9/pk;for(let c=0;c<b.numberOfChannels;c++){const d=b.getChannelData(c);for(let i=0;i<d.length;i++)d[i]*=k;}}catch(e){}return b;}
 
 try{const s=atob(GLB64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);MODEL=loadGLB(u.buffer,'โมเดลจาก Meshy ที่ส่งมา');if(!HADSAVE){CH.model=true;CH.msc=1;CH.myaw=0;CH.move='biped';CH.hold='hand';}if(CH.model&&MODEL.item&&!CH.itSet){CH.weap='item';CH.itSet=1;}if(CH.sk&&CH.sk.n===MODEL.name&&CH.sk.p&&CH.sk.p.length===17){MODEL.sk.p=CH.sk.p;MODEL.sk.tips=CH.sk.tips;skinWeights(MODEL);}}catch(e){console.error(e);}
 ui();resize();requestAnimationFrame(frame);
