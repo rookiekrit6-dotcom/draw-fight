@@ -1016,7 +1016,7 @@ function step(dt){const p=G.pl;G.t+=dt;if(G.over)return;db3Tick(dt);if(G.pvp){pv
   let sp=p.spd*(p.bs>0?p.bsm:1);if(p.dash>0){sp*=3.2;p.dash-=dt;}if(p.moving||p.dash>0){if(l>.12)p.yaw=Math.atan2(wx,wz);const fx=l>.12?wx:Math.sin(p.yaw),fz=l>.12?wz:Math.cos(p.yaw),k=p.dash>0?1:Math.min(1,l);p.x+=fx*sp*k*dt;p.z+=fz*sp*k*dt;p.ph+=dt*sp*1.9;}
   if(IN.dash&&p.dcd<=0){p.dash=.2;p.dcd=.9;p.inv=.3;{if(!sd3Play('dodge',.7,1,.05))beep(520,.12,760);}}IN.dash=false;if(IN.jump&&p.y<=0){p.vy=7.5;{if(!sd3Play('jump',.6,1,.05))beep(380,.1,520);}}IN.jump=false;
   if(IN.atk&&p.cd<=0){const w=wOf(p.ch);let b=null,bd=w.reach*1.8+2;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z)-e.rad;if(d<bd){bd=d;b=e;}}if(b)p.yaw=Math.atan2(b.x-p.x,b.z-p.z);p.atkT=p.atkDur=w.dur;p.cd=w.cd;p.did=false;{const kk=kitOf(p.ch);if(kk)sd3Play(kk.atk.sw,.55,kk.atk.rate||1,.03);else if(!sd3Play(w3sw(p.ch),.6,1,.03))beep(700,.08,420);}}IN.atk=false;
-  if(p.ai&&p.dcd<=0&&G.ents.some(e=>e.team&&!e.dead&&e.wind>0&&e.wind<.3&&Math.hypot(e.x-p.x,e.z-p.z)<1.25*e.sc+p.rad+.6))IN.dash=true;if(p.ai&&IN.sk==null&&G.ents.some(e=>e.team&&!e.dead&&Math.hypot(e.x-p.x,e.z-p.z)<11))for(let i=0;i<10;i++)if(SKS[i]&&G.skcd[i]<=0){IN.sk=i;break;}if(IN.sk!=null){skTry(p,IN.sk);IN.sk=null;}
+  if(p.ai&&p.dcd<=0&&G.ents.some(e=>e.team&&!e.dead&&e.wind>0&&e.wind<.3&&Math.hypot(e.x-p.x,e.z-p.z)<1.25*e.sc+p.rad+.6)&&Math.random()<dt*1.8)IN.dash=true;if(p.ai&&IN.sk==null&&!(p._aiSk>G.t)&&G.ents.some(e=>e.team&&!e.dead&&Math.hypot(e.x-p.x,e.z-p.z)<11))for(let i=0;i<10;i++)if(SKS[i]&&G.skcd[i]<=0){IN.sk=i;p._aiSk=G.t+.7;break;}if(IN.sk!=null){skTry(p,IN.sk);IN.sk=null;}
   if(p.atkT>0){p.atkT-=dt;if(!p.did&&p.atkT<p.atkDur*.55){p.did=true;const w=wOf(p.ch),fx=Math.sin(p.yaw),fz=Math.cos(p.yaw),kk=kitOf(p.ch);if(kk)kitAtk(p,kk);else if(w.shot){const o=p.itemPos||[p.x,1.2,p.z];G.shots.push({x:o[0],y:o[1],z:o[2],vx:fx*17,vz:fz*17,t:1.1,dmg:w.dmg});beep(900,.18,1500);}else for(const e of G.ents)if(e.team&&!e.dead){const dx=e.x-p.x,dz=e.z-p.z,d=Math.hypot(dx,dz);if(d-e.rad<w.reach+p.rad*.4&&(d<1||(dx*fx+dz*fz)/d>.2)){hurt(e,w.dmg*(.9+Math.random()*.25),p);G.shake=.12;}}}}
   p.vy-=22*dt;p.y=Math.max(0,p.y+p.vy*dt);if(p.y<=0)p.vy=0;const d=Math.hypot(p.x,p.z);if(d>R-.6){p.x*=(R-.6)/d;p.z*=(R-.6)/d;}}
  for(const s of G.shots){s.t-=dt;s.x+=s.vx*dt;s.z+=s.vz*dt;s.y+=(1.1-s.y)*dt*3;for(const e of G.ents)if(e.team&&!e.dead&&Math.hypot(e.x-s.x,e.z-s.z)<e.rad+.45){hurt(e,s.dmg*(.9+Math.random()*.25),p);s.t=0;G.shake=.08;break;}}G.shots=G.shots.filter(s=>s.t>0);skStep(dt);
@@ -2737,17 +2737,34 @@ function bal3Guard(e,dt){if(e.ccImm>0){e.ccImm-=dt;e.stun=0;e.rootT=0;e.frz=0;}c
 {const _p=skPower;skPower=function(s){let p=_p(s);try{let dot=0;for(const q of s.steps){if(q.do==='portal')p-=num(q.dmg,20,0,999)*.8;if(['shot','area','fall','beam','pillar','portal'].indexOf(q.do)>=0)dot++;}
  const el=auraEl(s,'');if((el==='poison'||el==='fire')&&dot)p+=Math.min(6,dot)*10;}catch(er){}return Math.max(0,Math.round(p));};}
 /* poison mist ticks four times and leaves stacking poison: it was worth about 3.5x its cost */
-function bal3Sk(s){try{if(s&&s.name==='หมอกพิษ'&&s.steps&&s.steps.filter(q=>q.do==='area').length>=4&&!(s.cd>=12))s.cd=12;
- /* the star-gate measured at under half the damage its cooldown asks for */
- if(s&&s.name==='ประตูมิติดับดารา'&&s.steps&&s.steps.some(q=>q.do==='portal')&&s.cd>6)s.cd=6;}catch(er){}return s;}
+function bal3Sk(s){try{if(s&&s.name==='หมอกพิษ'&&s.steps&&s.steps.filter(q=>q.do==='area').length>=4&&!(s.cd>=12))s.cd=12;}catch(er){}return s;}
 {const _c=skCheck;skCheck=function(o){return bal3Sk(_c(o));};}
 try{for(const s of SKPRE)bal3Sk(s);for(const s of SKS)bal3Sk(s);}catch(er){}
 /* 3. ready-made characters: the two strongest deal 10% less, the two weakest 15% more */
 const BAL3K={crystalqueen:.9,lavatitan:.9,bull:1.15,slime:1.15};
 try{for(const k of (Array.isArray(KITS)?KITS:Object.values(KITS))){const m=BAL3K[k.id];if(!m||k._bal)continue;k._bal=1;if(k.atk&&k.atk.dmg)k.atk.dmg=Math.round(k.atk.dmg*m*10)/10;
  for(const s of (k.sk||[]))for(const q of (s.steps||[]))if(typeof q.dmg==='number')q.dmg=Math.round(q.dmg*m*10)/10;}}catch(er){}
+/* 5. balance round 2 (skill bot, 3 stages): cooldowns pulled toward the middle; weak heal and guard skills also give 30% more */
+const BAL3R2={"หมุนพายุ": 5.0, "อสนีเคลื่อนย้าย": 9.0, "เขี้ยวพิษ": 11.0, "สลายเป็นหมอก": 5.5, "สระโลหิต": 11.5, "ประตูมิติดับดารา": 9.5, "ระเบิดเพลิง": 7.0, "กระแสวน": 6.0, "หมอกพิษ": 17.0, "ลาวาไหลบ่า": 12.0, "แถวเห็ดงอก": 12.5, "กรรไกรตัดมิติ": 7.5, "เสาไฟวิญญาณ": 12.5, "รักษา": 6.0, "เกราะธาตุ": 7.0, "อัสนีบาต": 10.0, "พายุทอร์นาโด": 6.0, "กีบสะเทือนสี่จังหวะ": 10.0, "ค้อนวงล้อ": 7.0, "หมัดลาวาพุ่ง": 8.5},BAL3W=["เกราะธาตุ", "สลายเป็นหมอก", "พายุทอร์นาโด", "ค้อนวงล้อ", "รักษา", "หมุนพายุ", "กระแสวน"];
+function bal3R2(s){try{if(!s||!s.name||s._r2)return s;const c=BAL3R2[s.name];if(c!=null){s.cd=c;s._r2=1;}if(BAL3W.indexOf(s.name)>=0&&s.steps){for(const q of s.steps){if(q.do==='heal'&&typeof q.amt==='number')q.amt=Math.round(q.amt*1.3);if(q.do==='buff'&&q.kind==='guard'&&typeof q.amt==='number')q.amt=Math.min(.7,+(q.amt*1.3).toFixed(2));}s._r2=1;}}catch(e){}return s;}
+{const _c=skCheck;skCheck=function(o){return bal3R2(_c(o));};}
+try{for(const s of SKPRE)bal3R2(s);for(const s of SKS)bal3R2(s);for(const k of (Array.isArray(KITS)?KITS:Object.values(KITS)))for(const s of (k.sk||[]))bal3R2(s);}catch(er){}
 /* test hook: the balance bot can add extra targets */
 setTimeout(()=>{try{if(window.__d3&&!window.__d3.mkEnt)window.__d3.mkEnt=(...a)=>mkEnt(...a);}catch(e){}},0);
+/* 4. PvP: ranged basic attacks won 70-91% of bot duels against melee ones. Basic shots deal 20% less, melee basics 10% more, melee moves 10% faster (PvP only) */
+function bal3Ranged(ch){try{const kk=kitOf(ch);if(kk&&kk.atk)return kk.atk.st==='shot';return !!wOf(ch).shot;}catch(e){return false;}}
+{const _ph=pv3Hurt;pv3Hurt=function(t,dmg,from){try{const src=(from&&from.src)||PV3cur||(from&&from.tm!=null?from:null);if(src&&src.ch&&!G.skCur&&!G.elCur&&!(from&&from.dot)&&!(from&&from.refl))dmg*=bal3Ranged(src.ch)?.8:1.1;}catch(e){}return _ph.call(this,t,dmg,from);};}
+/* PvP-only per-character damage, from 612 bot duels after the change above: pulls each win rate toward 50% */
+const BAL3PV={crystalqueen:.72,voidwalker:.9,bull:.92,paladin:.92,littlewitch:.95,stormwitch:1.15,kitsune:1.15,lavatitan:1.12,slime:1.1,dracula:1.08,bearknight:1.06};
+{const _ph=pv3Hurt;pv3Hurt=function(t,dmg,from){try{const src=(from&&from.src)||PV3cur||(from&&from.tm!=null?from:null),kk=src&&src.ch&&kitOf(src.ch),m=kk&&BAL3PV[kk.id];if(m)dmg*=m;}catch(e){}return _ph.call(this,t,dmg,from);};}
+{const _r=pv3Round;pv3Round=function(){const r=_r.apply(this,arguments);try{for(const e of G.ents)if(!bal3Ranged(e.ch))e.spd*=1.1;}catch(er){}return r;};}
+/* 6. difficulty curve from the play bot: the first tower bosses (floors 5 and 10) were a wall for a fresh character,
+   the final story boss beat every auto run, and survival stayed easy forever (enemies grew too slowly after round 10) */
+{const _sw=spawnWave;spawnWave=function(){const r=_sw.apply(this,arguments);try{const R=G.run;if(R&&!G.wkFoe&&!G.pvp){const foes=G.ents.filter(e=>e.team&&!e.dead);
+ if(R.kind==='tower'&&R.floor%5===0&&R.floor<=10)for(const e of foes)if(e.boss){e.maxhp=e.hp=Math.round(e.maxhp*.75);e.dmg=(e.dmg||10)*.8;}
+ if(R.kind==='tower'&&R.floor>10){const f=R.floor-10;for(const e of foes){e.maxhp=e.hp=Math.round(e.maxhp*(1+.05*f));e.dmg=(e.dmg||6)*(1+.03*f);}}
+ if(R.kind==='story'&&R.n===18)for(const e of foes)if(e.boss){e.maxhp=e.hp=Math.round(e.maxhp*.8);}
+ if(R.kind==='surv'&&R.lvl>10){const k=1+.06*(R.lvl-10);for(const e of foes){e.maxhp=e.hp=Math.round(e.maxhp*k);e.dmg=(e.dmg||6)*(1+.04*(R.lvl-10));}}}}catch(e){}return r;};}
 /* ---------- tower floor rules (shared 2D/3D): from floor 6, every floor that is not a boss floor gets one rule.
    The rule is fixed per floor number, so a retry meets the same rule. A biome rule comes first where the scene matches. ---------- */
 var FR={lava:{n:'พื้นลาวาปะทุ',d:'ลาวาพุ่งจากพื้นเป็นระยะ ดูวงแดงแล้วหลบ ลาวาโดนศัตรูด้วย',ic:'🌋',bio:'volcano'},
@@ -2802,6 +2819,22 @@ function fr3Off(){FR3.k=null;frBanner(null);frDark(false);}
 {const _t=skTry;skTry=function(p,i){const c0=G.skcd[i];const r=_t.apply(this,arguments);try{if(r&&FR3.k==='fastcd'&&p===G.pl&&!(c0>0)&&G.skcd[i]>0)G.skcd[i]*=.5;}catch(_){}return r;};}
 {const _e=end;end=function(win){const R=G.run,k=FR3.k,f=R&&R.floor;const r=_e.apply(this,arguments);try{if(win&&k==='gold'&&R&&R.kind==='tower'&&typeof pgXp==='function'){pgXp(20+f*5);const p=$('ovP');if(p)p.textContent='ชั้นทองคำ: รางวัลสองเท่า! '+p.textContent;}}catch(_){}fr3Off();return r;};}
 window.__fr3={map:()=>{const o={};for(let f=1;f<=40;f++){const bio=f%5===0?null:BIO_CYC[f%BIO_CYC.length];o[f]=[bio,frPick(f,bio,f%5===0)];}return o;},set:k=>{FR3.k=k;FR3.lava=1;FR3.hp=null;frBanner(k);if(k!=='dark')frDark(false);},get:()=>FR3.k,st:()=>({err:FR3.err,lava:FR3.lava,k:FR3.k,nE:FR3.nE,nH:FR3.nH,vx:FR3.vx})};
+/* ---------- battle stat recorder (3D): one record per fight, kept in memory for the balance bot and the debug panel ---------- */
+const ST3R={cur:null,log:[]};
+function st3New(){const R=G.run;return {mode:G.pvp?'pvp':G.wkFoe?'duel':R&&R.kind?R.kind:(typeof ST3P!=='undefined'&&ST3P&&ST3P.on?'story':'wave'),floor:R&&(R.floor||R.lvl)||0,t0:G.t||0,basic:0,skillHits:0,casts:0,dmgOut:0,dmgIn:0,kills:0,hitsIn:0,dodges:0,frule:null};}
+{const _s=start;start=function(){const r=_s.apply(this,arguments);try{ST3R.cur=st3New();}catch(e){}return r;};}
+{const _h=hurt;hurt=function(t,d,f){const P=G.pl,h0=t&&t.hp,dead0=t&&t.dead;const r=_h.apply(this,arguments);try{const C=ST3R.cur;if(C&&t){const dd=Math.max(0,h0-t.hp);
+ if(t===P){if(dd>0){C.dmgIn+=dd;C.hitsIn++;}}else if(t.team&&dd>0){C.dmgOut+=dd;if(G.skCur||G.elCur)C.skillHits++;else C.basic++;if(!dead0&&t.dead)C.kills++;}}}catch(e){}return r;};}
+{const _t=skTry;skTry=function(p,i){const c0=G.skcd[i];const r=_t.apply(this,arguments);try{if(r&&p===G.pl&&!(c0>0)&&ST3R.cur)ST3R.cur.casts++;}catch(e){}return r;};}
+{const _e=end;end=function(win){const C=ST3R.cur,was=G.over;let fk=null;try{fk=typeof FR3!=='undefined'?FR3.k:null;}catch(_){}const r=_e.apply(this,arguments);try{if(C&&!was){C.win=!!win;C.time=+((G.t||0)-C.t0).toFixed(1);C.hpLeft=G.pl?Math.max(0,Math.round(G.pl.hp/G.pl.maxhp*100)):0;C.frule=fk;ST3R.log.push(C);if(ST3R.log.length>500)ST3R.log.shift();ST3R.cur=null;}}catch(e){}return r;};}
+setTimeout(()=>{try{if(window.__d3)window.__d3.stats=ST3R;}catch(e){}},0);
+/* test hook: a ready-made character as an opponent, the same way PvP bots are dressed */
+setTimeout(()=>{try{if(window.__d3)window.__d3.kitFoe=async id=>{await mdlKit(id);const kk=KITS.find(k=>k.id===id);const ch=clone(PRE[Object.keys(PRE)[0]]);mdlDress(ch,MDLS['kit:'+id],'kit:'+id,{kit:id,msc:kk.msc||1});ch.move=kk.move||ch.move;return ch;};}catch(e){}},0);
+/* test hook: a real PvP round between two bots (both sides use the PvP bot brain and the PvP rules), for win-rate tables */
+setTimeout(()=>{try{if(window.__d3)window.__d3.pvDuel=async(a,b)=>{await mdlKit(a);await mdlKit(b);const ka=KITS.find(k=>k.id===a),kb=KITS.find(k=>k.id===b);
+ PV={room:{slots:[{kind:'bot',team:0,name:'A'},{kind:'bot',team:1,name:'B'}],size:'1v1',mode:'free',best:1,cap:0},peers:{},role:'host',fake:1};G.wkFoe=null;G.run=null;
+ G.pvp={n:2,score:[0,0],round:1,need:1,st:[{dmg:0,heal:0,ko:0,taken:0,sk:{}},{dmg:0,heal:0,ko:0,taken:0,sk:{}}],bots:{},botKits:{0:ka,1:kb},hostTm:0,begun:true};
+ pv3Round();G.pvWait=false;return G.ents.length;};}catch(e){}},0);
 /* ---------- cyber UI: dark glass panels, slanted buttons, one neon accent (both games) ---------- */
 (function(){const CY='#5fe3ff',YE='#ffd84a';
  const css=':root{--paper:#0a0f22;--grid:rgba(95,227,255,.06);--ink:#e8f1ff;--mute:#93a6c8;--card:rgba(16,23,50,.92);--ok:#3ddc84}'+
