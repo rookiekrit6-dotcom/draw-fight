@@ -2748,6 +2748,60 @@ try{for(const k of (Array.isArray(KITS)?KITS:Object.values(KITS))){const m=BAL3K
  for(const s of (k.sk||[]))for(const q of (s.steps||[]))if(typeof q.dmg==='number')q.dmg=Math.round(q.dmg*m*10)/10;}}catch(er){}
 /* test hook: the balance bot can add extra targets */
 setTimeout(()=>{try{if(window.__d3&&!window.__d3.mkEnt)window.__d3.mkEnt=(...a)=>mkEnt(...a);}catch(e){}},0);
+/* ---------- tower floor rules (shared 2D/3D): from floor 6, every floor that is not a boss floor gets one rule.
+   The rule is fixed per floor number, so a retry meets the same rule. A biome rule comes first where the scene matches. ---------- */
+var FR={lava:{n:'พื้นลาวาปะทุ',d:'ลาวาพุ่งจากพื้นเป็นระยะ ดูวงแดงแล้วหลบ ลาวาโดนศัตรูด้วย',ic:'🌋',bio:'volcano'},
+ slip:{n:'พื้นน้ำแข็งลื่น',d:'เดินแล้วไถลไปต่อ หยุดตัวยาก',ic:'🧊',bio:'snow'},
+ dark:{n:'ความมืดปกคลุม',d:'มองเห็นแค่รอบตัว',ic:'🌑',bio:'cave'},
+ lowg:{n:'แรงโน้มถ่วงต่ำ',d:'ตัวเบา กระโดดสูงและลอยนาน',ic:'🪶',bio:'islands'},
+ fastcd:{n:'พลังล้นหลาม',d:'คูลดาวน์สกิลเหลือครึ่งเดียว',ic:'⚡'},
+ noheal:{n:'ต้องสาปห้ามฟื้น',d:'ฟื้นเลือดไม่ได้ทั้งชั้น',ic:'🚫'},
+ swarm:{n:'ศัตรูยกฝูง',d:'ศัตรูมาเป็นสองเท่า แต่เลือดน้อยลงครึ่งหนึ่ง',ic:'🐜'},
+ gold:{n:'ชั้นทองคำ',d:'รางวัลสองเท่า แต่ศัตรูตีแรงขึ้น 30%',ic:'💰'}};
+var FR_GEN=['fastcd','noheal','swarm','gold'];
+function frPick(f,bio,boss){if(!(f>=6)||boss)return null;const h=Math.abs(Math.sin(f*78.233+3.1)*43758.5453)%1,h2=Math.abs(Math.sin(f*12.17+9.7)*24634.6345)%1;
+ const bk=Object.keys(FR).find(k=>FR[k].bio&&FR[k].bio===bio);if(bk&&h<.5)return bk;return FR_GEN[Math.floor(h2*FR_GEN.length)];}
+function frBanner(k){try{let el=document.getElementById('frBan');if(!el){el=document.createElement('div');el.id='frBan';document.body.appendChild(el);
+  const st=document.createElement('style');st.textContent='#frBan{position:fixed;left:50%;top:38%;transform:translateX(-50%);z-index:60;pointer-events:none;text-align:center;font-family:Mali,sans-serif;opacity:0;transition:opacity .35s}#frBan.on{opacity:1}#frBan b{display:block;font-size:22px;color:#ffd84a;text-shadow:0 0 12px #000,0 2px 0 #000}#frBan span{display:inline-block;margin-top:4px;font-size:13px;color:#eaf6ff;background:rgba(8,14,30,.78);border:1px solid #36e0ff;border-radius:8px;padding:4px 10px}'
+   +'#frChip{position:fixed;left:50%;transform:translateX(-50%);top:48px;z-index:40;pointer-events:none;font:700 12px Mali,sans-serif;color:#ffd84a;background:rgba(8,14,30,.78);border:1px solid #ffd84a;border-radius:8px;padding:3px 8px;display:none}'
+   +'#frDark{position:fixed;inset:0;z-index:20;pointer-events:none;display:none}';document.head.appendChild(st);}
+  let chip=document.getElementById('frChip');if(!chip){chip=document.createElement('div');chip.id='frChip';document.body.appendChild(chip);}
+  if(!k){chip.style.display='none';el.classList.remove('on');return;}const r=FR[k];chip.textContent=r.ic+' '+r.n;chip.style.display='block';
+  el.innerHTML='<b>'+r.ic+' กฎชั้นนี้: '+r.n+'</b><span>'+r.d+'</span>';el.classList.add('on');clearTimeout(frBanner.t);frBanner.t=setTimeout(()=>el.classList.remove('on'),3800);}catch(e){}}
+/* darkness: a radial mask centred on a screen point, drawn on its own layer over the game */
+function frDark(on,sx,sy,rad){try{let d=document.getElementById('frDark');if(!d){d=document.createElement('div');d.id='frDark';document.body.appendChild(d);}
+ if(!on){d.style.display='none';return;}d.style.display='block';d.style.background='radial-gradient(circle '+Math.round(rad)+'px at '+Math.round(sx)+'px '+Math.round(sy)+'px,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 55%,rgba(2,3,10,.93) 100%)';}catch(e){}}
+/* ---------- tower floor rules, 3D side ---------- */
+const FR3={k:null,lava:0,vx:0,vz:0,hp:null,lt:2,nE:0,nH:0};
+function fr3Show(k,n){n=n||0;setTimeout(()=>{if(FR3.k!==k)return;if(G.evoPause&&n<120)return fr3Show(k,n+1);frBanner(k);},n?250:900);}
+function fr3Off(){FR3.k=null;frBanner(null);frDark(false);}
+{const _sw=spawnWave;spawnWave=function(){const r=_sw.apply(this,arguments);try{const R=G.run;FR3.k=null;
+ if(R&&R.kind==='tower'&&!G.wkFoe&&!G.pvp){const f=R.floor||1;FR3.k=frPick(f,typeof BIO3!=='undefined'?BIO3.k:null,f%5===0);
+  if(!FR3.k&&typeof bioPick==='function'){}const k=FR3.k,foes=G.ents.filter(e=>e.team&&!e.dead);
+  if(k==='swarm'){const add=[];for(const e of foes){e.maxhp=e.hp=Math.max(1,Math.round(e.maxhp*.45));e.sc=(e.sc||1)*.72;e.rad=(e.rad||.5)*.72;
+    const n=mkEnt(e.ch,e.x+(Math.random()-.5)*3,e.z+(Math.random()-.5)*3,1,e.sc);n.noWeap=e.noWeap;n.hp=n.maxhp=e.maxhp;n.spd=e.spd;n.dmg=e.dmg;add.push(n);}for(const n of add)G.ents.push(n);}
+  if(k==='gold')for(const e of foes)e.dmg=(e.dmg||6)*1.3;
+  FR3.lava=2.5;FR3.pend=[];FR3.vx=FR3.vz=0;FR3.hp=null;fr3Show(k);}
+ if(!FR3.k){frBanner(null);frDark(false);}}catch(e){}return r;};}
+{const _s=stop;stop=function(){fr3Off();return _s.apply(this,arguments);};}
+{const _s=step;step=function(dt){const p=G.pl,k=FR3.k,on=k&&p&&!G.over&&!RP.on&&!G.pvp&&!G.evoPause;const x0=p?p.x:0,z0=p?p.z:0;const r=_s.apply(this,arguments);if(!on)return r;
+ try{
+  if(k==='lowg'){if(p.y>0||p.vy>0)p.vy+=12*dt;for(const e of G.ents)if(e.team&&!e.dead&&(e.y>0||e.vy>0))e.vy+=12*dt;}
+  if(k==='slip'&&!p.dead){const vx=(p.x-x0)/dt,vz=(p.z-z0)/dt,a=1-Math.exp(-2.2*dt);FR3.vx+=(vx-FR3.vx)*a;FR3.vz+=(vz-FR3.vz)*a;p.x=x0+FR3.vx*dt;p.z=z0+FR3.vz*dt;
+   const l=Math.hypot(p.x,p.z),lim=(typeof R==='number'?R:18)-.6;if(l>lim){p.x*=lim/l;p.z*=lim/l;FR3.vx*=-.3;FR3.vz*=-.3;}}
+  if(k==='noheal'){if(FR3.hp!=null&&p.hp>FR3.hp)p.hp=FR3.hp;FR3.hp=p.hp;}
+  if(k==='lava'){FR3.lava-=dt;if(FR3.lava<=0){FR3.lava=2.6+Math.random()*2;const al=G.ents.filter(e=>!e.dead),t=Math.random()<.65?p:al[Math.floor(Math.random()*al.length)]||p;
+    const x=t.x+(Math.random()-.5)*2.4,z=t.z+(Math.random()-.5)*2.4;G.circs.push({x,z,r:1.7,col:[1,.3,.08],t:0,d:1.25,spin:2,tx:TX.rune,_lava:1});FR3.nE++;(FR3.pend||(FR3.pend=[])).push({x,z,t:1.25});}
+   for(const q of (FR3.pend||[])){q.t-=dt;if(q.t>0||q.done)continue;q.done=1;const x=q.x,z=q.z;
+    G.pils.push({x,z,w:2.2,h:9,col:[1,.45,.1],t:0,d:.7});skBurst(x,.3,z,{n:40,speed:4,up:9,size:.22,life:.8,grav:-6,rad:1},[1,.5,.15]);G.shake=Math.max(G.shake||0,.18);try{sd3Play('x_imp_fire',.6,1,.05);}catch(_){}
+    for(const e of G.ents){if(e.dead||Math.hypot(e.x-x,e.z-z)>1.7+(e.rad||.5))continue;const a=Math.round(e.maxhp*.1);FR3.nH++;
+     if(e===p){if(p.inv>0)continue;if(p.hp-a<=0)hurt(p,a,{x,z});else{p.hp-=a;p.flash=.3;tag(p,'ลาวา -'+a,'#ff8a3d');}}else{e.hp-=a;e.flash=.3;tag(e,'-'+a,'#ff8a3d');if(e.hp<=0){e.hp=1;hurt(e,5,{x,z});}}e.vy=6;}}
+   FR3.pend=(FR3.pend||[]).filter(q=>!q.done);}
+  if(k==='dark'&&FR3.k==='dark'&&!G.over){const c=$('gl')||document.querySelector('canvas');const rc=c?c.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};frDark(true,rc.left+rc.width/2,rc.top+rc.height*.56,Math.min(rc.width,rc.height)*.42);}
+ }catch(e){FR3.err=String(e);}return r;};}
+{const _t=skTry;skTry=function(p,i){const c0=G.skcd[i];const r=_t.apply(this,arguments);try{if(r&&FR3.k==='fastcd'&&p===G.pl&&!(c0>0)&&G.skcd[i]>0)G.skcd[i]*=.5;}catch(_){}return r;};}
+{const _e=end;end=function(win){const R=G.run,k=FR3.k,f=R&&R.floor;const r=_e.apply(this,arguments);try{if(win&&k==='gold'&&R&&R.kind==='tower'&&typeof pgXp==='function'){pgXp(20+f*5);const p=$('ovP');if(p)p.textContent='ชั้นทองคำ: รางวัลสองเท่า! '+p.textContent;}}catch(_){}fr3Off();return r;};}
+window.__fr3={map:()=>{const o={};for(let f=1;f<=40;f++){const bio=f%5===0?null:BIO_CYC[f%BIO_CYC.length];o[f]=[bio,frPick(f,bio,f%5===0)];}return o;},set:k=>{FR3.k=k;FR3.lava=1;FR3.hp=null;frBanner(k);if(k!=='dark')frDark(false);},get:()=>FR3.k,st:()=>({err:FR3.err,lava:FR3.lava,k:FR3.k,nE:FR3.nE,nH:FR3.nH,vx:FR3.vx})};
 /* ---------- cyber UI: dark glass panels, slanted buttons, one neon accent (both games) ---------- */
 (function(){const CY='#5fe3ff',YE='#ffd84a';
  const css=':root{--paper:#0a0f22;--grid:rgba(95,227,255,.06);--ink:#e8f1ff;--mute:#93a6c8;--card:rgba(16,23,50,.92);--ok:#3ddc84}'+
