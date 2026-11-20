@@ -1011,7 +1011,7 @@ function hurt0(t,dmg,from){if(G.pvp)return pv3Hurt(t,dmg,from);if(t.dead||t.inv>
  {const tk=t.ch&&!t.team?kitOf(t.ch):null;if(tk&&tk.pack){if(t.hp<=0&&tk.die)sd3Play(tk.die,.85,1);else if(tk.hurt)sd3Play(tk.hurt,.7,1,.12);}}if(t.hp<=0){t.dead=true;t.deadT=.5;if(t===G.pl)end(false);}}
 function step(dt){const p=G.pl;G.t+=dt;if(G.over)return;db3Tick(dt);if(G.pvp){pv3Step(dt);return;}
  // player
- {let mx=-(IN.x+(IN.keys.KeyD||IN.keys.ArrowRight?1:0)-(IN.keys.KeyA||IN.keys.ArrowLeft?1:0)),mz=-IN.y+(IN.keys.KeyW||IN.keys.ArrowUp?1:0)-(IN.keys.KeyS||IN.keys.ArrowDown?1:0);if(p.ai){let b=null,bd=1e9;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z);if(d<bd){bd=d;b=e;}}if(b){const a=Math.atan2(b.x-p.x,b.z-p.z)-G.camYaw;if(bd>wOf(p.ch).reach*.8){mx=Math.sin(a);mz=Math.cos(a);}else IN.atk=true;}}
+ {let mx=-(IN.x+(IN.keys.KeyD||IN.keys.ArrowRight?1:0)-(IN.keys.KeyA||IN.keys.ArrowLeft?1:0)),mz=-IN.y+(IN.keys.KeyW||IN.keys.ArrowUp?1:0)-(IN.keys.KeyS||IN.keys.ArrowDown?1:0);if(p.ai){let b=null,bd=1e9;for(const e of G.ents)if(e.team&&!e.dead){const d=Math.hypot(e.x-p.x,e.z-p.z);if(d<bd){bd=d;b=e;}}if(b){const a=Math.atan2(b.x-p.x,b.z-p.z)-G.camYaw;if(bd-b.rad>wOf(p.ch).reach*.8+p.rad*.4){mx=Math.sin(a);mz=Math.cos(a);}else IN.atk=true;}}
   if(stGet(p,'conf')>0){mx=-mx;mz=-mz;}const l=Math.hypot(mx,mz);if(l>1){mx/=l;mz/=l;}const cy=Math.cos(G.camYaw),sy=Math.sin(G.camYaw),wx=mx*cy+mz*sy,wz=-mx*sy+mz*cy;p.moving=l>.12&&p.atkT<=0;
   let sp=p.spd*(p.bs>0?p.bsm:1);if(p.dash>0){sp*=3.2;p.dash-=dt;}if(p.moving||p.dash>0){if(l>.12)p.yaw=Math.atan2(wx,wz);const fx=l>.12?wx:Math.sin(p.yaw),fz=l>.12?wz:Math.cos(p.yaw),k=p.dash>0?1:Math.min(1,l);p.x+=fx*sp*k*dt;p.z+=fz*sp*k*dt;p.ph+=dt*sp*1.9;}
   if(IN.dash&&p.dcd<=0){p.dash=.2;p.dcd=.9;p.inv=.3;{if(!sd3Play('dodge',.7,1,.05))beep(520,.12,760);}}IN.dash=false;if(IN.jump&&p.y<=0){p.vy=7.5;{if(!sd3Play('jump',.6,1,.05))beep(380,.1,520);}}IN.jump=false;
@@ -1175,7 +1175,7 @@ function stFromEl(src,t,el,basic){if(!el||!t||t.dead)return;const m=basic?1:.6,R
    Loaded a moment after the page opens; a recorded sound replaces the synthesized recipe of the same name. Until it arrives,
    or if it fails to load, the synthesized sounds keep playing as before. */
 var RB={buf:{},state:0,loops:{}};
-function rbUrl(){return /\/(3d|vfx)\/[^/]*$/.test(location.pathname)?'../sfx/bank.json?v='+(window.SBV||4):'sfx/bank.json?v='+(window.SBV||4);}
+function rbUrl(){return /\/(3d|vfx)\/[^/]*$/.test(location.pathname)?'../sfx/bank.json?v='+(window.SBV||5):'sfx/bank.json?v='+(window.SBV||5);}
 function rbLoad(){if(!RB||RB.state)return;RB.state=1;let OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC||!window.fetch){RB.state=3;return;}
  fetch(rbUrl()).then(r=>r.ok?r.json():null).then(j=>{if(!j){RB.state=3;return;}const ctx=new OC(1,1,24000);
   for(const k in j){const e=j[k],arr=[];arr.g=+e.g||1;arr.loop=!!e.loop;RB.buf[k]=arr;
@@ -2321,7 +2321,8 @@ function evoEnd(win){const R=EVO.run;EVO.run=null;EVO.offer=null;evoUiHide();evo
  const f0=evoForm(b);for(const p in R.pts){const a=Math.round(R.pts[p]*(win?1.5:1));b.pts[p]+=a;got+=a;}evoSaveBlood(k,b);const ups=[];for(const p in EVP){const t=evoTier(b.pts[p]);if(t>before[p])ups.push(EVP[p].ic+' '+evoT(EVP[p].n)+evoT(' ขั้น ')+t);}
  const f1=evoForm(b);if(f1&&f1!==f0)ups.push('✨ '+evoT(EVFORM[f1].n));return {got,ups};}
 /* ---------- hooks the adapters call ---------- */
-function evoOut(t,amt,basic){const R=EVO.run;if(!R||EVO.inner)return amt;const S=R.S;let m=1+S.dmg;for(const k in S.vs)if(EVA.has(t,k))m+=S.vs[k];if(R.rage>0)m+=.5;
+/* balance: 'hits harder vs burning/slowed/shocked/bleeding' bonuses share one +40% cap, and all damage bonuses together stop at +150% */
+function evoOut(t,amt,basic){const R=EVO.run;if(!R||EVO.inner)return amt;const S=R.S;let vs=0;for(const k in S.vs)if(EVA.has(t,k))vs+=S.vs[k];let m=1+Math.min(1.5,S.dmg+Math.min(.4,vs)+(R.rage>0?.5:0));
  if(basic&&R.next>0){m*=1+R.next;R.next=0;EVA.tag(EVA.player(),'!','#ffd84a');}
  if(Math.random()<Math.min(.75,S.crit)){m*=2+S.critM;R.crit=1;}else R.crit=0;return amt*m;}
 function evoIn(amt){const R=EVO.run;if(!R)return amt;let a=amt*Math.max(.35,1-R.S.arm);if(R.shield>0){const k=Math.min(R.shield,a);R.shield-=k;a-=k;}return a;}
@@ -2480,7 +2481,7 @@ setTimeout(()=>{try{mod3UI();}catch(e){}},140);
 setInterval(()=>{try{const m=$('modIntro');if(m&&!m.classList.contains('ui3h')&&mode==='edit')mod3Ui();}catch(e){}},4000);
 /* ---------- shared audio: volume for effects / music / voices, a battle music loop that rises with the fight, voice shouts ---------- */
 var VOL=(()=>{try{return Object.assign({sfx:1,mus:.6,voi:1},JSON.parse(localStorage.getItem('df_vol')||'{}'));}catch(e){return {sfx:1,mus:.6,voi:1};}})();
-var MUSA={ctx:()=>null,level:()=>0,muted:()=>false,musOff:()=>false};
+var MUSA={ctx:()=>null,level:()=>0,muted:()=>false,musOff:()=>false,biome:()=>null};
 function volApply(){try{const c=MUSA.ctx();if(c&&c._vg){const t=c.currentTime;c._vg.sfx.gain.setTargetAtTime(VOL.sfx,t,.05);c._vg.mus.gain.setTargetAtTime(MUSA.muted()||MUSA.musOff()?0:VOL.mus*.55,t,.05);c._vg.voi.gain.setTargetAtTime(VOL.voi,t,.05);}}catch(e){}}
 /* sndBus (from the sound bank) feeds this: every source -> its channel -> compressor */
 (function(){const _b=window.sndBus;window.sndBus=function(c,n){if(!c._vg){const mk=()=>c.createGain();c._vg={sfx:mk(),mus:mk(),voi:mk(),out:mk()};c._vg.sfx.gain.value=VOL.sfx;c._vg.mus.gain.value=VOL.mus*.55;c._vg.voi.gain.value=VOL.voi;
@@ -2513,6 +2514,34 @@ function musTick(){try{const c=MUSA.ctx();if(!c||!c._vg)return;if(!BGM.buf){musP
  if(!BGM.src.length){const t=c.currentTime+.1;BGM.buf.forEach((b,i)=>{const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.loop=true;g.gain.value=0;s.connect(g);g.connect(c._vg.mus);s.start(t);BGM.src.push(s);BGM.g.push(g);});}
  const lv=Math.max(0,Math.min(2,MUSA.level()|0));if(lv!==BGM.lv){BGM.lv=lv;const t=c.currentTime;MUSLV[lv].forEach((v,i)=>BGM.g[i].gain.setTargetAtTime(v,t,.6));}volApply();}catch(e){}}
 setInterval(musTick,500);
+/* ---- biome ambience: short loops rendered in code once per place (wind, river, birds, drips, lava, bubbles), cross-faded on change ---- */
+var AMB={k:null,buf:{},busy:{},src:null,g:null};
+function ambRender(k){const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)return Promise.resolve(null);const sr=22050,LEN=8,X=1,oc=new OC(2,sr*(LEN+X),sr),D=oc.destination,T=LEN+X;
+ const nb=oc.createBuffer(1,sr*2,sr),nd=nb.getChannelData(0);let br=0;for(let i=0;i<nd.length;i++){nd[i]=Math.random()*2-1;}
+ const noise=()=>{const s=oc.createBufferSource();s.buffer=nb;s.loop=true;s.start(0);return s;};
+ const out=(node,v,pan)=>{const g=oc.createGain();g.gain.value=v;const p=oc.createStereoPanner();p.pan.value=pan||0;node.connect(g);g.connect(p);p.connect(D);return g;};
+ const filt=(src,type,f,q)=>{const b=oc.createBiquadFilter();b.type=type;b.frequency.value=f;if(q)b.Q.value=q;src.connect(b);return b;};
+ const lfo=(param,rate,amt,base)=>{const o=oc.createOscillator(),g=oc.createGain();o.frequency.value=rate;g.gain.value=amt;o.connect(g);g.connect(param);param.value=base;o.start(0);};
+ const wind=(f,v,pan)=>{const b=filt(noise(),'bandpass',f,.8);lfo(b.frequency,.09+Math.random()*.05,f*.45,f);const g=out(b,v,pan);lfo(g.gain,.13,v*.45,v);};
+ const tone=(t,f0,f1,d,v,type,pan)=>{const o=oc.createOscillator();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);const g=oc.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.01);g.gain.exponentialRampToValueAtTime(.0005,t+d);const p=oc.createStereoPanner();p.pan.value=pan||0;o.connect(g);g.connect(p);p.connect(D);o.start(t);o.stop(t+d+.02);};
+ const birds=(n)=>{for(let i=0;i<n;i++){const t=Math.random()*(T-1),f=2400+Math.random()*1800,pan=Math.random()*1.6-.8;for(let j=0;j<2+(Math.random()*3|0);j++)tone(t+j*.11,f,f*1.35,.08,.035,'sine',pan);}};
+ if(k==='meadow'){wind(500,.05,-.3);const r=filt(filt(noise(),'lowpass',1300),'highpass',250);out(r,.07,.5);birds(6);}
+ else if(k==='islands'){wind(900,.09,-.5);wind(400,.06,.5);birds(3);}
+ else if(k==='snow'){wind(700,.12,-.4);const w=filt(noise(),'bandpass',1300,5);lfo(w.frequency,.07,500,1300);out(w,.05,.4);}
+ else if(k==='desert'){wind(600,.09,0);out(filt(noise(),'highpass',4500),.012,.3);}
+ else if(k==='cave'){for(const f of [55,82.4]){const o=oc.createOscillator();o.frequency.value=f;o.start(0);out(o,.03,0);}out(filt(noise(),'lowpass',260),.05,0);const dl=oc.createDelay(1),fb=oc.createGain();dl.delayTime.value=.23;fb.gain.value=.4;dl.connect(fb);fb.connect(dl);out(dl,.6,0);
+  for(let t=.3;t<T-.5;t+=1+Math.random()*1.2){const o=oc.createOscillator(),g=oc.createGain(),f=1100+Math.random()*900;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.6,t+.05);g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.0005,t+.18);o.connect(g);g.connect(D);g.connect(dl);o.start(t);o.stop(t+.2);}}
+ else if(k==='volcano'){out(filt(noise(),'lowpass',140),.35,0);out(filt(noise(),'lowpass',420),.05,0);for(let t=0;t<T;t+=.02+Math.random()*.09){const s=oc.createBufferSource();s.buffer=nb;const g=oc.createGain();g.gain.setValueAtTime(.05+Math.random()*.08,t);g.gain.exponentialRampToValueAtTime(.0005,t+.012);const hp=oc.createBiquadFilter();hp.type='highpass';hp.frequency.value=1500;s.connect(hp);hp.connect(g);const p=oc.createStereoPanner();p.pan.value=Math.random()*1.4-.7;g.connect(p);p.connect(D);s.start(t,Math.random()*1.5,.02);}}
+ else if(k==='swamp'){out(filt(noise(),'lowpass',300),.05,0);for(let t=.1;t<T-.3;t+=.25+Math.random()*.5)tone(t,180+Math.random()*120,520+Math.random()*300,.09,.05,'sine',Math.random()*1.4-.7);
+  const o=oc.createOscillator();o.frequency.value=4300;const g=oc.createGain();g.gain.value=0;o.connect(g);lfo(g.gain,22,.006,.006);const p=oc.createStereoPanner();p.pan.value=.6;g.connect(p);p.connect(D);o.start(0);}
+ else return Promise.resolve(null);
+ return oc.startRendering().then(b=>{const n=sr*LEN,x=sr*X,out=new AudioBuffer({length:n,numberOfChannels:2,sampleRate:sr});for(let ch=0;ch<2;ch++){const a=b.getChannelData(ch),o=out.getChannelData(ch);for(let i=0;i<n;i++)o[i]=a[i];for(let i=0;i<x;i++){const w=i/x;o[i]=a[i]*w+a[n+i]*(1-w);}}return out;});}
+function ambTick(){try{const c=MUSA.ctx();if(!c||!c._vg)return;const want=MUSA.level()>0&&!MUSA.muted()?MUSA.biome():null;if(want===AMB.k)return;
+ if(want&&!AMB.buf[want]){if(!AMB.busy[want]){AMB.busy[want]=1;ambRender(want).then(b=>{AMB.buf[want]=b||'none';}).catch(()=>{AMB.buf[want]='none';});}return;}
+ const t=c.currentTime;if(AMB.src){const s=AMB.src,g=AMB.g;g.gain.setTargetAtTime(0,t,.5);setTimeout(()=>{try{s.stop();}catch(e){}},2500);AMB.src=AMB.g=null;}
+ AMB.k=want;const b=want&&AMB.buf[want];if(b&&b!=='none'){const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.loop=true;g.gain.value=0;s.connect(g);g.connect(c._vg.sfx);s.start();g.gain.setTargetAtTime(1.6,t,.8);AMB.src=s;AMB.g=g;}}catch(e){}}
+setInterval(ambTick,600);
+
 /* ---- the volume panel ---- */
 function volUi(){if(document.getElementById('volBtn'))return;const st=document.createElement('style');st.textContent='#volBtn{position:fixed;left:6px;top:50%;z-index:70;width:34px;height:34px;border-radius:50%;border:2px solid #1c2740;background:#fff;box-shadow:2px 2px 0 #1c2740;font-size:16px;cursor:pointer;padding:0;line-height:30px}'+
  '#volBox{position:fixed;left:46px;top:calc(50% - 70px);z-index:70;background:#fff;border:2.5px solid #1c2740;border-radius:12px 8px 13px 9px;box-shadow:3px 3px 0 #1c2740;padding:10px 12px;font:600 13px "Bai Jamjuree",Kanit,sans-serif;color:#1c2740;display:none;min-width:190px}'+
@@ -2524,6 +2553,7 @@ function volUi(){if(document.getElementById('volBtn'))return;const st=document.c
  b.onclick=e=>{e.stopPropagation();box.classList.toggle('on');};document.addEventListener('pointerdown',e=>{if(!box.contains(e.target)&&e.target!==b)box.classList.remove('on');});document.body.append(b,box);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',volUi);else setTimeout(volUi,50);
 window.__musStem=musStem;
+window.__ambR=ambRender;
 /* ---------- detailed skill sound (3D): cast, launch, travel, impact by element, statuses, with distance and stereo ---------- */
 const SX={seen:new WeakSet(),prev:{},last:{},t:0,cur:'',ent:new WeakMap()};
 const SXE={fire:'fire',ice:'ice',thunder:'volt',wind:'wind',void:'void',blood:'dark',earth:'earth',poison:'poison',light:'light',psy:'light'};
@@ -2555,7 +2585,7 @@ function sxGone(k,o,el){const x=o.x,z=o.z;
  else if(k==='sshots')sxPlay(sxN('x_imp',el),x,z,.6,.05);
  else if(k==='ports')sxPlay('x_pull',x,z,.6,.2);
  else if(k==='orbs')sxPlay(sxN('x_imp',el),x,z,.5,.1);}
-function sxScan(el){for(const k of SXA){const A=G[k];if(!A)continue;for(const o of A)if(o&&typeof o==='object'&&!SX.seen.has(o)){SX.seen.add(o);o._sxe=el!=null?el:SX.cur;sxSpawn(k,o,o._sxe);}}}
+function sxScan(el){for(const k of SXA){const A=G[k];if(!A)continue;for(const o of A)if(o&&typeof o==='object'&&!SX.seen.has(o)){SX.seen.add(o);if(el==null){o._sxq=1;continue;}o._sxe=el;sxSpawn(k,o,o._sxe);}}}
 /* the moment a skill is cast: a charge-up in its element */
 {const _c=skCast;skCast=function(p,s,live){try{if(p&&!RP.on)sxPlay(sxN('x_cast',sxElOf(s)),p.x,p.z,.6,.12);}catch(e){}return _c.apply(this,arguments);};}
 {const _f=skFire;skFire=function(c,q){const prev=SX.cur;SX.cur=sxElOf(c&&c.s);const r=_f.apply(this,arguments);try{if(!RP.on){sxScan(SX.cur);const d=q&&q.do,p=c&&c.p,x=p?p.x:0,z=p?p.z:0,el=SX.cur;
@@ -2569,7 +2599,7 @@ function sxScan(el){for(const k of SXA){const A=G[k];if(!A)continue;for(const o 
   for(const f of G.falls||[])if(!f._sxw&&f.w<=0){f._sxw=1;sxPlay('x_fall',f.x,f.z,.5,.09,1+Math.random()*.15);}
   for(const o of G.ports||[])if(SX.t-(o._sxl||0)>1.25){o._sxl=SX.t;sxPlay('x_vortex',o.x,o.z,.6);}
   for(const o of G.orbs||[])if(SX.t-(o._sxl||0)>.9){o._sxl=SX.t;sxPlay('x_orb',o.x,o.z,.3,.3);}
-  for(const k of ['falls','sshots','ports','orbs']){const cur=new Set(G[k]||[]),pv=SX.prev[k];if(pv)for(const o of pv)if(!cur.has(o))sxGone(k,o,o._sxe);SX.prev[k]=cur;}
+  for(const k of ['falls','sshots','ports','orbs']){const cur=new Set(G[k]||[]),pv=SX.prev[k];if(pv)for(const o of pv)if(!cur.has(o)&&!o._sxq)sxGone(k,o,o._sxe);SX.prev[k]=cur;}
   for(const e of G.ents){if(e.dead)continue;let m=SX.ent.get(e);if(!m){m={};SX.ent.set(e,m);}
    const b=(e.burnT||0)>0,fz=(e.frzV||0)>0,ps=(e.poisT||0)>0;if(b&&!m.b)sxPlay('x_burn',e.x,e.z,.7,.15);if(fz&&!m.f)sxPlay('x_freeze',e.x,e.z,.7,.15);if(ps&&!m.p)sxPlay('x_pois',e.x,e.z,.6,.15);
    const sh=(e.bg||0)>0;m.b=b;m.f=fz;m.p=ps;m.s=sh;}}}catch(e){}return r;};}
@@ -2643,9 +2673,12 @@ const BIO_STORY=['meadow','meadow','cave','cave','snow','snow','desert','desert'
 const BIO_CYC=['meadow','cave','snow','desert','swamp','islands','volcano'];
 const BIO3={k:'cyber',props:[],seed:0,amb:0};
 function bioPick(){try{const R=G.run;if(G.pvp)return 'cyber';if(R&&R.kind==='story'&&R.n)return BIO_STORY[(R.n-1)%BIO_STORY.length];
- if(R&&R.kind==='tower'){const f=R.floor||R.f||1;return f%5===0?BIO_CYC[(f/5+3)%BIO_CYC.length]:BIO_CYC[f%BIO_CYC.length];}
+ if(R&&R.kind==='tower'){const f=R.floor||R.f||1;const bs=(G.ents||[]).find(e=>e.team&&e.boss&&!e.dead);if(bs){const k=bioOfBoss(bs);if(k)return k;}else if(f%5===0&&typeof pgBossKit==='function'){const kt=pgBossKit(f);if(kt&&kt.sk){const k=bioOfBoss({sks:kt.sk});if(k)return k;}}return f%5===0?BIO_CYC[(f/5+3)%BIO_CYC.length]:BIO_CYC[f%BIO_CYC.length];}
  if(R&&R.kind==='surv')return BIO_CYC[Math.floor((G.wave||1)/5)%BIO_CYC.length];
  if(typeof mode!=='undefined'&&mode==='fight')return BIO_CYC[(BIO3.seed>>>0)%BIO_CYC.length];}catch(e){}return 'cyber';}
+/* a boss brings its own ground: the element of its skills decides the place */
+const BIO_EL={fire:'volcano',ice:'snow',poison:'swamp',wind:'islands',thunder:'islands',void:'cave',blood:'cave',psy:'cave',earth:'desert',light:'meadow'};
+function bioOfBoss(e){try{const cnt={};for(const s of e.sks||[]){if(!s)continue;const el=auraEl(s,'none');if(BIO_EL[el])cnt[el]=(cnt[el]||0)+1;}let best=null,bn=0;for(const k in cnt)if(cnt[k]>bn){bn=cnt[k];best=k;}return best?BIO_EL[best]:null;}catch(er){return null;}}
 function p3pal(){const b=BIO[BIO3.k]||BIO.cyber;return b.pal;}
 /* props are built once per biome as a list of parts in world space */
 function bioRng(s){return ()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
@@ -2688,7 +2721,33 @@ function bioBanner(){try{const b=BIO[BIO3.k];if(!b)return;let el=document.getEle
 {const _s=step;step=function(dt){const r=_s.apply(this,arguments);try{if(!RP.on&&G.pl&&typeof mode!=='undefined'&&mode==='fight'){const q=BIOP[BIO3.k];BIOt-=dt;if(q&&BIOt<=0){BIOt=.12;const p=G.pl,a=Math.random()*6.2832,d=2+Math.random()*12;
   skBurst(p.x+Math.cos(a)*d,q[2]<0?7+Math.random()*3:.5+Math.random()*2,p.z+Math.sin(a)*d,{n:2,speed:q[1]*.6,up:q[2],size:.1+Math.random()*.08,life:2.6,grav:q[2]<0?1:-.4},q[0]);}}}catch(e){}return r;};}
 {const _sp=stop;stop=function(){const r=_sp.apply(this,arguments);bioSet('cyber');return r;};}
+MUSA.biome=()=>(typeof mode!=='undefined'&&mode==='fight'&&BIO3.k!=='cyber')?BIO3.k:null;
 window.__bio={set:k=>{bioSet(k);bioBanner();},keys:Object.keys(BIO)};
+/* test hook: lets the balance bot drive the simulation without rendering */
+setTimeout(()=>{try{if(window.__d3&&!('step' in window.__d3))Object.defineProperty(window.__d3,'step',{get:()=>step,configurable:true});}catch(e){}},0);
+/* test hook: the balance bot can watch every damage call */
+{const _h=hurt;hurt=function(t,d,f){if(window.__hh)try{window.__hh(t,d,f,G.skCur&&G.skCur.name,G.elCur);}catch(e){}return _h.apply(this,arguments);};}
+/* ---------- balance pass (3D), from the balance-bot report ---------- */
+/* 1. bosses and code-shared opponents get the PvP crowd-control rule: 2.5 s of stun/root in a row gives 3 s of resistance */
+function bal3Guard(e,dt){if(e.ccImm>0){e.ccImm-=dt;e.stun=0;e.rootT=0;e.frz=0;}const cc=e.stun>0||e.rootT>0;
+ if(cc){e._cc=(e._cc||0)+dt;if(e._cc>2.5){e.stun=0;e.rootT=0;e.frz=0;e._cc=0;e.ccImm=3;if(e.st){e.st.sleep=0;e.st.stone=0;}e._pop={n:'ต้านทาน',t:1.2,c:'#ffffff'};try{dbSnd('imm');}catch(er){}}}else if(e._cc>0)e._cc=Math.max(0,e._cc-dt);}
+{const _s=step;step=function(dt){try{if(!G.pvp&&!RP.on&&G.ents)for(const e of G.ents)if(e.team&&!e.dead&&(e.boss||e.wk))bal3Guard(e,dt);}catch(er){}return _s.apply(this,arguments);};}
+/* 2. skill power: a portal's damage lands over time and rarely all of it, so it costs half as much as before;
+      poison and fire skills leave damage over time behind, so each damaging step costs a little more */
+{const _p=skPower;skPower=function(s){let p=_p(s);try{let dot=0;for(const q of s.steps){if(q.do==='portal')p-=num(q.dmg,20,0,999)*.8;if(['shot','area','fall','beam','pillar','portal'].indexOf(q.do)>=0)dot++;}
+ const el=auraEl(s,'');if((el==='poison'||el==='fire')&&dot)p+=Math.min(6,dot)*10;}catch(er){}return Math.max(0,Math.round(p));};}
+/* poison mist ticks four times and leaves stacking poison: it was worth about 3.5x its cost */
+function bal3Sk(s){try{if(s&&s.name==='หมอกพิษ'&&s.steps&&s.steps.filter(q=>q.do==='area').length>=4&&!(s.cd>=12))s.cd=12;
+ /* the star-gate measured at under half the damage its cooldown asks for */
+ if(s&&s.name==='ประตูมิติดับดารา'&&s.steps&&s.steps.some(q=>q.do==='portal')&&s.cd>6)s.cd=6;}catch(er){}return s;}
+{const _c=skCheck;skCheck=function(o){return bal3Sk(_c(o));};}
+try{for(const s of SKPRE)bal3Sk(s);for(const s of SKS)bal3Sk(s);}catch(er){}
+/* 3. ready-made characters: the two strongest deal 10% less, the two weakest 15% more */
+const BAL3K={crystalqueen:.9,lavatitan:.9,bull:1.15,slime:1.15};
+try{for(const k of (Array.isArray(KITS)?KITS:Object.values(KITS))){const m=BAL3K[k.id];if(!m||k._bal)continue;k._bal=1;if(k.atk&&k.atk.dmg)k.atk.dmg=Math.round(k.atk.dmg*m*10)/10;
+ for(const s of (k.sk||[]))for(const q of (s.steps||[]))if(typeof q.dmg==='number')q.dmg=Math.round(q.dmg*m*10)/10;}}catch(er){}
+/* test hook: the balance bot can add extra targets */
+setTimeout(()=>{try{if(window.__d3&&!window.__d3.mkEnt)window.__d3.mkEnt=(...a)=>mkEnt(...a);}catch(e){}},0);
 /* ---------- cyber UI: dark glass panels, slanted buttons, one neon accent (both games) ---------- */
 (function(){const CY='#5fe3ff',YE='#ffd84a';
  const css=':root{--paper:#0a0f22;--grid:rgba(95,227,255,.06);--ink:#e8f1ff;--mute:#93a6c8;--card:rgba(16,23,50,.92);--ok:#3ddc84}'+
