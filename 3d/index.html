@@ -114,7 +114,8 @@ body:not(.fight) #keys{display:none!important}
 <div id="nogl" class="box"><h1>เครื่องนี้ใช้กราฟิก 3 มิติไม่ได้</h1><p>ตัวทดลองนี้ต้องใช้ WebGL ลองเปิดด้วยเบราว์เซอร์อื่นหรือเครื่องอื่น</p></div>
 <script>
 (()=>{'use strict';
-function sd3Render(name){const R=SD3.rec[name];if(!R||SD3.buf[name]||SD3.pend[name])return;const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)return;
+function sd3Render(name){return;/* synthesized recipes are off: only the recorded bank (sbank.js) plays */}
+function sd3RenderSynth(name){const R=SD3.rec[name];if(!R||SD3.buf[name]||SD3.pend[name])return;const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)return;
  try{const sr=32000,len=Math.max(...R.map(l=>(l.dl||0)+l.d))+.06,oc=new OC(1,Math.ceil(sr*len),sr),out=oc.createGain();out.gain.value=.9;out.connect(oc.destination);
   const nb=oc.createBuffer(1,sr,sr),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
   for(const l of R){const t0=l.dl||0,d=l.d,a=Math.min(l.a||.004,d*.8),g=oc.createGain();g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(l.v,t0+a);if(l.h)g.gain.setValueAtTime(l.v,t0+a+l.h);g.gain.exponentialRampToValueAtTime(.0008,t0+d);
@@ -128,7 +129,8 @@ function sd3Render(name){const R=SD3.rec[name];if(!R||SD3.buf[name]||SD3.pend[na
 function sd3Prep(){const ks=Object.keys(SD3.rec);let i=0;const step=()=>{for(let n=0;n<6&&i<ks.length;n++)sd3Render(ks[i++]);if(i<ks.length)setTimeout(step,30);};step();}function sd3Play(name,v,rate,gap){try{au();}catch(e){}const c=AC;if(!c)return false;if(!SD3M){try{SD3M=c.createGain();SD3M.gain.value=.55;(window.sndBus||function(c,n){n.connect(c.destination)})(c,SD3M);}catch(e){return false;}}const rb=rbGet(name),b=rb||SD3.buf[name];if(!b){sd3Render(name);return false;}
  const now=c.currentTime;if(gap&&SD3.last[name]&&now-SD3.last[name]<gap)return true;if(SD3.voices>22)return true;SD3.last[name]=now;
  try{const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.playbackRate.value=(rate||1)*(.94+Math.random()*.12);g.gain.value=(v==null?1:v)*(rb?rbGain(name):1);s.connect(g);g.connect(SD3M);SD3.voices++;s.onended=()=>{SD3.voices--;};s.start();}catch(e){}return true;}function autoUI(){const b=$('autoB');b.textContent='ออโต้: '+(AUTO?'เปิด':'ปิด');b.classList.toggle('on',AUTO);if(G.pl)G.pl.ai=AUTO;}function au(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}}
-function beep(f,d,f2){if(!AC)return;try{const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type='triangle';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);}catch(e){}}
+/* UI beeps were synthesized: silent now (recorded sounds only) */
+function beep(f,d,f2){return;if(!AC)return;try{const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type='triangle';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d);}catch(e){}}
 function wOf(c){if(c&&c._mk&&!wOf.in){wOf.in=1;try{return withMdl(c,()=>wOf(c));}finally{wOf.in=0;}}{const kk=kitOf(c);if(kk){const a=kk.atk;return {reach:a.reach,dmg:a.dmg,dur:a.dur,cd:a.cd,shot:a.st==='shot'};}}const w=WEAPS[c.weap]||WEAPS.sword;if(c.weap==='item'&&MODEL&&MODEL.item){const melee=(c.itMode||(MODEL.item.long?'melee':'shot'))==='melee';return melee?{reach:1.9,dmg:14,dur:.34,cd:.5}:{reach:11,dmg:9,dur:.34,cd:.5,shot:true};}return w;}
 function statsOf(c){if(c&&c._mk&&!statsOf.in){statsOf.in=1;try{return withMdl(c,()=>statsOf(c));}finally{statsOf.in=0;}}let vol=0;if(useModel(c)){const q=mdDim(c);vol=q.w*q.h*q.d*.45;}else for(const p of c.parts)if(p.r!=='d')vol+=p.w*p.h*p.d*(p.s===1?1:.6);vol=clamp(vol,.15,6);const w=wOf(c),mv={biped:1,quad:1.18,float:.96,hop:.9,slide:1.05}[c.move];
  return {hp:Math.round(70+vol*42),spd:clamp(7.6-vol*.75,3.6,7.4)*mv,dmg:w.dmg,rad:clamp(Math.cbrt(vol)*.55,.4,1.1),vol};}
@@ -1389,8 +1391,8 @@ var STA={t:()=>G.t,R:u=>u,tag:(e,s,c)=>tag(e,s,c),pop:(e,s,c)=>{e._pop={n:s,t:1.
  loopLv:()=>{const o={lp_burn:0,lp_pois:0};if(!G.ents)return o;const c=G.pl||{x:0,z:0};for(const e of G.ents){if(e.dead)continue;const w=1/(1+Math.hypot(e.x-c.x,e.z-c.z)/7);if(e.burnT>0)o.lp_burn+=w*.8;if(e.poisT>0)o.lp_pois+=w*.65;}return o;},
  fx:(e,k)=>{if(k==='chain'||k==='toxicboom'||k==='steam')rpMark('combo',e);try{fxEnsure().then(api=>{api.play(stFx(k,.6),{x:e.x,y:e.y||0,z:e.z,yaw:0,scale:e.sc||1},null,null);}).catch(()=>{});}catch(er){}}};
 let DBT=0;function DB_FXON(){return !!FX.api;}
-function tone(f,d,type,v,f2,dl){if(!AC)return;try{const t=AC.currentTime+(dl||0),o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v||.1,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
-let DBNB=null;function noise(d,v,fq,type,dl){if(!AC)return;try{if(!DBNB){DBNB=AC.createBuffer(1,Math.floor(AC.sampleRate*.5),AC.sampleRate);const a=DBNB.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;}const t=AC.currentTime+(dl||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=DBNB;s.loop=true;f.type=type||'lowpass';f.frequency.value=fq||1000;g.gain.setValueAtTime(v||.1,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);s.stop(t+d+.02);}catch(e){}}
+function tone(f,d,type,v,f2,dl){return;/* synthesized: off */if(!AC)return;try{const t=AC.currentTime+(dl||0),o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v||.1,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02);}catch(e){}}
+let DBNB=null;function noise(d,v,fq,type,dl){return;/* synthesized: off */if(!AC)return;try{if(!DBNB){DBNB=AC.createBuffer(1,Math.floor(AC.sampleRate*.5),AC.sampleRate);const a=DBNB.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;}const t=AC.currentTime+(dl||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=DBNB;s.loop=true;f.type=type||'lowpass';f.frequency.value=fq||1000;g.gain.setValueAtTime(v||.1,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);s.stop(t+d+.02);}catch(e){}}
 function db3Px(e){return {y:0,f:{H:60},stun:e.stun>0?e.stun:0,frz:e.frz>0?e.frz:0,root:e.rootT>0?e.rootT:0,burn:e.burnT>0?e.burnT:0,pois:e.poisT>0?e.poisT:0,poisN:e.poisN||0,slow:e.slowT>0?e.slowT:0,spore:0,shield:0,ccImm:e.ccImm>0?e.ccImm:0,_pop:e._pop,_dbMax:e._dbMax||(e._dbMax={}),st:e.st,_stMax:e._stMax||(e._stMax={})};}
 function db3Ov(){let c=$('db3Ov');if(!c){c=document.createElement('canvas');c.id='db3Ov';c.style.cssText='position:absolute;pointer-events:none;z-index:2;left:0;top:0';$('gl').after(c);}return c;}
 function db3Tick(dt){for(const e of G.ents){if(e.dead)continue;if(e.frz>0)e.frz-=dt;if(e._pop&&e._pop.t>0)e._pop.t-=dt;
@@ -2465,7 +2467,7 @@ const MUSLV=[[.75,0,0,0],[.6,.85,.8,0],[.55,1,1,.85]];
 function musTick(){try{const c=MUSA.ctx();if(!c||!c._vg)return;if(!BGM.buf){musPrep(c);return;}
  if(!BGM.src.length){const t=c.currentTime+.1;BGM.buf.forEach((b,i)=>{const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.loop=true;g.gain.value=0;s.connect(g);g.connect(c._vg.mus);s.start(t);BGM.src.push(s);BGM.g.push(g);});}
  const lv=Math.max(0,Math.min(2,MUSA.level()|0));if(lv!==BGM.lv){BGM.lv=lv;const t=c.currentTime;MUSLV[lv].forEach((v,i)=>BGM.g[i].gain.setTargetAtTime(v,t,.6));}volApply();}catch(e){}}
-setInterval(musTick,500);
+/* synthesized background music is off (recorded music can be added later) */
 /* ---- biome ambience: short loops rendered in code once per place (wind, river, birds, drips, lava, bubbles), cross-faded on change ---- */
 var AMB={k:null,buf:{},busy:{},src:null,g:null};
 function ambRender(k){const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OC)return Promise.resolve(null);const sr=22050,LEN=8,X=1,oc=new OC(2,sr*(LEN+X),sr),D=oc.destination,T=LEN+X;
@@ -2492,7 +2494,7 @@ function ambTick(){try{const c=MUSA.ctx();if(!c||!c._vg)return;const want=MUSA.l
  if(want&&!AMB.buf[want]){if(!AMB.busy[want]){AMB.busy[want]=1;ambRender(want).then(b=>{AMB.buf[want]=b||'none';}).catch(()=>{AMB.buf[want]='none';});}return;}
  const t=c.currentTime;if(AMB.src){const s=AMB.src,g=AMB.g;g.gain.setTargetAtTime(0,t,.5);setTimeout(()=>{try{s.stop();}catch(e){}},2500);AMB.src=AMB.g=null;}
  AMB.k=want;const b=want&&AMB.buf[want];if(b&&b!=='none'){const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.loop=true;g.gain.value=0;s.connect(g);g.connect(c._vg.sfx);s.start();g.gain.setTargetAtTime(1.6,t,.8);AMB.src=s;AMB.g=g;}}catch(e){}}
-setInterval(ambTick,600);
+/* synthesized ambience (birds, wind, drips) is off */
 
 /* ---- the volume panel ---- */
 function volUi(){if(document.getElementById('volBtn'))return;const st=document.createElement('style');st.textContent='#volBtn{position:fixed;left:6px;top:50%;z-index:70;width:34px;height:34px;border-radius:50%;border:2px solid #1c2740;background:#fff;box-shadow:2px 2px 0 #1c2740;font-size:16px;cursor:pointer;padding:0;line-height:30px}'+
