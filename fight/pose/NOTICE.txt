@@ -1,0 +1,5 @@
+MediaPipe Pose (@mediapipe/pose 0.5.1675469404) — Copyright Google LLC — Apache License 2.0
+https://github.com/google/mediapipe · https://www.apache.org/licenses/LICENSE-2.0
+Files copied unchanged from the npm package. Used only to guess the 12 rig joints of a character picture
+(photo.js / posefind.js); runs entirely in the player's browser, nothing is sent anywhere.
+Only the "full" model is shipped (pose_landmark_full.tflite); the lite / heavy models are left out.

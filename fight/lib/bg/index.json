@@ -1,0 +1,10 @@
+{
+ "note": "ฉากหลังภูมิภาค (Figma AI gpt-image-2.5-flare, 21 พ.ย. 2026) · ground = ตำแหน่งเส้นพื้น (สัดส่วนความสูงภาพ)",
+ "ground": {
+  "forest": 0.802,
+  "desert": 0.787,
+  "volcano": 0.784,
+  "robot": 0.796,
+  "castle": 0.811
+ }
+}
