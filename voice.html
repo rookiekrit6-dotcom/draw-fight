@@ -36,16 +36,17 @@
 <header><h1>🎙️ ห้องอัดเสียงเกรียน <span id="count"></span></h1><div class="bar"><i id="prog"></i></div></header>
 <main>
   <div class="note">
-    <b>วิธีใช้</b><br>
+    <b>วิธีใช้</b> (ไม่ต้องอัดครบ อัดเฉพาะคำที่อยากให้มีในเกม หมวดไหนไม่อัด เกมจะเงียบในจังหวะนั้น)<br>
     1. กด <b>● อัด</b> แล้วพูดคำนั้นตามอารมณ์ที่บอก กด <b>■ หยุด</b> เมื่อพูดจบ (หยุดเองที่ 5 วินาที)<br>
     2. โปรแกรมตัดช่วงเงียบหัวท้ายและปรับความดังให้เท่ากันเอง กด ▶ ฟังได้ ไม่ชอบกด ✕ แล้วอัดใหม่<br>
     3. อัดได้คำละ 3 แบบ ยิ่งหลายแบบเกมยิ่งสุ่มสลับไม่ซ้ำหู ข้ามคำที่ไม่ชอบได้<br>
     4. เสร็จแล้วกด <b>ส่งออกไฟล์</b> ด้านล่าง จะได้ไฟล์ zip หนึ่งไฟล์ ส่งไฟล์นั้นให้ Claude ในแชต<br>
     เสียงเก็บอยู่ในเครื่องนี้เท่านั้น ปิดหน้าแล้วเปิดใหม่ยังอยู่ ไม่มีการส่งขึ้นเน็ต
   </div>
-  <div class="note"><b>ไม่ต้องพากย์เก่ง</b> พูดธรรมดาได้เลย แล้วเลือก <b>เสียงตัวละคร</b> ข้างล่าง โปรแกรมจะบีบเสียงให้แหลม ทุ้ม สั่น หรือก้องเอง กด ▶ เพื่อฟังผลได้ทันที เปลี่ยนแบบได้ตลอดโดยไม่ต้องอัดใหม่<br>
+  <div class="note"><b>ไม่ต้องพากย์เก่ง</b> พูดธรรมดาได้เลย กด ▶ จะได้ยินเสียงจริงของคุณที่ปรับให้ดังชัดแล้ว เสียงผู้หญิง เสียงเด็ก และเสียงคนแก่ Claude ทำให้ตอนใส่เข้าเกม<br>
+    อยากลองฟังเล่น ๆ ว่าบีบเสียงแล้วเป็นยังไง เลือกข้างล่างได้ (มีผลกับการฟังในหน้านี้เท่านั้น)<br>
     <div class="row"><b>เสียงตัวละคร:</b><select id="fxSel" style="font:inherit;padding:8px;border-radius:8px"></select></div>
-    <span class="how">หมวดวัยทารกใช้เสียงทารก และหมวดวัยชราใช้เสียงคนแก่เสมอ</span></div>
+</div>
   <div class="row"><button id="micBtn">เปิดไมค์</button><div class="meter"><i id="lvl"></i></div></div>
   <div id="list"></div>
 </main>
@@ -56,7 +57,7 @@
 // to 3 takes per line in this browser (IndexedDB) and exports one zip: v_<group>_<line>_<take>.wav (mono 22050 Hz 16 bit)
 // + voice.json (which file is which line). Nothing is uploaded. The owner is not a voice actor: a plain reading is turned into
 // a character voice by fx() (higher, lower, shaking, echo...); the zip holds both the character voice and the plain take (raw/).
-const RATE = 22050, MAX_TAKES = 3, MAX_SECS = 5, SILENCE = 0.025, PAD = 0.04, PEAK = 0.9;
+const RATE = 22050, MAX_TAKES = 3, MAX_SECS = 5, SILENCE = 0.004, PAD = 0.1, PEAK = 0.9;
 const $ = (id) => document.getElementById(id);
 let DATA = null, db = null, stream = null, ctx = null, analyser = null, recording = null;
 const takes = new Map();
@@ -73,8 +74,10 @@ const FX = {
   baby: { name: 'ทารก', pitch: 1.9, drive: 1.6 },
   elder: { name: 'คนแก่เสียงสั่น', pitch: 0.86, drive: 1.8, wobble: [0.012, 6.5] },
 };
-const GROUP_FX = { baby: 'baby', elder: 'elder' };
-let fxNow = localStorage.getItem('df-voice-fx') || 'brat';
+// no group forces a character voice any more (24 Nov: the forced baby / old voices sounded wrong on the phone); the game's
+// pack (pack.mjs) makes the age voices from the plain take, keeping its length
+const GROUP_FX = {};
+let fxNow = localStorage.getItem('df-voice-fx2') || 'plain';
 const fxOf = (key) => GROUP_FX[key.split('_')[0]] || fxNow;
 function fx(pcm, id) {
   const F = FX[id] || FX.plain, n = Math.floor(pcm.length / F.pitch), a = new Float32Array(n);
@@ -98,10 +101,14 @@ const say = (t) => { $('msg').textContent = t; };
 
 // ---- sound: trim the silence at both ends, bring the loudest point to PEAK, mono at RATE ----
 function clean(samples) {
-  let a = 0, b = samples.length - 1;
-  while (a < b && Math.abs(samples[a]) < SILENCE) a++;
-  while (b > a && Math.abs(samples[b]) < SILENCE) b--;
-  const pad = Math.round(PAD * RATE); a = Math.max(0, a - pad); b = Math.min(samples.length - 1, b + pad);
+  // where the voice starts and ends: loudness in 10 ms steps, measured against the loudest step of this take (a quiet
+  // ending such as "...ลั่น" or a breath is part of the word; only what is under 5% of the loudest step counts as silence)
+  const W = Math.round(RATE * 0.01), steps = Math.floor(samples.length / W), env = new Float32Array(steps); let top = 0;
+  for (let i = 0; i < steps; i++) { let e = 0; for (let j = i * W; j < (i + 1) * W; j++) e += samples[j] * samples[j]; env[i] = Math.sqrt(e / W); top = Math.max(top, env[i]); }
+  const cut = Math.max(SILENCE, top * 0.05); let s0 = 0, s1 = steps - 1;
+  while (s0 < s1 && env[s0] < cut) s0++;
+  while (s1 > s0 && env[s1] < cut) s1--;
+  const pad = Math.round(PAD * RATE); let a = Math.max(0, s0 * W - pad), b = Math.min(samples.length - 1, (s1 + 1) * W + pad);
   if (b - a < RATE * 0.08) return null;
   const out = samples.slice(a, b + 1); let peak = 0;
   for (const v of out) peak = Math.max(peak, Math.abs(v));
@@ -175,7 +182,7 @@ function render() {
     const h = document.createElement('h2'); h.textContent = g.name; const how = document.createElement('p'); how.className = 'how'; how.textContent = 'อารมณ์: ' + g.how; root.append(h, how);
     g.lines.forEach((text, i) => { const key = g.id + '_' + i, box = document.createElement('div'); box.className = 'line';
       box.innerHTML = '<div class="word"></div><div class="row"><button class="recBtn">● อัด</button><span class="takes row" style="margin:0"></span></div>';
-      box.querySelector('.word').textContent = text; box.querySelector('.recBtn').onclick = () => record(key, box); root.append(box); renderTakes(key, box); });
+      box.querySelector('.word').textContent = text.t || text; box.querySelector('.recBtn').onclick = () => record(key, box); root.append(box); renderTakes(key, box); });
   }
   count();
 }
@@ -204,15 +211,15 @@ function exportZip() {
   const files = [], index = [];
   for (const g of DATA.groups) g.lines.forEach((text, i) => { const list = takes.get(g.id + '_' + i) || [];
     list.forEach((pcm, n) => { const name = `v_${g.id}_${i}_${n}.wav`, id = fxOf(g.id + '_' + i), made = fx(pcm, id);
-      files.push({ name, data: wav(made) }, { name: 'raw/' + name, data: wav(pcm) }); index.push({ file: name, group: g.id, line: i, text, fx: id, secs: +(made.length / RATE).toFixed(2) }); }); });
+      files.push({ name, data: wav(made) }, { name: 'raw/' + name, data: wav(pcm) }); index.push({ file: name, group: g.id, line: i, key: text.k || null, text: text.t || text, fx: id, secs: +(made.length / RATE).toFixed(2) }); }); });
   if (!files.length) { say('ยังไม่มีเสียงที่อัดไว้'); return null; }
   files.push({ name: 'voice.json', data: new TextEncoder().encode(JSON.stringify({ rate: RATE, made: new Date().toISOString().slice(0, 10), files: index }, null, 1)) });
   const blob = zip(files), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'df-voice.zip'; a.click();
   say(`ส่งออกแล้ว ${index.length} เสียง (${(blob.size / 1e6).toFixed(1)} MB) ส่งไฟล์ df-voice.zip ให้ Claude ในแชตได้เลย`); return blob;
 }
 $('micBtn').onclick = mic; $('exportBtn').onclick = exportZip;
-for (const id of Object.keys(FX)) { if (id === 'baby' || id === 'elder') continue; const o = document.createElement('option'); o.value = id; o.textContent = FX[id].name; $('fxSel').append(o); }
-$('fxSel').value = FX[fxNow] ? fxNow : 'brat'; $('fxSel').onchange = () => { fxNow = $('fxSel').value; localStorage.setItem('df-voice-fx', fxNow); say('เปลี่ยนเสียงตัวละครแล้ว กด ▶ ฟังได้เลย'); };
+for (const id of Object.keys(FX)) { const o = document.createElement('option'); o.value = id; o.textContent = FX[id].name; $('fxSel').append(o); }
+$('fxSel').value = FX[fxNow] ? fxNow : 'plain'; $('fxSel').onchange = () => { fxNow = $('fxSel').value; localStorage.setItem('df-voice-fx2', fxNow); say('เปลี่ยนเสียงตัวละครแล้ว กด ▶ ฟังได้เลย'); };
 $('wipeBtn').onclick = () => { if (!takes.size) return; if ($('wipeBtn').dataset.sure !== '1') { $('wipeBtn').dataset.sure = '1'; $('wipeBtn').textContent = 'กดอีกครั้งเพื่อลบจริง'; setTimeout(() => { $('wipeBtn').dataset.sure = ''; $('wipeBtn').textContent = 'ลบทั้งหมด'; }, 3000); return; }
   for (const k of takes.keys()) dbDel(k); takes.clear(); render(); say('ลบเสียงทั้งหมดแล้ว'); };
 // tests: the cleaning and packing steps without a microphone
