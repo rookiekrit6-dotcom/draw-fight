@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ห้องอัดเสียงเกรียน · วาดแล้วสู้</title>
+<style>
+  body { margin: 0; font: 17px/1.45 system-ui, sans-serif; background: #f3ead6; color: #2a2118; }
+  header { position: sticky; top: 0; z-index: 5; background: #7a4e26; color: #fff; padding: 10px 14px; }
+  header h1 { margin: 0; font-size: 19px; }
+  header .bar { height: 8px; background: rgba(255,255,255,.25); border-radius: 4px; margin-top: 6px; overflow: hidden; }
+  header .bar i { display: block; height: 100%; width: 0; background: #ffd24a; }
+  main { max-width: 720px; margin: 0 auto; padding: 10px 12px 120px; }
+  .note { background: #fff8e6; border: 2px solid #c9a15a; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+  h2 { font-size: 18px; margin: 22px 0 2px; }
+  .how { color: #7a4e26; margin: 0 0 8px; }
+  .line { background: #fff; border: 2px solid #d8c7a3; border-radius: 12px; padding: 10px; margin: 8px 0; }
+  .line.rec { border-color: #d33; background: #fff0f0; }
+  .line.done { border-color: #3a9a4a; }
+  .word { font-size: 23px; font-weight: 700; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+  button { font: inherit; font-weight: 700; border: 2px solid #7a4e26; background: #ffe9b8; color: #2a2118; border-radius: 10px; padding: 9px 14px; min-height: 46px; }
+  button.recBtn { background: #e5484d; color: #fff; border-color: #a11; }
+  button.small { padding: 6px 10px; min-height: 40px; font-weight: 400; }
+  button:disabled { opacity: .45; }
+  .take { display: inline-flex; gap: 4px; align-items: center; background: #eef7ee; border: 1px solid #9c9; border-radius: 10px; padding: 3px 5px; }
+  canvas.wave { width: 86px; height: 34px; background: #fff; border-radius: 6px; }
+  .meter { height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; flex: 1 1 120px; }
+  .meter i { display: block; height: 100%; width: 0; background: #3a9a4a; }
+  footer { position: fixed; left: 0; right: 0; bottom: 0; background: #2a2118; padding: 10px 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  footer button { background: #ffd24a; }
+  #msg { color: #fff; width: 100%; text-align: center; font-size: 15px; }
+</style>
+</head>
+<body>
+<header><h1>🎙️ ห้องอัดเสียงเกรียน <span id="count"></span></h1><div class="bar"><i id="prog"></i></div></header>
+<main>
+  <div class="note">
+    <b>วิธีใช้</b><br>
+    1. กด <b>● อัด</b> แล้วพูดคำนั้นตามอารมณ์ที่บอก กด <b>■ หยุด</b> เมื่อพูดจบ (หยุดเองที่ 5 วินาที)<br>
+    2. โปรแกรมตัดช่วงเงียบหัวท้ายและปรับความดังให้เท่ากันเอง กด ▶ ฟังได้ ไม่ชอบกด ✕ แล้วอัดใหม่<br>
+    3. อัดได้คำละ 3 แบบ ยิ่งหลายแบบเกมยิ่งสุ่มสลับไม่ซ้ำหู ข้ามคำที่ไม่ชอบได้<br>
+    4. เสร็จแล้วกด <b>ส่งออกไฟล์</b> ด้านล่าง จะได้ไฟล์ zip หนึ่งไฟล์ ส่งไฟล์นั้นให้ Claude ในแชต<br>
+    เสียงเก็บอยู่ในเครื่องนี้เท่านั้น ปิดหน้าแล้วเปิดใหม่ยังอยู่ ไม่มีการส่งขึ้นเน็ต
+  </div>
+  <div class="note"><b>ไม่ต้องพากย์เก่ง</b> พูดธรรมดาได้เลย แล้วเลือก <b>เสียงตัวละคร</b> ข้างล่าง โปรแกรมจะบีบเสียงให้แหลม ทุ้ม สั่น หรือก้องเอง กด ▶ เพื่อฟังผลได้ทันที เปลี่ยนแบบได้ตลอดโดยไม่ต้องอัดใหม่<br>
+    <div class="row"><b>เสียงตัวละคร:</b><select id="fxSel" style="font:inherit;padding:8px;border-radius:8px"></select></div>
+    <span class="how">หมวดวัยทารกใช้เสียงทารก และหมวดวัยชราใช้เสียงคนแก่เสมอ</span></div>
+  <div class="row"><button id="micBtn">เปิดไมค์</button><div class="meter"><i id="lvl"></i></div></div>
+  <div id="list"></div>
+</main>
+<footer><div id="msg"></div><button id="exportBtn">📦 ส่งออกไฟล์ (zip)</button><button id="wipeBtn" class="small">ลบทั้งหมด</button></footer>
+<script>
+// voice.html — the owner's recording booth for the silly voice pack (24 Nov 2026). Recorded voices only: the owner speaks
+// each line (voice-lines.json: groups, lines and how to say them), the page trims the silence, evens the loudness, keeps up
+// to 3 takes per line in this browser (IndexedDB) and exports one zip: v_<group>_<line>_<take>.wav (mono 22050 Hz 16 bit)
+// + voice.json (which file is which line). Nothing is uploaded. The owner is not a voice actor: a plain reading is turned into
+// a character voice by fx() (higher, lower, shaking, echo...); the zip holds both the character voice and the plain take (raw/).
+const RATE = 22050, MAX_TAKES = 3, MAX_SECS = 5, SILENCE = 0.025, PAD = 0.04, PEAK = 0.9;
+const $ = (id) => document.getElementById(id);
+let DATA = null, db = null, stream = null, ctx = null, analyser = null, recording = null;
+const takes = new Map();
+// voice characters: what is done to a plain reading so it sounds like a silly character, not like the owner reading a list
+//   pitch = speed and height together (over 1 = higher and faster) · drive = how hard the voice is pushed (louder, rougher)
+//   wobble = [depth, times a second] a shaking voice · echo = [seconds, share] · thin = telephone / megaphone sound
+const FX = {
+  plain: { name: 'เสียงจริง (แค่ปรับให้ดังชัด)', pitch: 1, drive: 1.6 },
+  brat: { name: 'เกรียนเสียงแหลม', pitch: 1.32, drive: 2.2 },
+  chip: { name: 'ชิปมังก์ (แหลมจี๊ด)', pitch: 1.75, drive: 1.8 },
+  giant: { name: 'ยักษ์เสียงทุ้ม', pitch: 0.72, drive: 2.4 },
+  hero: { name: 'พระเอกก้องภูเขา', pitch: 0.92, drive: 2, echo: [0.16, 0.38] },
+  horn: { name: 'โทรโข่งแตก ๆ', pitch: 1.08, drive: 5, thin: 1 },
+  baby: { name: 'ทารก', pitch: 1.9, drive: 1.6 },
+  elder: { name: 'คนแก่เสียงสั่น', pitch: 0.86, drive: 1.8, wobble: [0.012, 6.5] },
+};
+const GROUP_FX = { baby: 'baby', elder: 'elder' };
+let fxNow = localStorage.getItem('df-voice-fx') || 'brat';
+const fxOf = (key) => GROUP_FX[key.split('_')[0]] || fxNow;
+function fx(pcm, id) {
+  const F = FX[id] || FX.plain, n = Math.floor(pcm.length / F.pitch), a = new Float32Array(n);
+  for (let i = 0; i < n; i++) { let pos = i * F.pitch; if (F.wobble) pos += Math.sin(i / RATE * 6.283 * F.wobble[1]) * F.wobble[0] * RATE;
+    const j = Math.max(0, Math.min(pcm.length - 2, Math.floor(pos))), t = pos - j; a[i] = (pcm[j] * (1 - t) + pcm[j + 1] * t) / 32767; }
+  if (F.thin) { let lo = 0, prev = 0; for (let i = 0; i < n; i++) { lo += (a[i] - lo) * 0.45; const hi = lo - prev; prev = lo; a[i] = hi * 3; } }
+  const norm = Math.tanh(F.drive); for (let i = 0; i < n; i++) a[i] = Math.tanh(a[i] * F.drive) / norm;
+  let out = a;
+  if (F.echo) { const d = Math.round(F.echo[0] * RATE); out = new Float32Array(n + d * 3); out.set(a); for (let i = d; i < out.length; i++) out[i] += out[i - d] * F.echo[1]; }
+  let peak = 0; for (const v of out) peak = Math.max(peak, Math.abs(v));
+  const k = peak > 0 ? PEAK / peak : 1, res = new Int16Array(out.length);
+  for (let i = 0; i < out.length; i++) res[i] = Math.round(out[i] * k * 32767);
+  return res;
+}
+
+function openDb() { return new Promise((res, rej) => { const r = indexedDB.open('df-voice', 1); r.onupgradeneeded = () => r.result.createObjectStore('takes'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+function dbAll() { return new Promise((res) => { const out = new Map(), c = db.transaction('takes').objectStore('takes').openCursor(); c.onsuccess = () => { const k = c.result; if (!k) return res(out); out.set(k.key, k.value); k.continue(); }; c.onerror = () => res(out); }); }
+function dbPut(key, val) { db.transaction('takes', 'readwrite').objectStore('takes').put(val, key); }
+function dbDel(key) { db.transaction('takes', 'readwrite').objectStore('takes').delete(key); }
+const say = (t) => { $('msg').textContent = t; };
+
+// ---- sound: trim the silence at both ends, bring the loudest point to PEAK, mono at RATE ----
+function clean(samples) {
+  let a = 0, b = samples.length - 1;
+  while (a < b && Math.abs(samples[a]) < SILENCE) a++;
+  while (b > a && Math.abs(samples[b]) < SILENCE) b--;
+  const pad = Math.round(PAD * RATE); a = Math.max(0, a - pad); b = Math.min(samples.length - 1, b + pad);
+  if (b - a < RATE * 0.08) return null;
+  const out = samples.slice(a, b + 1); let peak = 0;
+  for (const v of out) peak = Math.max(peak, Math.abs(v));
+  if (peak < 0.02) return null;
+  const k = PEAK / peak, n = out.length, fade = Math.min(Math.round(0.01 * RATE), n >> 1);
+  for (let i = 0; i < n; i++) out[i] *= k;
+  for (let i = 0; i < fade; i++) { out[i] *= i / fade; out[n - 1 - i] *= i / fade; }
+  const pcm = new Int16Array(n);
+  for (let i = 0; i < n; i++) pcm[i] = Math.max(-32767, Math.min(32767, Math.round(out[i] * 32767)));
+  return pcm;
+}
+async function decode(blob) {
+  const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
+  const off = new OfflineAudioContext(1, Math.ceil(buf.duration * RATE), RATE), src = off.createBufferSource();
+  src.buffer = buf; src.connect(off.destination); src.start();
+  return (await off.startRendering()).getChannelData(0);
+}
+function play(pcm) {
+  const buf = ctx.createBuffer(1, pcm.length, RATE), ch = buf.getChannelData(0);
+  for (let i = 0; i < pcm.length; i++) ch[i] = pcm[i] / 32767;
+  const s = ctx.createBufferSource(); s.buffer = buf; s.connect(ctx.destination); s.start();
+}
+function drawWave(cv, pcm) {
+  const g = cv.getContext('2d'), w = cv.width = 172, h = cv.height = 68; g.clearRect(0, 0, w, h); g.fillStyle = '#7a4e26';
+  for (let x = 0; x < w; x++) { let m = 0; const i0 = Math.floor(x / w * pcm.length), i1 = Math.floor((x + 1) / w * pcm.length); for (let i = i0; i < i1; i += 8) m = Math.max(m, Math.abs(pcm[i])); const y = m / 32767 * h * 0.5; g.fillRect(x, h / 2 - y, 1, y * 2 || 1); }
+}
+
+// ---- microphone ----
+async function mic() {
+  if (stream) return true;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } });
+    ctx = new (window.AudioContext || window.webkitAudioContext)(); analyser = ctx.createAnalyser(); analyser.fftSize = 512;
+    ctx.createMediaStreamSource(stream).connect(analyser); $('micBtn').textContent = 'ไมค์พร้อม ✓'; $('micBtn').disabled = true; meter(); say('ไมค์พร้อมแล้ว กด ● อัด ที่คำไหนก็ได้'); return true;
+  } catch (e) { say('เปิดไมค์ไม่ได้: กดอนุญาตไมโครโฟนในเบราว์เซอร์ก่อน (' + e.name + ')'); return false; }
+}
+function meter() { const d = new Uint8Array(analyser.fftSize); const t = () => { analyser.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); $('lvl').style.width = Math.min(100, m / 128 * 140) + '%'; $('lvl').style.background = m > 118 ? '#d33' : '#3a9a4a'; requestAnimationFrame(t); }; t(); }
+async function record(key, box) {
+  if (recording) { recording.stop(); return; }
+  if (!(await mic())) return;
+  if ((takes.get(key) || []).length >= MAX_TAKES) { say('คำนี้ครบ 3 แบบแล้ว ลบอันที่ไม่ชอบก่อน'); return; }
+  const chunks = [], mr = new MediaRecorder(stream); recording = mr; box.classList.add('rec'); box.querySelector('.recBtn').textContent = '■ หยุด'; say('กำลังอัด... พูดได้เลย');
+  const timer = setTimeout(() => mr.state === 'recording' && mr.stop(), MAX_SECS * 1000);
+  mr.ondataavailable = (e) => chunks.push(e.data);
+  mr.onstop = async () => {
+    clearTimeout(timer); recording = null; box.classList.remove('rec'); box.querySelector('.recBtn').textContent = '● อัด';
+    try {
+      const pcm = clean(await decode(new Blob(chunks, { type: mr.mimeType })));
+      if (!pcm) { say('เสียงเบาหรือสั้นเกินไป ลองใหม่ พูดให้ดังขึ้นหรือเข้าใกล้ไมค์'); return; }
+      const list = takes.get(key) || []; list.push(pcm); takes.set(key, list); dbPut(key, list); renderTakes(key, box); count(); play(fx(pcm, fxOf(key)));
+      say('เก็บแล้ว ยาว ' + (pcm.length / RATE).toFixed(1) + ' วินาที');
+    } catch (e) { say('อ่านเสียงที่อัดไม่ได้ ลองอีกครั้ง (' + e.name + ')'); }
+  };
+  mr.start();
+}
+
+// ---- page ----
+function renderTakes(key, box) {
+  const row = box.querySelector('.takes'), list = takes.get(key) || []; row.innerHTML = ''; box.classList.toggle('done', list.length > 0);
+  list.forEach((pcm, i) => { const t = document.createElement('span'); t.className = 'take';
+    const cv = document.createElement('canvas'); cv.className = 'wave'; drawWave(cv, pcm);
+    const p = document.createElement('button'); p.className = 'small'; p.textContent = '▶'; p.onclick = () => { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); play(fx(pcm, fxOf(key))); };
+    const x = document.createElement('button'); x.className = 'small'; x.textContent = '✕'; x.onclick = () => { list.splice(i, 1); if (list.length) dbPut(key, list); else { takes.delete(key); dbDel(key); } renderTakes(key, box); count(); };
+    t.append(cv, p, x); row.append(t); });
+}
+function count() { const all = DATA.groups.reduce((n, g) => n + g.lines.length, 0); let done = 0, files = 0; for (const l of takes.values()) { if (l.length) done++; files += l.length; }
+  $('count').textContent = `${done}/${all} คำ · ${files} ไฟล์`; $('prog').style.width = (done / all * 100) + '%'; }
+function render() {
+  const root = $('list'); root.innerHTML = '';
+  for (const g of DATA.groups) {
+    const h = document.createElement('h2'); h.textContent = g.name; const how = document.createElement('p'); how.className = 'how'; how.textContent = 'อารมณ์: ' + g.how; root.append(h, how);
+    g.lines.forEach((text, i) => { const key = g.id + '_' + i, box = document.createElement('div'); box.className = 'line';
+      box.innerHTML = '<div class="word"></div><div class="row"><button class="recBtn">● อัด</button><span class="takes row" style="margin:0"></span></div>';
+      box.querySelector('.word').textContent = text; box.querySelector('.recBtn').onclick = () => record(key, box); root.append(box); renderTakes(key, box); });
+  }
+  count();
+}
+
+// ---- export: wav files in a plain (stored) zip ----
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return (u8) => { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = t[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }; })();
+function wav(pcm) {
+  const b = new ArrayBuffer(44 + pcm.length * 2), v = new DataView(b), str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + pcm.length * 2, true); str(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, RATE, true); v.setUint32(28, RATE * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, pcm.length * 2, true);
+  for (let i = 0; i < pcm.length; i++) v.setInt16(44 + i * 2, pcm[i], true);
+  return new Uint8Array(b);
+}
+function zip(files) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  for (const f of files) { const name = enc.encode(f.name), crc = CRC(f.data), h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x800, true); h.setUint32(14, crc, true); h.setUint32(18, f.data.length, true); h.setUint32(22, f.data.length, true); h.setUint16(26, name.length, true);
+    parts.push(new Uint8Array(h.buffer), name, f.data);
+    const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x800, true); c.setUint32(16, crc, true); c.setUint32(20, f.data.length, true); c.setUint32(24, f.data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), name); off += 30 + name.length + f.data.length; }
+  const size = central.reduce((n, p) => n + p.length, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, size, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type: 'application/zip' });
+}
+function exportZip() {
+  const files = [], index = [];
+  for (const g of DATA.groups) g.lines.forEach((text, i) => { const list = takes.get(g.id + '_' + i) || [];
+    list.forEach((pcm, n) => { const name = `v_${g.id}_${i}_${n}.wav`, id = fxOf(g.id + '_' + i), made = fx(pcm, id);
+      files.push({ name, data: wav(made) }, { name: 'raw/' + name, data: wav(pcm) }); index.push({ file: name, group: g.id, line: i, text, fx: id, secs: +(made.length / RATE).toFixed(2) }); }); });
+  if (!files.length) { say('ยังไม่มีเสียงที่อัดไว้'); return null; }
+  files.push({ name: 'voice.json', data: new TextEncoder().encode(JSON.stringify({ rate: RATE, made: new Date().toISOString().slice(0, 10), files: index }, null, 1)) });
+  const blob = zip(files), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'df-voice.zip'; a.click();
+  say(`ส่งออกแล้ว ${index.length} เสียง (${(blob.size / 1e6).toFixed(1)} MB) ส่งไฟล์ df-voice.zip ให้ Claude ในแชตได้เลย`); return blob;
+}
+$('micBtn').onclick = mic; $('exportBtn').onclick = exportZip;
+for (const id of Object.keys(FX)) { if (id === 'baby' || id === 'elder') continue; const o = document.createElement('option'); o.value = id; o.textContent = FX[id].name; $('fxSel').append(o); }
+$('fxSel').value = FX[fxNow] ? fxNow : 'brat'; $('fxSel').onchange = () => { fxNow = $('fxSel').value; localStorage.setItem('df-voice-fx', fxNow); say('เปลี่ยนเสียงตัวละครแล้ว กด ▶ ฟังได้เลย'); };
+$('wipeBtn').onclick = () => { if (!takes.size) return; if ($('wipeBtn').dataset.sure !== '1') { $('wipeBtn').dataset.sure = '1'; $('wipeBtn').textContent = 'กดอีกครั้งเพื่อลบจริง'; setTimeout(() => { $('wipeBtn').dataset.sure = ''; $('wipeBtn').textContent = 'ลบทั้งหมด'; }, 3000); return; }
+  for (const k of takes.keys()) dbDel(k); takes.clear(); render(); say('ลบเสียงทั้งหมดแล้ว'); };
+// tests: the cleaning and packing steps without a microphone
+window.__voice = { clean, wav, zip, takes, exportZip, render, RATE, fx, FX };
+(async () => {
+  DATA = await (await fetch('voice-lines.json')).json(); db = await openDb();
+  for (const [k, v] of await dbAll()) takes.set(k, v);
+  render(); say(navigator.mediaDevices ? 'กด "เปิดไมค์" เพื่อเริ่ม' : 'เบราว์เซอร์นี้ใช้ไมค์ไม่ได้ ลองเปิดด้วย Chrome');
+})();
+</script>
+</body>
+</html>
