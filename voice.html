@@ -225,7 +225,8 @@ $('wipeBtn').onclick = () => { if (!takes.size) return; if ($('wipeBtn').dataset
 // tests: the cleaning and packing steps without a microphone
 window.__voice = { clean, wav, zip, takes, exportZip, render, RATE, fx, FX };
 (async () => {
-  DATA = await (await fetch('voice-lines.json')).json(); db = await openDb();
+  // always the newest list of lines (the browser kept an old copy for 10 minutes after a new list went up)
+  DATA = await (await fetch('voice-lines.json?t=' + Date.now(), { cache: 'no-store' })).json(); db = await openDb();
   for (const [k, v] of await dbAll()) takes.set(k, v);
   render(); say(navigator.mediaDevices ? 'กด "เปิดไมค์" เพื่อเริ่ม' : 'เบราว์เซอร์นี้ใช้ไมค์ไม่ได้ ลองเปิดด้วย Chrome');
 })();
